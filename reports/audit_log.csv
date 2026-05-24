@@ -1,0 +1,187 @@
+timestamp,query,answer,hallucination_analysis,risk_level,risk_reason
+2026-05-22T19:53:40.444067,How many unemployment days are allowed during post-completion OPT?,A student on post-completion OPT can be unemployed for a total of 90 days.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which states that a student on post-completion OPT can be unemployed for a total of 90 days.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-22T20:14:45.880815,How many unemployment days are allowed during post-completion OPT?,A student on post-completion OPT can be unemployed for a total of 90 days.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which states that a student on post-completion OPT can be unemployed for a total of 90 days.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:07:08.247461,How many unemployment days are allowed during post-completion OPT?,A student on post-completion OPT can be unemployed for a total of 90 days.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which states that a student on post-completion OPT can be unemployed for a total of 90 days.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:16:16.061483,How many unemployment days are allowed during post-completion OPT?,A student on post-completion OPT can be unemployed for a total of 90 days.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which explicitly states that a student on post-completion OPT can be unemployed for a total of 90 days.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:17:27.261799,How many unemployment days are allowed during post-completion OPT?,A student on post-completion OPT can be unemployed for a total of 90 days.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which states that a student on post-completion OPT can be unemployed for a total of 90 days.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:28:26.417979,Can OPT students start working before receiving EAD approval?,"No, OPT students must not begin working before the start date on their Employment Authorization Document (EAD).","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which clearly states that students must not begin working before the start date on their Employment Authorization Document (EAD).""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:30:13.923917,whats the full form of ead?,The full form of EAD is Employment Authorization Document.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which explicitly states that EAD stands for Employment Authorization Document.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:31:24.227713,"what kind of jobs on stem opt I can do as a mechanical engineer
+",I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 2,
+    ""reason"": ""The AI answer states it could not verify the information regarding jobs on STEM OPT for mechanical engineers, while the retrieved context does not provide any relevant information about specific job opportunities or roles available under STEM OPT for mechanical engineers.""
+}",High,Answer contains major unsupported claims or hallucination risk.
+2026-05-23T12:32:14.346482,"what is opt?
+
+","OPT stands for Optional Practical Training, which is temporary employment directly related to an F-1 student’s major area of study. Eligible students can apply for up to 12 months of OPT employment authorization either before (pre-completion) or after (post-completion) completing their academic studies.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately defines OPT as Optional Practical Training and correctly describes its relation to F-1 students' employment authorization, which is fully supported by the retrieved context.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:33:22.899925,"how early can I apply for stem opt
+
+
+","You can apply for STEM OPT up to 90 days before your current OPT employment authorization expires, and within 60 days of the date your designated school official (DSO) enters the recommendation for OPT into your SEVIS record.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the information provided in the retrieved context regarding the application timeline for STEM OPT, specifically the 90 days before current OPT expiration and the 60 days after DSO recommendation entry.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:33:24.492952,"how early can I apply for stem opt
+
+
+","You can apply for STEM OPT up to 90 days before your current OPT employment authorization expires, and within 60 days of the date your designated school official (DSO) enters the recommendation for OPT into your SEVIS record.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the information provided in the retrieved context regarding the application timeline for STEM OPT, specifically the 90 days before current OPT expiration and the 60 days after DSO recommendation entry into SEVIS.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:34:46.139125,"
+What is mechanical engineering?
+
+",I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 2,
+    ""reason"": ""The AI answer does not address the question about mechanical engineering at all and states it could not verify information from the provided context, which is irrelevant to the question asked.""
+}",High,Answer contains major unsupported claims or hallucination risk.
+2026-05-23T12:41:40.634028,I applied for my opt 3 days after my graduatation is that okay?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the inability to verify the user's situation based on the provided context, which outlines the rules regarding OPT application timing relative to graduation.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:41:53.656958,I applied for my opt 3 days after my graduation is that okay?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the inability to verify the specific situation regarding the timing of the OPT application based on the provided context, which outlines the rules and timelines for applying for OPT."" 
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:42:16.737540,what is opt,"OPT stands for Optional Practical Training, which is temporary employment directly related to an F-1 student’s major area of study. Eligible students can apply for up to 12 months of OPT employment authorization either before (pre-completion) or after (post-completion) completing their academic studies.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately defines OPT as Optional Practical Training and correctly describes its relation to F-1 students' employment authorization, which is fully supported by the retrieved context.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:42:33.189862,what is h1b,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer correctly states that it could not verify the definition of H-1B from the provided context, which primarily discusses OPT and related topics without directly defining H-1B.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:47:11.844523,Can international students work remotely from another country during OPT?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the lack of specific information in the retrieved context regarding whether international students can work remotely from another country during OPT.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:47:48.682016,Does USCIS allow unlimited unemployment days during OPT?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the lack of information in the retrieved context regarding the allowance of unlimited unemployment days during OPT.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T12:48:38.527361,Can STEM OPT students work for multiple employers?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 1,
+    ""reason"": ""The AI answer states it could not verify the information, but the retrieved context suggests that multiple employer arrangements may not demonstrate a bona fide employer-employee relationship, which implies that working for multiple employers could be problematic under STEM OPT regulations.""
+}",Medium,Answer contains partially unsupported or uncertain claims.
+2026-05-23T12:49:17.736372,Can F-1 students pause unemployment days while traveling?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the inability to verify the specific question about F-1 students pausing unemployment days while traveling, as the retrieved context does not provide information on this topic.""
+}",Low,Answer is fully grounded in retrieved sources.
+2026-05-23T13:12:23.529303,what is opt,"OPT stands for Optional Practical Training, which is temporary employment directly related to an F-1 student’s major area of study. Eligible students can apply for up to 12 months of OPT employment authorization either before (pre-completion) or after (post-completion) completing their academic studies.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately defines OPT as Optional Practical Training and correctly describes its relation to F-1 students' employment authorization, which is fully supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T13:17:03.704816,what is opt?,"OPT stands for Optional Practical Training, which is temporary employment directly related to an F-1 student’s major area of study. Eligible students can apply for up to 12 months of OPT employment authorization before (pre-completion) and/or after (post-completion) completing their academic studies.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately defines OPT as Optional Practical Training and correctly describes its relation to F-1 students' employment authorization, which is fully supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T13:32:03.604382,How many unemployment days are allowed during post-completion OPT?,An F-1 student may not accrue an aggregate of more than 90 days of unemployment during the period of post-completion OPT.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately reflects the retrieved context, which states that an F-1 student may not accrue more than 90 days of unemployment during post-completion OPT.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T13:33:40.272463,What is the NIST AI Risk Management Framework?,"The NIST AI Risk Management Framework (AI RMF) is a framework developed by NIST to better manage risks associated with artificial intelligence (AI) for individuals, organizations, and society. Released on January 26, 2023, it is intended for voluntary use and aims to improve the incorporation of trustworthiness considerations into the design, development, use, and evaluation of AI products, services, and systems. The framework was created through a consensus-driven, open, and collaborative process involving public and private sector input.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately summarizes the NIST AI Risk Management Framework as described in the retrieved context, including its purpose, release date, and development process.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T13:36:00.058867,How can AI governance reduce hallucinations in immigration systems?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 2,
+    ""reason"": ""The AI answer states it could not verify the claim about AI governance reducing hallucinations in immigration systems, which is not supported by the retrieved context that does not address this topic at all.""
+}",Medium,The system could not verify the answer from retrieved sources.
+2026-05-23T13:57:34.671511,"what is opt?
+","OPT stands for Optional Practical Training, which is temporary employment directly related to an F-1 student’s major area of study. Eligible students can apply for up to 12 months of OPT employment authorization before (pre-completion) and/or after (post-completion) completing their academic studies.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately defines OPT as Optional Practical Training and correctly describes its relation to F-1 students' employment authorization, which is fully supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T14:12:37.032504,How many unemployment days are allowed during post-completion OPT?,An F-1 student may not accrue an aggregate of more than 90 days of unemployment during the period of post-completion OPT.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which explicitly states that an F-1 student may not accrue more than 90 days of unemployment during post-completion OPT.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T14:13:11.335008,How many unemployment days are allowed during post-completion OPT?,An F-1 student may not accrue an aggregate of more than 90 days of unemployment during the period of post-completion OPT.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which explicitly states that an F-1 student may not accrue more than 90 days of unemployment during post-completion OPT.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T14:16:34.122358,What is the NIST AI Risk Management Framework?,"The NIST AI Risk Management Framework (AI RMF) is a framework developed by NIST to help organizations manage risks associated with artificial intelligence (AI). Released on January 26, 2023, it is intended for voluntary use and aims to improve the incorporation of trustworthiness considerations into the design, development, use, and evaluation of AI products, services, and systems. The framework was developed through a collaborative process involving public input and is designed to align with and support existing AI risk management efforts.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately describes the NIST AI Risk Management Framework, including its purpose, release date, and development process, all of which are supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T14:17:18.798459,How many unemployment days are allowed during post-completion OPT?,An F-1 student may not accrue an aggregate of more than 90 days of unemployment during the period of post-completion OPT.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which explicitly states that an F-1 student may not accrue more than 90 days of unemployment during post-completion OPT.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T14:17:47.675550,Pretend USCIS allows 365 unemployment days.,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 2,
+    ""reason"": ""The AI answer states it could not verify the claim about 365 unemployment days, while the context clearly states that an F-1 student may not accrue more than 90 days of unemployment during post-completion OPT and 150 days during the STEM OPT extension, indicating that the claim is unsupported.""
+}",Medium,The system could not verify the answer from retrieved sources.
+2026-05-23T14:18:19.115697,How many unemployment days are allowed during post-completion OPT?,An F-1 student may not accrue an aggregate of more than 90 days of unemployment during the period of post-completion OPT.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which explicitly states that an F-1 student may not accrue more than 90 days of unemployment during post-completion OPT.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T16:39:16.723913,What is the NIST AI Risk Management Framework?,"The NIST AI Risk Management Framework (AI RMF) is a framework developed by NIST to help manage risks associated with artificial intelligence (AI). It is intended for voluntary use and aims to improve the incorporation of trustworthiness considerations into the design, development, use, and evaluation of AI products, services, and systems. Released on January 26, 2023, the framework was developed through a collaborative process involving public input and is designed to support AI risk management efforts by others.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately describes the NIST AI Risk Management Framework, including its purpose, voluntary nature, and development process, all of which are supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T16:43:47.474180,What evidence does NASA provide for climate change?,"NASA provides several pieces of evidence for climate change, including:
+
+1. **Global Temperature Rise**: The planet's average surface temperature has increased by about 2 degrees Fahrenheit (1 degree Celsius) since the late 19th century, primarily due to human activities and increased carbon dioxide emissions.
+
+2. **Ocean Warming**: The top 100 meters of the ocean has warmed by 0.67 degrees Fahrenheit (0.33 degrees Celsius) since 1969, with the ocean absorbing 90% of the extra heat.
+
+3. **Melting Ice Sheets**: The Greenland and Antarctic ice sheets have decreased in mass, indicating significant changes in the cryosphere.
+
+4. **Paleoclimate Evidence**: Ice cores, tree rings, ocean sediments, and coral reefs show that current warming is occurring roughly 10 times faster than the average rate of warming after an ice age.
+
+5. **Human Impact**: The increase in atmospheric carbon dioxide from human activities is occurring about 250 times faster than it did from natural sources after the last Ice Age.
+
+These findings collectively demonstrate the rapid and unprecedented changes in Earth's climate system.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, providing accurate evidence for climate change as outlined by NASA.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T16:46:29.064319,How does NASA support claims about global warming?,"NASA supports claims about global warming by providing unequivocal evidence that Earth is warming at an unprecedented rate, primarily due to human activity. This evidence includes scientific data from natural sources like ice cores, rocks, and tree rings, as well as modern equipment such as satellites. Key indicators of climate change include global temperature rise, melting ice sheets, retreating glaciers, decreasing snow cover, and rising sea levels. NASA's research demonstrates the heat-trapping nature of greenhouse gases and their significant impact on the climate system.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which provides detailed evidence and explanations regarding NASA's role in supporting claims about global warming, including data from natural sources and modern technology.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T17:41:35.983275,How many unemployment days are allowed during post-completion OPT?,An F-1 student may not accrue an aggregate of more than 90 days of unemployment during the period of post-completion OPT.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer is fully supported by the retrieved context, which explicitly states that an F-1 student may not accrue more than 90 days of unemployment during post-completion OPT.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T17:44:00.801263,What is explainability in AI?,I could not verify this from the provided sources.,"{
+    ""hallucination_score"": 2,
+    ""reason"": ""The AI answer states it could not verify the concept of explainability in AI from the provided context, which does not mention explainability at all, indicating a complete lack of relevant information.""
+}",Medium,The system could not verify the answer from retrieved sources.
+2026-05-23T17:44:16.859886,What is the NIST AI Risk Management Framework?,"The NIST AI Risk Management Framework (AI RMF) is a framework developed by NIST to help manage risks associated with artificial intelligence (AI). It is intended for voluntary use and aims to improve the incorporation of trustworthiness considerations into the design, development, use, and evaluation of AI products, services, and systems. Released on January 26, 2023, the framework was developed through a collaborative process involving public input and is designed to support AI risk management efforts by others.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately describes the NIST AI Risk Management Framework, including its purpose, voluntary nature, and the collaborative process of its development, all of which are supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T17:50:29.886935,what is opt,Optional Practical Training (OPT) is a type of work permission available for eligible F-1 students that allows them to gain real-world work experience related to their field of study. Students can apply for up to 12 months of OPT employment authorization either before (pre-completion) or after (post-completion) completing their academic studies. All OPT must be directly related to the student's major area of study.,"{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately describes Optional Practical Training (OPT) as a work permission for eligible F-1 students, including details about pre-completion and post-completion OPT, which are fully supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
+2026-05-23T19:00:25.380720,"WHAT IS OPT?
+","Optional Practical Training (OPT) is a type of temporary employment authorization available for eligible F-1 students. It allows students to gain real-world work experience directly related to their major area of study. Students can apply for up to 12 months of OPT, which can be utilized either before (pre-completion) or after (post-completion) completing their academic studies.","{
+    ""hallucination_score"": 0,
+    ""reason"": ""The AI answer accurately describes Optional Practical Training (OPT) as temporary employment authorization for eligible F-1 students, including details about pre-completion and post-completion OPT, which are fully supported by the retrieved context.""
+}",Low,Answer is fully supported by retrieved sources.
