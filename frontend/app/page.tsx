@@ -51,7 +51,7 @@ export default function Home() {
     setFeedbackStatus("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/analyze", {
+      const response = await fetch("https://trustguard-ai-production.up.railway.app/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
@@ -73,7 +73,7 @@ export default function Home() {
     setIngestResult(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/ingest-url", {
+      const response = await fetch("https://trustguard-ai-production.up.railway.app/ingest-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -94,7 +94,7 @@ export default function Home() {
     if (!result) return;
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/feedback", {
+      const response = await fetch("https://trustguard-ai-production.up.railway.app/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -117,7 +117,7 @@ export default function Home() {
     setAuditLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/audit-logs");
+      const response = await fetch("https://trustguard-ai-production.up.railway.app/audit-logs");
 
       if (!response.ok) throw new Error("Audit API error");
 
