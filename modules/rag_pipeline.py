@@ -21,7 +21,7 @@ embedding_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 def retrieve_context(query, top_k=10):
     db_client = chromadb.PersistentClient(path=DB_PATH)
 
-    collection = db_client.get_collection(
+    collection = db_client.get_or_create_collection(
         name=COLLECTION_NAME
     )
 
@@ -34,29 +34,57 @@ def retrieve_context(query, top_k=10):
         n_results=top_k
     )
 
+    documents = results.get("documents", [])
+    metadatas = results.get("metadatas", [])
+
+    if not documents or not documents[0]:
+        return []
+
     contexts = []
 
-    for doc, meta in zip(
-        results["documents"][0],
-        results["metadatas"][0]
-    ):
+    for doc, meta in zip(documents[0], metadatas[0]):
         contexts.append({
             "text": doc,
-            "source_title": meta["source_title"],
-            "source_url": meta["source_url"]
+            "source_title": meta.get("source_title", "Unknown Source"),
+            "source_url": meta.get("source_url", "")
         })
 
     return contexts
 
 
 def generate_answer(query):
-
     contexts = retrieve_context(query, top_k=15)
-    contexts = rerank_contexts(query, contexts, top_k=6 )
+
+    if not contexts:
+        result = {
+            "query": query,
+            "answer": (
+                "No knowledge sources have been ingested yet. "
+                "Please add a source URL first."
+            ),
+            "sources": [],
+            "hallucination_analysis": {
+                "hallucination_score": 0,
+                "reason": "No retrieved context was available."
+            },
+            "risk_analysis": {
+                "risk_level": "Low",
+                "risk_status": "No Context",
+                "risk_reason": "The knowledge base is empty."
+            }
+        }
+
+        log_audit(result)
+        return result
+
+    contexts = rerank_contexts(
+        query,
+        contexts,
+        top_k=6
+    )
 
     context_text = "\n\n".join([
-        f"Source: {c['source_title']}\n"
-        f"Text: {c['text']}"
+        f"Source: {c['source_title']}\nText: {c['text']}"
         for c in contexts
     ])
 
