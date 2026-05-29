@@ -12,6 +12,7 @@ def log_audit(result):
     row = {
         "timestamp": datetime.now().isoformat(),
         "query": result["query"],
+        "rewritten_query": result.get("rewritten_query", ""),
         "answer": result["answer"],
         "hallucination_analysis": str(
             result["hallucination_analysis"]
@@ -23,12 +24,18 @@ def log_audit(result):
     df = pd.DataFrame([row])
 
     if os.path.exists(AUDIT_LOG):
-        df.to_csv(
+        existing_df = pd.read_csv(AUDIT_LOG)
+
+        updated_df = pd.concat(
+            [df, existing_df],
+            ignore_index=True
+        )
+
+        updated_df.to_csv(
             AUDIT_LOG,
-            mode="a",
-            header=False,
             index=False
         )
+
     else:
         df.to_csv(
             AUDIT_LOG,

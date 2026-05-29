@@ -21,6 +21,9 @@ export default function Home() {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [auditPage, setAuditPage] = useState(1);
+
+  const logsPerPage = 5;
 
   useEffect(() => {
     let i = 0;
@@ -120,11 +123,28 @@ export default function Home() {
 
       const data = await response.json();
       setAuditLogs(data.logs || []);
+      setAuditPage(1);
     } catch {
       alert("Could not load audit logs.");
     }
 
     setAuditLoading(false);
+  };
+
+  const resetQuery = () => {
+    setQuestion("");
+    setResult(null);
+    setFeedbackStatus("");
+  };
+
+  const resetUrl = () => {
+    setUrl("");
+    setIngestResult(null);
+  };
+
+  const closeAuditLogs = () => {
+    setAuditLogs([]);
+    setAuditPage(1);
   };
 
   const hallucination = result?.hallucination_analysis
@@ -135,6 +155,19 @@ export default function Home() {
 
   const riskBadge =
     riskLevel === "Low" ? "success" : riskLevel === "Medium" ? "warning" : "danger";
+
+  const sortedAuditLogs = [...auditLogs].sort(
+    (a, b) =>
+      new Date(b.timestamp).getTime() -
+      new Date(a.timestamp).getTime()
+  );
+
+  const totalAuditPages = Math.ceil(sortedAuditLogs.length / logsPerPage);
+
+  const paginatedAuditLogs = sortedAuditLogs.slice(
+    (auditPage - 1) * logsPerPage,
+    auditPage * logsPerPage
+  );
 
   return (
     <main className="min-vh-100 text-light app-bg">
@@ -275,6 +308,13 @@ export default function Home() {
                 {ingesting ? "Ingesting..." : "Ingest URL"}
               </button>
 
+              <button
+                onClick={resetUrl}
+                className="btn contact-btn w-100 mt-3"
+              >
+                Clear URL
+              </button>
+
               {ingestResult && (
                 <div className="alert alert-success mt-3 mb-0">
                   {ingestResult.status} — {ingestResult.chunks_added || 0} chunks added
@@ -301,6 +341,13 @@ export default function Home() {
                 className="btn purple-btn w-100 btn-lg"
               >
                 {loading ? "Analyzing..." : "Analyze Query"}
+              </button>
+
+              <button
+                onClick={resetQuery}
+                className="btn contact-btn w-100 mt-3"
+              >
+                Clear Query
               </button>
             </div>
           </div>
@@ -411,9 +458,15 @@ export default function Home() {
               Audit Log Dashboard
             </h5>
 
-            <button onClick={loadAuditLogs} className="btn purple-btn">
-              {auditLoading ? "Loading..." : "Load Audit Logs"}
-            </button>
+            <div className="d-flex gap-2">
+              <button onClick={loadAuditLogs} className="btn purple-btn">
+                {auditLoading ? "Loading..." : "Load Audit Logs"}
+              </button>
+
+              <button onClick={closeAuditLogs} className="btn contact-btn">
+                Close
+              </button>
+            </div>
           </div>
 
           {auditLogs.length === 0 && (
@@ -423,35 +476,59 @@ export default function Home() {
           )}
 
           {auditLogs.length > 0 && (
-            <div className="table-responsive">
-              <table className="table table-dark table-hover align-middle">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Question</th>
-                    <th>Risk Level</th>
-                    <th>Risk Reason</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {auditLogs.map((log: any, index: number) => (
-                    <tr key={index}>
-                      <td className="small">{log.timestamp}</td>
-                      <td>{log.query}</td>
-                      <td>
-                        <span className="badge text-bg-info">
-                          {log.risk_level}
-                        </span>
-                      </td>
-                      <td className="small text-secondary">
-                        {log.risk_reason}
-                      </td>
+            <>
+              <div className="table-responsive">
+                <table className="table table-dark table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Question</th>
+                      <th>Risk Level</th>
+                      <th>Risk Reason</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+
+                  <tbody>
+                    {paginatedAuditLogs.map((log: any, index: number) => (
+                      <tr key={index}>
+                        <td className="small">{log.timestamp}</td>
+                        <td>{log.query}</td>
+                        <td>
+                          <span className="badge text-bg-info">
+                            {log.risk_level}
+                          </span>
+                        </td>
+                        <td className="small text-secondary">
+                          {log.risk_reason}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center mt-4">
+                <button
+                  className="btn btn-sm contact-btn"
+                  disabled={auditPage === 1}
+                  onClick={() => setAuditPage(auditPage - 1)}
+                >
+                  Previous
+                </button>
+
+                <span className="text-secondary">
+                  Page {auditPage} of {totalAuditPages || 1}
+                </span>
+
+                <button
+                  className="btn btn-sm contact-btn"
+                  disabled={auditPage >= totalAuditPages}
+                  onClick={() => setAuditPage(auditPage + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
