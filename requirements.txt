@@ -59,6 +59,7 @@ packaging==26.2
 pandas==3.0.3
 propcache==0.5.2
 protobuf==6.33.6
+psycopg2-binary==2.9.12
 pybase64==1.4.3
 pydantic==2.13.4
 pydantic-settings==2.14.1

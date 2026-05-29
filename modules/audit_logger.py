@@ -1,45 +1,14 @@
-import pandas as pd
-import os
-from datetime import datetime
-
-AUDIT_LOG = "reports/audit_log.csv"
+from modules.supabase_logger import save_audit_log
 
 
 def log_audit(result):
+    save_audit_log(
+        query=result["query"],
+        rewritten_query=result.get("rewritten_query", ""),
+        answer=result["answer"],
+        hallucination_analysis=result["hallucination_analysis"],
+        risk_level=result["risk_analysis"]["risk_level"],
+        risk_reason=result["risk_analysis"]["risk_reason"]
+    )
 
-    os.makedirs("reports", exist_ok=True)
-
-    row = {
-        "timestamp": datetime.now().isoformat(),
-        "query": result["query"],
-        "rewritten_query": result.get("rewritten_query", ""),
-        "answer": result["answer"],
-        "hallucination_analysis": str(
-            result["hallucination_analysis"]
-        ),
-        "risk_level": result["risk_analysis"]["risk_level"],
-        "risk_reason": result["risk_analysis"]["risk_reason"]
-    }
-
-    df = pd.DataFrame([row])
-
-    if os.path.exists(AUDIT_LOG):
-        existing_df = pd.read_csv(AUDIT_LOG)
-
-        updated_df = pd.concat(
-            [df, existing_df],
-            ignore_index=True
-        )
-
-        updated_df.to_csv(
-            AUDIT_LOG,
-            index=False
-        )
-
-    else:
-        df.to_csv(
-            AUDIT_LOG,
-            index=False
-        )
-
-    print(f"Audit log saved to {AUDIT_LOG}")
+    print("Audit log saved to Supabase")
