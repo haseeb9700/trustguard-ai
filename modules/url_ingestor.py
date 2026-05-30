@@ -1,23 +1,27 @@
-import uuid
+import os
 import requests
-import chromadb
+import psycopg2
 from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
 
-DB_PATH = "data/chroma_db"
-COLLECTION_NAME = "uscis_policy_docs"
+load_dotenv()
 
 embedding_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
 
+def get_connection():
+    return psycopg2.connect(os.getenv("DATABASE_URL"))
+
+
 def scrape_url(url):
     headers = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/122.0.0.0 Safari/537.36"
-    )
-}
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/122.0.0.0 Safari/537.36"
+        )
+    }
 
     response = requests.get(url, headers=headers, timeout=20)
     response.raise_for_status()
@@ -48,7 +52,6 @@ def scrape_url(url):
 def chunk_text(text, chunk_size=400, overlap=80):
     words = str(text).split()
     chunks = []
-
     start = 0
 
     while start < len(words):
@@ -63,6 +66,35 @@ def chunk_text(text, chunk_size=400, overlap=80):
     return chunks
 
 
+def save_chunks_to_supabase(title, url, chunks, embeddings):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    for chunk, embedding in zip(chunks, embeddings):
+        cur.execute(
+            """
+            INSERT INTO knowledge_sources
+            (
+                source_title,
+                source_url,
+                chunk_text,
+                embedding
+            )
+            VALUES (%s, %s, %s, %s)
+            """,
+            (
+                title,
+                url,
+                chunk,
+                embedding
+            )
+        )
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 def ingest_url(url):
     title, full_text = scrape_url(url)
 
@@ -75,38 +107,23 @@ def ingest_url(url):
             "url": url
         }
 
-    client = chromadb.PersistentClient(path=DB_PATH)
-    collection = client.get_or_create_collection(name=COLLECTION_NAME)
-
-    ids = []
-    documents = []
-    metadatas = []
-
-    for index, chunk in enumerate(chunks):
-        ids.append(str(uuid.uuid4()))
-        documents.append(chunk)
-        metadatas.append({
-            "source_title": title,
-            "source_url": url,
-            "chunk_index": index
-        })
-
     embeddings = embedding_model.encode(
-        documents,
+        chunks,
         batch_size=32,
         show_progress_bar=True
     ).tolist()
 
-    collection.add(
-        ids=ids,
-        documents=documents,
-        embeddings=embeddings,
-        metadatas=metadatas
+    save_chunks_to_supabase(
+        title=title,
+        url=url,
+        chunks=chunks,
+        embeddings=embeddings
     )
 
     return {
         "status": "success",
         "source_title": title,
         "source_url": url,
-        "chunks_added": len(chunks)
+        "chunks_added": len(chunks),
+        "storage": "supabase"
     }
