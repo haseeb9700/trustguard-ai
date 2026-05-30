@@ -147,9 +147,7 @@ export default function Home() {
     setAuditPage(1);
   };
 
-  const hallucination = result?.hallucination_analysis
-    ? JSON.parse(result.hallucination_analysis)
-    : null;
+  const hallucination = result?.hallucination_analysis || null;
 
   const riskLevel = result?.risk_analysis?.risk_level;
 
