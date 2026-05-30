@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 import psycopg2
 from bs4 import BeautifulSoup
@@ -86,7 +87,7 @@ def save_chunks_to_supabase(title, url, chunks, embeddings):
                 title,
                 url,
                 chunk,
-                embedding
+                json.dumps(embedding)
             )
         )
 
