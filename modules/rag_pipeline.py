@@ -4,52 +4,83 @@ from modules.audit_logger import log_audit
 from modules.reranker import rerank_contexts
 
 import os
-import chromadb
+import json
+import numpy as np
+import psycopg2
 from dotenv import load_dotenv
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
-DB_PATH = "data/chroma_db"
-COLLECTION_NAME = "uscis_policy_docs"
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 embedding_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
 
+def get_connection():
+    return psycopg2.connect(os.getenv("DATABASE_URL"))
+
+
+def cosine_similarity(a, b):
+    a = np.array(a)
+    b = np.array(b)
+
+    denominator = np.linalg.norm(a) * np.linalg.norm(b)
+
+    if denominator == 0:
+        return 0
+
+    return float(np.dot(a, b) / denominator)
+
+
 def retrieve_context(query, top_k=10):
-    db_client = chromadb.PersistentClient(path=DB_PATH)
-
-    collection = db_client.get_or_create_collection(
-        name=COLLECTION_NAME
-    )
-
     query_embedding = embedding_model.encode(
         [query]
     ).tolist()[0]
 
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT
+            source_title,
+            source_url,
+            chunk_text,
+            embedding
+        FROM knowledge_sources
+        """
     )
 
-    documents = results.get("documents", [])
-    metadatas = results.get("metadatas", [])
+    rows = cur.fetchall()
 
-    if not documents or not documents[0]:
+    cur.close()
+    conn.close()
+
+    if not rows:
         return []
 
-    contexts = []
+    scored_contexts = []
 
-    for doc, meta in zip(documents[0], metadatas[0]):
-        contexts.append({
-            "text": doc,
-            "source_title": meta.get("source_title", "Unknown Source"),
-            "source_url": meta.get("source_url", "")
+    for source_title, source_url, chunk_text, embedding in rows:
+        if isinstance(embedding, str):
+            embedding = json.loads(embedding)
+
+        score = cosine_similarity(query_embedding, embedding)
+
+        scored_contexts.append({
+            "text": chunk_text,
+            "source_title": source_title or "Unknown Source",
+            "source_url": source_url or "",
+            "similarity_score": score
         })
 
-    return contexts
+    scored_contexts.sort(
+        key=lambda item: item["similarity_score"],
+        reverse=True
+    )
+
+    return scored_contexts[:top_k]
 
 
 def generate_answer(query):
