@@ -185,251 +185,120 @@ export default function Home() {
   return (
     <main className="min-vh-100 text-light app-bg">
       <style jsx>{`
-        /* ── Design tokens ── */
-        :root {
-          --bg-base:       #0f0e0c;
-          --bg-surface:    #1a1814;
-          --bg-card:       rgba(26, 24, 20, 0.92);
-          --border:        rgba(255, 220, 120, 0.08);
-          --border-accent: rgba(217, 160, 50, 0.4);
-          --accent:        #d9a032;
-          --accent-dark:   #b8862a;
-          --accent-dim:    rgba(217, 160, 50, 0.1);
-          --text-primary:  #ede8df;
-          --text-muted:    #7a7168;
-          --text-heading:  #faf7f2;
-          --glow:          rgba(217, 160, 50, 0.1);
-        }
-
-        /* ── Base ── */
         .app-bg {
           background:
             radial-gradient(
-              ellipse at 15% 0%,
-              rgba(180, 120, 20, 0.1),
-              transparent 45%
+              circle at top left,
+              rgba(139, 92, 246, 0.28),
+              transparent 35%
             ),
             radial-gradient(
-              ellipse at 85% 5%,
-              rgba(100, 70, 10, 0.08),
-              transparent 40%
+              circle at top right,
+              rgba(168, 85, 247, 0.18),
+              transparent 35%
             ),
-            var(--bg-base);
-          font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
-          color: var(--text-primary);
+            #020204;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+            monospace;
         }
 
-        /* ── Cards ── */
         .glass {
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 0 transparent;
-          backdrop-filter: blur(16px);
-          transition: border-color 0.2s, box-shadow 0.2s;
+          background: rgba(22, 18, 32, 0.78);
+          border: 1px solid rgba(168, 85, 247, 0.35);
+          box-shadow: 0 0 35px rgba(124, 58, 237, 0.18);
+          backdrop-filter: blur(18px);
         }
 
-        .glass:hover {
-          border-color: var(--border-accent);
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 20px var(--glow);
-        }
-
-        /* ── Primary button (was purple-btn) ── */
         .purple-btn {
-          background: var(--accent);
+          background: linear-gradient(90deg, #7c3aed, #a855f7);
           border: none;
-          color: #0d1117;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          transition: background 0.2s, transform 0.1s;
+          color: white;
         }
 
         .purple-btn:hover {
-          background: var(--accent-dark);
-          color: #0d1117;
-          transform: translateY(-1px);
+          background: linear-gradient(90deg, #6d28d9, #9333ea);
+          color: white;
         }
 
-        .purple-btn:active {
-          transform: translateY(0);
-        }
-
-        .purple-btn:disabled {
-          opacity: 0.45;
-          transform: none;
-        }
-
-        /* ── Terminal / typing box ── */
         .terminal-box {
-          border: 1px solid var(--border-accent);
-          background: rgba(13, 17, 23, 0.9);
-          box-shadow: inset 0 1px 0 rgba(217, 160, 50, 0.06);
+          border: 1px solid rgba(168, 85, 247, 0.7);
+          background: rgba(8, 6, 14, 0.85);
+          box-shadow: 0 0 40px rgba(168, 85, 247, 0.22);
         }
 
         .typing {
-          color: var(--accent);
+          color: #c084fc;
           min-height: 42px;
-          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-          font-size: 1.1rem;
         }
 
         .cursor {
-          animation: blink 0.9s infinite;
+          animation: blink 0.8s infinite;
         }
 
         @keyframes blink {
-          50% { opacity: 0; }
+          50% {
+            opacity: 0;
+          }
         }
 
-        /* ── Outline / ghost button (was contact-btn) ── */
         .contact-btn {
-          border: 1px solid var(--border-accent);
-          color: var(--accent);
+          border: 1px solid rgba(216, 180, 254, 0.7);
+          color: #d8b4fe;
           background: transparent;
-          font-weight: 500;
-          transition: background 0.2s, color 0.2s;
         }
 
         .contact-btn:hover {
-          background: var(--accent-dim);
-          color: var(--accent);
-          border-color: var(--accent);
+          background: #a855f7;
+          color: white;
         }
 
-        /* ── Form controls ── */
-        .form-control {
-          background: rgba(13, 17, 23, 0.8) !important;
-          border-color: var(--border) !important;
-          color: var(--text-primary) !important;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .form-control:focus {
-          border-color: var(--accent) !important;
-          box-shadow: 0 0 0 3px rgba(217, 160, 50, 0.15) !important;
-          outline: none;
-        }
-
-        .form-control::placeholder {
-          color: var(--text-muted) !important;
-        }
-
-        /* ── Headings / accent text ── */
-        .accent-text {
-          color: var(--accent);
-        }
-
-        h5.section-title {
-          color: var(--text-heading);
-          font-weight: 600;
-          letter-spacing: -0.01em;
-        }
-
-        /* ── List group (sources) ── */
-        .list-group-item {
-          background: rgba(13, 17, 23, 0.7) !important;
-          border-color: var(--border) !important;
-          color: var(--text-primary) !important;
-          transition: background 0.15s;
-        }
-
-        .list-group-item:hover {
-          background: var(--accent-dim) !important;
-        }
-
-        /* ── Table ── */
-        .table-dark {
-          --bs-table-bg: transparent;
-          --bs-table-hover-bg: rgba(20, 184, 166, 0.06);
-          --bs-table-border-color: var(--border);
-        }
-
-        .table th {
-          color: var(--text-muted);
-          font-size: 0.75rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-        }
-
-        /* ── Badge overrides ── */
-        .badge-accent {
-          background: var(--accent-dim);
-          color: var(--accent);
-          border: 1px solid var(--border-accent);
-          font-weight: 500;
-        }
-
-        /* ── FAQ marquee ── */
         .faq-marquee {
           overflow: hidden;
           white-space: nowrap;
-          border: 1px solid var(--border);
-          background: rgba(13, 17, 23, 0.6);
-          border-radius: 8px;
+          border: 1px solid rgba(168, 85, 247, 0.35);
+          background: rgba(8, 6, 14, 0.85);
         }
 
         .faq-track {
           display: inline-flex;
-          gap: 12px;
-          animation: scrollFaq 80s linear infinite;
+          gap: 18px;
+          animation: scrollFaq 35s linear infinite;
         }
 
         .faq-card {
           display: inline-flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px 16px;
-          border-radius: 6px;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
+          gap: 12px;
+          padding: 12px 18px;
+          border-radius: 999px;
+          background: rgba(22, 18, 32, 0.95);
+          border: 1px solid rgba(216, 180, 254, 0.35);
           min-width: max-content;
-          color: var(--text-primary);
-          font-size: 0.875rem;
+          color: #e9d5ff;
         }
 
         .faq-count {
-          color: var(--accent);
-          font-size: 0.75rem;
-          font-weight: 600;
+          color: #c084fc;
+          font-size: 13px;
         }
 
         @keyframes scrollFaq {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-
-        /* ── Nav ── */
-        .nav-brand {
-          font-weight: 700;
-          font-size: 1.1rem;
-          color: var(--text-heading);
-          letter-spacing: -0.02em;
-        }
-
-        .nav-brand span {
-          color: var(--accent);
-        }
-
-        /* ── Divider dot in hero badge ── */
-        .hero-badge {
-          background: var(--accent-dim);
-          border: 1px solid var(--border-accent);
-          color: var(--accent);
-          font-size: 0.7rem;
-          font-weight: 600;
-          letter-spacing: 0.1em;
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
         }
       `}</style>
 
       <div className="container py-5">
         {/* ── Navbar ── */}
         <nav className="d-flex justify-content-between align-items-center mb-5">
-          <div className="nav-brand">
-            Trust<span>Guard</span> AI
-          </div>
+          <div className="fw-bold fs-4">TrustGuard AI</div>
           <a
             href="mailto:m.haseeb311@gmail.com"
-            className="btn contact-btn rounded-2 px-4"
+            className="btn contact-btn rounded-pill px-4"
           >
             Contact Us
           </a>
@@ -437,16 +306,16 @@ export default function Home() {
 
         {/* ── Hero ── */}
         <section className="mb-5">
-          <span className="badge rounded-2 px-3 py-2 mb-4 hero-badge">
+          <span className="badge rounded-pill px-3 py-2 mb-4 glass text-light">
             ● AI GOVERNANCE PLATFORM
           </span>
 
-          <h1 className="display-3 fw-bold mb-4" style={{ color: "#f1f5f9", letterSpacing: "-0.02em" }}>
+          <h1 className="display-3 fw-bold mb-4">
             Engineering trust <br />
-            in every <span className="accent-text">AI response.</span>
+            in every <span style={{ color: "#a855f7" }}>AI response.</span>
           </h1>
 
-          <p className="fs-5 mb-4" style={{ maxWidth: "780px", color: "#94a3b8" }}>
+          <p className="fs-5 text-secondary mb-4" style={{ maxWidth: "780px" }}>
             TrustGuard AI helps teams detect hallucinations, verify sources,
             score AI risk, and create audit-ready governance workflows.
           </p>
@@ -466,10 +335,12 @@ export default function Home() {
         <div className="row g-4 mb-5 text-center">
           {FEATURE_CARDS.map(([icon, title, description], index) => (
             <div className="col-md-3" key={index}>
-              <div className="glass rounded-3 p-4 h-100">
-                <div className="fs-2 mb-2 accent-text">{icon}</div>
-                <h5 style={{ color: "#e2e8f0", fontWeight: 600 }}>{title}</h5>
-                <p className="small mb-0" style={{ color: "#64748b" }}>{description}</p>
+              <div className="glass rounded-4 p-4 h-100">
+                <div className="fs-2 mb-2" style={{ color: "#c084fc" }}>
+                  {icon}
+                </div>
+                <h5 style={{ color: "#d8b4fe" }}>{title}</h5>
+                <p className="text-secondary small mb-0">{description}</p>
               </div>
             </div>
           ))}
@@ -480,13 +351,15 @@ export default function Home() {
           {/* Left column */}
           <div className="col-lg-5">
             {/* Ingest URL */}
-            <div className="glass rounded-3 p-4 mb-4">
-              <h5 className="mb-3 section-title">◉ Add Knowledge Source</h5>
+            <div className="glass rounded-4 p-4 mb-4">
+              <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
+                ◉ Add Knowledge Source
+              </h5>
 
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="form-control mb-3"
+                className="form-control bg-black text-light border-secondary mb-3"
                 placeholder="https://example.gov/policy"
               />
 
@@ -498,25 +371,31 @@ export default function Home() {
                 {ingesting ? "Ingesting..." : "Ingest URL"}
               </button>
 
-              <button onClick={resetUrl} className="btn contact-btn w-100 mt-3">
+              <button
+                onClick={resetUrl}
+                className="btn contact-btn w-100 mt-3"
+              >
                 Clear URL
               </button>
 
               {ingestResult && (
-                <div className="alert alert-success mt-3 mb-0 small">
-                  {ingestResult.status} — {ingestResult.chunks_added || 0} chunks added
+                <div className="alert alert-success mt-3 mb-0">
+                  {ingestResult.status} — {ingestResult.chunks_added || 0} chunks
+                  added
                 </div>
               )}
             </div>
 
             {/* Ask a question */}
-            <div className="glass rounded-3 p-4">
-              <h5 className="mb-3 section-title">▣ Ask a Question</h5>
+            <div className="glass rounded-4 p-4">
+              <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
+                ▣ Ask a Question
+              </h5>
 
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="form-control mb-3"
+                className="form-control bg-black text-light border-secondary mb-3"
                 rows={7}
                 placeholder="Ask a governance, policy, or compliance question..."
               />
@@ -529,7 +408,10 @@ export default function Home() {
                 {loading ? "Analyzing..." : "Analyze Query"}
               </button>
 
-              <button onClick={resetQuery} className="btn contact-btn w-100 mt-3">
+              <button
+                onClick={resetQuery}
+                className="btn contact-btn w-100 mt-3"
+              >
                 Clear Query
               </button>
             </div>
@@ -539,10 +421,9 @@ export default function Home() {
           <div className="col-lg-7">
             {/* Empty state */}
             {!result && (
-              <div className="glass rounded-3 p-5 text-center h-100 d-flex flex-column align-items-center justify-content-center">
-                <div className="accent-text mb-3" style={{ fontSize: "2rem" }}>◎</div>
-                <h3 style={{ color: "#e2e8f0" }}>Ready for analysis</h3>
-                <p style={{ color: "#64748b" }}>
+              <div className="glass rounded-4 p-5 text-center h-100">
+                <h3>Ready for analysis</h3>
+                <p className="text-secondary">
                   Ask a question to generate a grounded answer, hallucination
                   score, risk level, and retrieved sources.
                 </p>
@@ -553,43 +434,45 @@ export default function Home() {
             {result && (
               <div className="d-flex flex-column gap-4">
                 {/* Answer */}
-                <div className="glass rounded-3 p-4">
+                <div className="glass rounded-4 p-4">
                   <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="section-title mb-0">›_ AI Answer</h5>
+                    <h5 style={{ color: "#d8b4fe" }}>›_ AI Answer</h5>
                     <span className={`badge text-bg-${riskBadge}`}>
                       {riskLevel} Risk
                     </span>
                   </div>
-                  <p className="fs-5 lh-lg mb-0" style={{ color: "#cbd5e1" }}>{result.answer}</p>
+                  <p className="fs-5 lh-lg mb-0">{result.answer}</p>
                 </div>
 
                 {/* Hallucination + Risk */}
                 <div className="row g-4">
                   <div className="col-md-6">
-                    <div className="glass rounded-3 p-4 h-100">
-                      <h5 className="section-title">Hallucination Analysis</h5>
+                    <div className="glass rounded-4 p-4 h-100">
+                      <h5 style={{ color: "#c084fc" }}>Hallucination Analysis</h5>
                       <p>
                         <strong>Score:</strong>{" "}
-                        <span className="accent-text fw-semibold">{hallucination?.hallucination_score}</span>
+                        {hallucination?.hallucination_score}
                       </p>
-                      <p className="small mb-0" style={{ color: "#64748b" }}>
+                      <p className="text-secondary mb-0">
                         {hallucination?.reason}
                       </p>
                     </div>
                   </div>
 
                   <div className="col-md-6">
-                    <div className="glass rounded-3 p-4 h-100">
-                      <h5 className="section-title">Risk Analysis</h5>
+                    <div className="glass rounded-4 p-4 h-100">
+                      <h5 style={{ color: "#c084fc" }}>Risk Analysis</h5>
                       <p>
                         <strong>Level:</strong>{" "}
-                        <span className={`badge text-bg-${riskBadge} ms-1`}>{riskLevel}</span>
+                        <span className={`badge text-bg-${riskBadge}`}>
+                          {riskLevel}
+                        </span>
                       </p>
                       <p>
                         <strong>Status:</strong>{" "}
                         {result.risk_analysis.risk_status}
                       </p>
-                      <p className="small mb-0" style={{ color: "#64748b" }}>
+                      <p className="text-secondary mb-0">
                         {result.risk_analysis.risk_reason}
                       </p>
                     </div>
@@ -597,29 +480,42 @@ export default function Home() {
                 </div>
 
                 {/* Feedback */}
-                <div className="glass rounded-3 p-4">
-                  <h5 className="mb-3 section-title">Was this answer useful?</h5>
+                <div className="glass rounded-4 p-4">
+                  <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
+                    Was this answer useful?
+                  </h5>
 
                   <div className="d-flex gap-3 flex-wrap">
-                    <button className="btn btn-success btn-sm px-3" onClick={() => submitFeedback("Correct")}>
-                      ✓ Correct
+                    <button
+                      className="btn btn-success"
+                      onClick={() => submitFeedback("Correct")}
+                    >
+                      Correct
                     </button>
-                    <button className="btn btn-warning btn-sm px-3" onClick={() => submitFeedback("Partially Correct")}>
-                      ~ Partially Correct
+                    <button
+                      className="btn btn-warning"
+                      onClick={() => submitFeedback("Partially Correct")}
+                    >
+                      Partially Correct
                     </button>
-                    <button className="btn btn-danger btn-sm px-3" onClick={() => submitFeedback("Incorrect")}>
-                      ✕ Incorrect
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => submitFeedback("Incorrect")}
+                    >
+                      Incorrect
                     </button>
                   </div>
 
                   {feedbackStatus && (
-                    <p className="accent-text mt-3 mb-0 small">{feedbackStatus}</p>
+                    <p className="text-success mt-3 mb-0">{feedbackStatus}</p>
                   )}
                 </div>
 
                 {/* Sources */}
-                <div className="glass rounded-3 p-4">
-                  <h5 className="mb-3 section-title">Retrieved Sources</h5>
+                <div className="glass rounded-4 p-4">
+                  <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
+                    Retrieved Sources
+                  </h5>
 
                   <div className="list-group">
                     {result.sources?.map((source: any, index: number) => (
@@ -627,12 +523,12 @@ export default function Home() {
                         key={index}
                         href={source.url}
                         target="_blank"
-                        className="list-group-item list-group-item-action"
+                        className="list-group-item list-group-item-action bg-black text-light border-secondary"
                       >
-                        <div className="small fw-medium">
+                        <div>
                           {index + 1}. {source.title || "No Title"}
                         </div>
-                        <small className="accent-text">{source.url}</small>
+                        <small style={{ color: "#c084fc" }}>{source.url}</small>
                       </a>
                     ))}
                   </div>
@@ -644,10 +540,12 @@ export default function Home() {
 
         {/* ── FAQ marquee ── */}
         {topQuestions.length > 0 && (
-          <div className="glass rounded-3 p-4 mt-5">
-            <h5 className="mb-3 section-title">Frequently Asked Questions</h5>
+          <div className="glass rounded-4 p-4 mt-5">
+            <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
+              Frequently Asked Questions
+            </h5>
 
-            <div className="faq-marquee rounded-2 p-3">
+            <div className="faq-marquee rounded-4 p-3">
               <div className="faq-track">
                 {[...topQuestions, ...topQuestions].map(
                   (item: any, index: number) => (
@@ -663,22 +561,22 @@ export default function Home() {
         )}
 
         {/* ── Audit log dashboard ── */}
-        <div className="glass rounded-3 p-4 mt-5">
+        <div className="glass rounded-4 p-4 mt-5">
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="section-title mb-0">Audit Log Dashboard</h5>
+            <h5 style={{ color: "#d8b4fe" }}>Audit Log Dashboard</h5>
 
             <div className="d-flex gap-2">
-              <button onClick={loadAuditLogs} className="btn purple-btn btn-sm px-3">
+              <button onClick={loadAuditLogs} className="btn purple-btn">
                 {auditLoading ? "Loading..." : "Load Audit Logs"}
               </button>
-              <button onClick={closeAuditLogs} className="btn contact-btn btn-sm px-3">
+              <button onClick={closeAuditLogs} className="btn contact-btn">
                 Close
               </button>
             </div>
           </div>
 
           {auditLogs.length === 0 && (
-            <p className="mb-0 small" style={{ color: "#64748b" }}>No audit logs loaded yet.</p>
+            <p className="text-secondary mb-0">No audit logs loaded yet.</p>
           )}
 
           {auditLogs.length > 0 && (
