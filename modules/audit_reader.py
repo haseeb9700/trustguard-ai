@@ -4,18 +4,57 @@ import pandas as pd
 AUDIT_LOG = "reports/audit_log.csv"
 
 
-def get_audit_logs():
+def get_audit_logs(limit=20):
+
     if not os.path.exists(AUDIT_LOG):
         return {
             "status": "empty",
+            "count": 0,
             "logs": []
         }
 
-    df = pd.read_csv(AUDIT_LOG)
+    try:
+        df = pd.read_csv(AUDIT_LOG)
 
-    logs = df.tail(20).iloc[::-1].to_dict(orient="records")
+        if df.empty:
+            return {
+                "status": "empty",
+                "count": 0,
+                "logs": []
+            }
 
-    return {
-        "status": "success",
-        "logs": logs
-    }
+        # newest first
+        if "timestamp" in df.columns:
+            df["timestamp"] = pd.to_datetime(
+                df["timestamp"],
+                errors="coerce"
+            )
+
+            df = df.sort_values(
+                by="timestamp",
+                ascending=False
+            )
+
+        logs = (
+            df
+            .head(limit)
+            .fillna("")
+            .to_dict(
+                orient="records"
+            )
+        )
+
+        return {
+            "status": "success",
+            "count": len(df),
+            "returned": len(logs),
+            "logs": logs
+        }
+
+    except Exception as e:
+
+        return {
+            "status": "error",
+            "message": str(e),
+            "logs": []
+        }
