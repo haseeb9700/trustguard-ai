@@ -22,8 +22,8 @@ def get_connection():
 
 
 def cosine_similarity(a, b):
-    a = np.array(a)
-    b = np.array(b)
+    a = np.array(a, dtype=float)
+    b = np.array(b, dtype=float)
 
     denominator = np.linalg.norm(a) * np.linalg.norm(b)
 
@@ -34,9 +34,7 @@ def cosine_similarity(a, b):
 
 
 def retrieve_context(query, top_k=10):
-    query_embedding = embedding_model.encode(
-        [query]
-    ).tolist()[0]
+    query_embedding = embedding_model.encode([query]).tolist()[0]
 
     conn = get_connection()
     cur = conn.cursor()

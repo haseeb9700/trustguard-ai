@@ -1,5 +1,6 @@
 from typing import Optional
 import math
+import json
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,6 +10,7 @@ from agents.orchestrator import run_agentic_workflow
 from modules.url_ingestor import ingest_url
 from modules.feedback_logger import save_feedback
 from modules.audit_reader import get_audit_logs
+
 
 app = FastAPI(title="TrustGuard AI")
 
@@ -57,6 +59,38 @@ def clean_json(value):
     return value
 
 
+# FIX FOR HALLUCINATION RESPONSE
+def parse_json_if_string(value):
+
+    if isinstance(value, str):
+
+        try:
+            parsed = json.loads(value)
+
+            if isinstance(parsed, dict):
+                return parsed
+
+            return {
+                "hallucination_score": None,
+                "reason": value
+            }
+
+        except Exception:
+
+            return {
+                "hallucination_score": None,
+                "reason": value
+            }
+
+    if isinstance(value, dict):
+        return value
+
+    return {
+        "hallucination_score": None,
+        "reason": "No hallucination analysis returned."
+    }
+
+
 @app.get("/")
 def home():
     return {
@@ -68,22 +102,69 @@ def home():
 
 @app.post("/analyze")
 def analyze_query(request: QueryRequest):
-    result = run_agentic_workflow(request.question)
+
+    result = run_agentic_workflow(
+        request.question
+    )
 
     response = {
         "question": result["query"],
-        "rewritten_query": result.get("rewritten_query", ""),
-        "answer": result["answer"],
-        "hallucination_analysis": result["hallucination_analysis"],
-        "risk_analysis": result["risk_analysis"],
-        "workflow": result.get("workflow", {}),
-        "retrieved_context_count": result.get("retrieved_context_count", 0),
+
+        "rewritten_query":
+        result.get(
+            "rewritten_query",
+            ""
+        ),
+
+        "answer":
+        result["answer"],
+
+        # FIXED
+        "hallucination_analysis":
+        parse_json_if_string(
+            result.get(
+                "hallucination_analysis",
+                {}
+            )
+        ),
+
+        "risk_analysis":
+        result.get(
+            "risk_analysis",
+            {}
+        ),
+
+        "workflow":
+        result.get(
+            "workflow",
+            {}
+        ),
+
+        "retrieved_context_count":
+        result.get(
+            "retrieved_context_count",
+            0
+        ),
+
         "sources": [
             {
-                "title": source.get("source_title", "No Title"),
-                "url": source.get("source_url", "")
+                "title":
+                source.get(
+                    "source_title",
+                    "No Title"
+                ),
+
+                "url":
+                source.get(
+                    "source_url",
+                    ""
+                )
             }
-            for source in result["sources"]
+
+            for source in result.get(
+                "sources",
+                []
+            )
         ]
     }
 
@@ -91,22 +172,35 @@ def analyze_query(request: QueryRequest):
 
 
 @app.post("/ingest-url")
-def ingest_source(request: UrlIngestRequest):
-    return clean_json(ingest_url(request.url))
+def ingest_source(
+    request: UrlIngestRequest
+):
+
+    result = ingest_url(
+        request.url
+    )
+
+    return clean_json(result)
 
 
 @app.post("/feedback")
-def submit_feedback(request: FeedbackRequest):
-    return clean_json(
-        save_feedback(
-            question=request.question,
-            answer=request.answer,
-            feedback=request.feedback,
-            corrected_answer=request.corrected_answer
-        )
+def submit_feedback(
+    request: FeedbackRequest
+):
+
+    result = save_feedback(
+        question=request.question,
+        answer=request.answer,
+        feedback=request.feedback,
+        corrected_answer=request.corrected_answer
     )
+
+    return clean_json(result)
 
 
 @app.get("/audit-logs")
 def audit_logs():
-    return clean_json(get_audit_logs())
+
+    logs = get_audit_logs()
+
+    return clean_json(logs)
