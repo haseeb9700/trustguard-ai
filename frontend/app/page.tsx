@@ -262,7 +262,7 @@ export default function Home() {
         .faq-track {
           display: inline-flex;
           gap: 18px;
-          animation: scrollFaq 35s linear infinite;
+          animation: scrollFaq 80s linear infinite;
         }
 
         .faq-card {
