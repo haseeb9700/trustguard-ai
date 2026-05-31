@@ -59,11 +59,8 @@ def clean_json(value):
     return value
 
 
-# FIX FOR HALLUCINATION RESPONSE
 def parse_json_if_string(value):
-
     if isinstance(value, str):
-
         try:
             parsed = json.loads(value)
 
@@ -76,7 +73,6 @@ def parse_json_if_string(value):
             }
 
         except Exception:
-
             return {
                 "hallucination_score": None,
                 "reason": value
@@ -91,6 +87,27 @@ def parse_json_if_string(value):
     }
 
 
+def get_unique_sources(sources, max_sources=5):
+    unique_sources = []
+    seen_urls = set()
+
+    for source in sources:
+        url = source.get("source_url", "")
+
+        if url and url not in seen_urls:
+            seen_urls.add(url)
+
+            unique_sources.append({
+                "title": source.get("source_title", "No Title"),
+                "url": url
+            })
+
+        if len(unique_sources) >= max_sources:
+            break
+
+    return unique_sources
+
+
 @app.get("/")
 def home():
     return {
@@ -102,80 +119,31 @@ def home():
 
 @app.post("/analyze")
 def analyze_query(request: QueryRequest):
-
     result = run_agentic_workflow(
         request.question
     )
 
     response = {
         "question": result["query"],
-
-        "rewritten_query":
-        result.get(
-            "rewritten_query",
-            ""
+        "rewritten_query": result.get("rewritten_query", ""),
+        "answer": result["answer"],
+        "hallucination_analysis": parse_json_if_string(
+            result.get("hallucination_analysis", {})
         ),
-
-        "answer":
-        result["answer"],
-
-        # FIXED
-        "hallucination_analysis":
-        parse_json_if_string(
-            result.get(
-                "hallucination_analysis",
-                {}
-            )
-        ),
-
-        "risk_analysis":
-        result.get(
-            "risk_analysis",
-            {}
-        ),
-
-        "workflow":
-        result.get(
-            "workflow",
-            {}
-        ),
-
-        "retrieved_context_count":
-        result.get(
-            "retrieved_context_count",
-            0
-        ),
-
-        "sources": [
-            {
-                "title":
-                source.get(
-                    "source_title",
-                    "No Title"
-                ),
-
-                "url":
-                source.get(
-                    "source_url",
-                    ""
-                )
-            }
-
-            for source in result.get(
-                "sources",
-                []
-            )
-        ]
+        "risk_analysis": result.get("risk_analysis", {}),
+        "workflow": result.get("workflow", {}),
+        "retrieved_context_count": result.get("retrieved_context_count", 0),
+        "sources": get_unique_sources(
+            result.get("sources", []),
+            max_sources=5
+        )
     }
 
     return clean_json(response)
 
 
 @app.post("/ingest-url")
-def ingest_source(
-    request: UrlIngestRequest
-):
-
+def ingest_source(request: UrlIngestRequest):
     result = ingest_url(
         request.url
     )
@@ -184,10 +152,7 @@ def ingest_source(
 
 
 @app.post("/feedback")
-def submit_feedback(
-    request: FeedbackRequest
-):
-
+def submit_feedback(request: FeedbackRequest):
     result = save_feedback(
         question=request.question,
         answer=request.answer,
@@ -200,7 +165,6 @@ def submit_feedback(
 
 @app.get("/audit-logs")
 def audit_logs():
-
     logs = get_audit_logs()
 
     return clean_json(logs)
