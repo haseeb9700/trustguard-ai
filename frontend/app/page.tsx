@@ -22,6 +22,7 @@ export default function Home() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditPage, setAuditPage] = useState(1);
+  const [topQuestions, setTopQuestions] = useState<any[]>([]);
 
   const logsPerPage = 5;
 
@@ -51,11 +52,14 @@ export default function Home() {
     setFeedbackStatus("");
 
     try {
-      const response = await fetch("https://trustguard-ai-production.up.railway.app/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
-      });
+      const response = await fetch(
+        "https://trustguard-ai-production.up.railway.app/analyze",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question }),
+        },
+      );
 
       if (!response.ok) throw new Error("API error");
 
@@ -73,11 +77,14 @@ export default function Home() {
     setIngestResult(null);
 
     try {
-      const response = await fetch("https://trustguard-ai-production.up.railway.app/ingest-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
+      const response = await fetch(
+        "https://trustguard-ai-production.up.railway.app/ingest-url",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        },
+      );
 
       if (!response.ok) throw new Error("API error");
 
@@ -94,16 +101,19 @@ export default function Home() {
     if (!result) return;
 
     try {
-      const response = await fetch("https://trustguard-ai-production.up.railway.app/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question: result.question,
-          answer: result.answer,
-          feedback,
-          corrected_answer: "",
-        }),
-      });
+      const response = await fetch(
+        "https://trustguard-ai-production.up.railway.app/feedback",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: result.question,
+            answer: result.answer,
+            feedback,
+            corrected_answer: "",
+          }),
+        },
+      );
 
       if (!response.ok) throw new Error("Feedback API error");
 
@@ -117,12 +127,15 @@ export default function Home() {
     setAuditLoading(true);
 
     try {
-      const response = await fetch("https://trustguard-ai-production.up.railway.app/audit-logs");
+      const response = await fetch(
+        "https://trustguard-ai-production.up.railway.app/audit-logs",
+      );
 
       if (!response.ok) throw new Error("Audit API error");
 
       const data = await response.json();
       setAuditLogs(data.logs || []);
+      setTopQuestions(data.top_questions || []);
       setAuditPage(1);
     } catch {
       alert("Could not load audit logs.");
@@ -144,6 +157,7 @@ export default function Home() {
 
   const closeAuditLogs = () => {
     setAuditLogs([]);
+    setTopQuestions([]);
     setAuditPage(1);
   };
 
@@ -152,19 +166,21 @@ export default function Home() {
   const riskLevel = result?.risk_analysis?.risk_level;
 
   const riskBadge =
-    riskLevel === "Low" ? "success" : riskLevel === "Medium" ? "warning" : "danger";
+    riskLevel === "Low"
+      ? "success"
+      : riskLevel === "Medium"
+        ? "warning"
+        : "danger";
 
   const sortedAuditLogs = [...auditLogs].sort(
-    (a, b) =>
-      new Date(b.timestamp).getTime() -
-      new Date(a.timestamp).getTime()
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
 
   const totalAuditPages = Math.ceil(sortedAuditLogs.length / logsPerPage);
 
   const paginatedAuditLogs = sortedAuditLogs.slice(
     (auditPage - 1) * logsPerPage,
-    auditPage * logsPerPage
+    auditPage * logsPerPage,
   );
 
   return (
@@ -172,10 +188,19 @@ export default function Home() {
       <style jsx>{`
         .app-bg {
           background:
-            radial-gradient(circle at top left, rgba(139,92,246,.28), transparent 35%),
-            radial-gradient(circle at top right, rgba(168,85,247,.18), transparent 35%),
+            radial-gradient(
+              circle at top left,
+              rgba(139, 92, 246, 0.28),
+              transparent 35%
+            ),
+            radial-gradient(
+              circle at top right,
+              rgba(168, 85, 247, 0.18),
+              transparent 35%
+            ),
             #020204;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-family:
+            ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
         .glass {
@@ -212,7 +237,9 @@ export default function Home() {
         }
 
         @keyframes blink {
-          50% { opacity: 0; }
+          50% {
+            opacity: 0;
+          }
         }
 
         .contact-btn {
@@ -224,6 +251,51 @@ export default function Home() {
         .contact-btn:hover {
           background: #a855f7;
           color: white;
+        }
+        .faq-marquee {
+          overflow: hidden;
+          white-space: nowrap;
+          border: 1px solid rgba(168, 85, 247, 0.35);
+          background: rgba(8, 6, 14, 0.85);
+        }
+
+        .faq-track {
+          display: inline-flex;
+          gap: 18px;
+          animation: scrollFaq 35s linear infinite;
+        }
+
+        .faq-card {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+
+          padding: 12px 18px;
+
+          border-radius: 999px;
+
+          background: rgba(22, 18, 32, 0.95);
+
+          border: 1px solid rgba(216, 180, 254, 0.35);
+
+          min-width: max-content;
+
+          color: #e9d5ff;
+        }
+
+        .faq-count {
+          color: #c084fc;
+          font-size: 13px;
+        }
+
+        @keyframes scrollFaq {
+          from {
+            transform: translateX(0);
+          }
+
+          to {
+            transform: translateX(-50%);
+          }
         }
       `}</style>
 
@@ -306,16 +378,14 @@ export default function Home() {
                 {ingesting ? "Ingesting..." : "Ingest URL"}
               </button>
 
-              <button
-                onClick={resetUrl}
-                className="btn contact-btn w-100 mt-3"
-              >
+              <button onClick={resetUrl} className="btn contact-btn w-100 mt-3">
                 Clear URL
               </button>
 
               {ingestResult && (
                 <div className="alert alert-success mt-3 mb-0">
-                  {ingestResult.status} — {ingestResult.chunks_added || 0} chunks added
+                  {ingestResult.status} — {ingestResult.chunks_added || 0}{" "}
+                  chunks added
                 </div>
               )}
             </div>
@@ -355,8 +425,8 @@ export default function Home() {
               <div className="glass rounded-4 p-5 text-center h-100">
                 <h3>Ready for analysis</h3>
                 <p className="text-secondary">
-                  Ask a question to generate a grounded answer, hallucination score,
-                  risk level, and retrieved sources.
+                  Ask a question to generate a grounded answer, hallucination
+                  score, risk level, and retrieved sources.
                 </p>
               </div>
             )}
@@ -377,9 +447,16 @@ export default function Home() {
                 <div className="row g-4">
                   <div className="col-md-6">
                     <div className="glass rounded-4 p-4 h-100">
-                      <h5 style={{ color: "#c084fc" }}>Hallucination Analysis</h5>
-                      <p><strong>Score:</strong> {hallucination?.hallucination_score}</p>
-                      <p className="text-secondary mb-0">{hallucination?.reason}</p>
+                      <h5 style={{ color: "#c084fc" }}>
+                        Hallucination Analysis
+                      </h5>
+                      <p>
+                        <strong>Score:</strong>{" "}
+                        {hallucination?.hallucination_score}
+                      </p>
+                      <p className="text-secondary mb-0">
+                        {hallucination?.reason}
+                      </p>
                     </div>
                   </div>
 
@@ -392,7 +469,10 @@ export default function Home() {
                           {riskLevel}
                         </span>
                       </p>
-                      <p><strong>Status:</strong> {result.risk_analysis.risk_status}</p>
+                      <p>
+                        <strong>Status:</strong>{" "}
+                        {result.risk_analysis.risk_status}
+                      </p>
                       <p className="text-secondary mb-0">
                         {result.risk_analysis.risk_reason}
                       </p>
@@ -406,23 +486,30 @@ export default function Home() {
                   </h5>
 
                   <div className="d-flex gap-3 flex-wrap">
-                    <button className="btn btn-success" onClick={() => submitFeedback("Correct")}>
+                    <button
+                      className="btn btn-success"
+                      onClick={() => submitFeedback("Correct")}
+                    >
                       Correct
                     </button>
 
-                    <button className="btn btn-warning" onClick={() => submitFeedback("Partially Correct")}>
+                    <button
+                      className="btn btn-warning"
+                      onClick={() => submitFeedback("Partially Correct")}
+                    >
                       Partially Correct
                     </button>
 
-                    <button className="btn btn-danger" onClick={() => submitFeedback("Incorrect")}>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => submitFeedback("Incorrect")}
+                    >
                       Incorrect
                     </button>
                   </div>
 
                   {feedbackStatus && (
-                    <p className="text-success mt-3 mb-0">
-                      {feedbackStatus}
-                    </p>
+                    <p className="text-success mt-3 mb-0">{feedbackStatus}</p>
                   )}
                 </div>
 
@@ -439,7 +526,9 @@ export default function Home() {
                         target="_blank"
                         className="list-group-item list-group-item-action bg-black text-light border-secondary"
                       >
-                        <div>{index + 1}. {source.title || "No Title"}</div>
+                        <div>
+                          {index + 1}. {source.title || "No Title"}
+                        </div>
                         <small style={{ color: "#c084fc" }}>{source.url}</small>
                       </a>
                     ))}
@@ -450,11 +539,58 @@ export default function Home() {
           </div>
         </div>
 
+        {topQuestions.length > 0 && (
+          <div className="glass rounded-4 p-4 mt-5">
+            <h5
+              className="mb-3"
+              style={{
+                color: "#d8b4fe",
+              }}
+            >
+              Frequently Asked Questions
+            </h5>
+
+            <div
+              className="
+faq-marquee
+rounded-4
+p-3
+"
+            >
+              <div
+                className="
+faq-track
+"
+              >
+                {[...topQuestions, ...topQuestions].map(
+                  (item: any, index: number) => (
+                    <div
+                      key={index}
+                      className="
+faq-card
+"
+                    >
+                      <span>{item.question}</span>
+
+                      <span
+                        className="
+faq-count
+"
+                      >
+                        Asked
+                        {item.count}×
+                      </span>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="glass rounded-4 p-4 mt-5">
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 style={{ color: "#d8b4fe" }}>
-              Audit Log Dashboard
-            </h5>
+            <h5 style={{ color: "#d8b4fe" }}>Audit Log Dashboard</h5>
 
             <div className="d-flex gap-2">
               <button onClick={loadAuditLogs} className="btn purple-btn">
@@ -468,9 +604,7 @@ export default function Home() {
           </div>
 
           {auditLogs.length === 0 && (
-            <p className="text-secondary mb-0">
-              No audit logs loaded yet.
-            </p>
+            <p className="text-secondary mb-0">No audit logs loaded yet.</p>
           )}
 
           {auditLogs.length > 0 && (
