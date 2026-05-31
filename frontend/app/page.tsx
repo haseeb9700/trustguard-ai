@@ -9,6 +9,17 @@ const phrases = [
   "Build trust in enterprise LLM systems.",
 ];
 
+const API_BASE = "https://trustguard-ai-production.up.railway.app";
+
+const FEATURE_CARDS = [
+  ["◎", "Detect", "Identify hallucinations in LLM responses"],
+  ["盾", "Verify", "Trace answers to trusted sources"],
+  ["⌁", "Score", "Assess risk levels automatically"],
+  ["🔒", "Learn", "Collect feedback for future improvement"],
+];
+
+const LOGS_PER_PAGE = 5;
+
 export default function Home() {
   const [question, setQuestion] = useState("");
   const [url, setUrl] = useState("");
@@ -24,8 +35,7 @@ export default function Home() {
   const [auditPage, setAuditPage] = useState(1);
   const [topQuestions, setTopQuestions] = useState<any[]>([]);
 
-  const logsPerPage = 5;
-
+  // ── Typing animation ─────────────────────────────────────────────────────────
   useEffect(() => {
     let i = 0;
     const current = phrases[phraseIndex];
@@ -46,20 +56,18 @@ export default function Home() {
     return () => clearInterval(typing);
   }, [phraseIndex]);
 
+  // ── API helpers ───────────────────────────────────────────────────────────────
   const analyzeQuestion = async () => {
     setLoading(true);
     setResult(null);
     setFeedbackStatus("");
 
     try {
-      const response = await fetch(
-        "https://trustguard-ai-production.up.railway.app/analyze",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
-        },
-      );
+      const response = await fetch(`${API_BASE}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
 
       if (!response.ok) throw new Error("API error");
 
@@ -77,14 +85,11 @@ export default function Home() {
     setIngestResult(null);
 
     try {
-      const response = await fetch(
-        "https://trustguard-ai-production.up.railway.app/ingest-url",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-        },
-      );
+      const response = await fetch(`${API_BASE}/ingest-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
 
       if (!response.ok) throw new Error("API error");
 
@@ -101,19 +106,16 @@ export default function Home() {
     if (!result) return;
 
     try {
-      const response = await fetch(
-        "https://trustguard-ai-production.up.railway.app/feedback",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            question: result.question,
-            answer: result.answer,
-            feedback,
-            corrected_answer: "",
-          }),
-        },
-      );
+      const response = await fetch(`${API_BASE}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: result.question,
+          answer: result.answer,
+          feedback,
+          corrected_answer: "",
+        }),
+      });
 
       if (!response.ok) throw new Error("Feedback API error");
 
@@ -127,9 +129,7 @@ export default function Home() {
     setAuditLoading(true);
 
     try {
-      const response = await fetch(
-        "https://trustguard-ai-production.up.railway.app/audit-logs",
-      );
+      const response = await fetch(`${API_BASE}/audit-logs`);
 
       if (!response.ok) throw new Error("Audit API error");
 
@@ -144,6 +144,7 @@ export default function Home() {
     setAuditLoading(false);
   };
 
+  // ── Reset helpers ─────────────────────────────────────────────────────────────
   const resetQuery = () => {
     setQuestion("");
     setResult(null);
@@ -161,10 +162,9 @@ export default function Home() {
     setAuditPage(1);
   };
 
-  const hallucination = result?.hallucination_analysis || null;
-
+  // ── Derived values ────────────────────────────────────────────────────────────
+  const hallucination = result?.hallucination_analysis ?? null;
   const riskLevel = result?.risk_analysis?.risk_level;
-
   const riskBadge =
     riskLevel === "Low"
       ? "success"
@@ -175,14 +175,13 @@ export default function Home() {
   const sortedAuditLogs = [...auditLogs].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
-
-  const totalAuditPages = Math.ceil(sortedAuditLogs.length / logsPerPage);
-
+  const totalAuditPages = Math.ceil(sortedAuditLogs.length / LOGS_PER_PAGE);
   const paginatedAuditLogs = sortedAuditLogs.slice(
-    (auditPage - 1) * logsPerPage,
-    auditPage * logsPerPage,
+    (auditPage - 1) * LOGS_PER_PAGE,
+    auditPage * LOGS_PER_PAGE,
   );
 
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <main className="min-vh-100 text-light app-bg">
       <style jsx>{`
@@ -199,8 +198,8 @@ export default function Home() {
               transparent 35%
             ),
             #020204;
-          font-family:
-            ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+            monospace;
         }
 
         .glass {
@@ -252,6 +251,7 @@ export default function Home() {
           background: #a855f7;
           color: white;
         }
+
         .faq-marquee {
           overflow: hidden;
           white-space: nowrap;
@@ -269,17 +269,11 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           gap: 12px;
-
           padding: 12px 18px;
-
           border-radius: 999px;
-
           background: rgba(22, 18, 32, 0.95);
-
           border: 1px solid rgba(216, 180, 254, 0.35);
-
           min-width: max-content;
-
           color: #e9d5ff;
         }
 
@@ -292,7 +286,6 @@ export default function Home() {
           from {
             transform: translateX(0);
           }
-
           to {
             transform: translateX(-50%);
           }
@@ -300,9 +293,9 @@ export default function Home() {
       `}</style>
 
       <div className="container py-5">
+        {/* ── Navbar ── */}
         <nav className="d-flex justify-content-between align-items-center mb-5">
           <div className="fw-bold fs-4">TrustGuard AI</div>
-
           <a
             href="mailto:m.haseeb311@gmail.com"
             className="btn contact-btn rounded-pill px-4"
@@ -311,6 +304,7 @@ export default function Home() {
           </a>
         </nav>
 
+        {/* ── Hero ── */}
         <section className="mb-5">
           <span className="badge rounded-pill px-3 py-2 mb-4 glass text-light">
             ● AI GOVERNANCE PLATFORM
@@ -337,27 +331,26 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── Feature cards ── */}
         <div className="row g-4 mb-5 text-center">
-          {[
-            ["◎", "Detect", "Identify hallucinations in LLM responses"],
-            ["盾", "Verify", "Trace answers to trusted sources"],
-            ["⌁", "Score", "Assess risk levels automatically"],
-            ["🔒", "Learn", "Collect feedback for future improvement"],
-          ].map((item, index) => (
+          {FEATURE_CARDS.map(([icon, title, description], index) => (
             <div className="col-md-3" key={index}>
               <div className="glass rounded-4 p-4 h-100">
                 <div className="fs-2 mb-2" style={{ color: "#c084fc" }}>
-                  {item[0]}
+                  {icon}
                 </div>
-                <h5 style={{ color: "#d8b4fe" }}>{item[1]}</h5>
-                <p className="text-secondary small mb-0">{item[2]}</p>
+                <h5 style={{ color: "#d8b4fe" }}>{title}</h5>
+                <p className="text-secondary small mb-0">{description}</p>
               </div>
             </div>
           ))}
         </div>
 
+        {/* ── Main panel ── */}
         <div className="row g-4">
+          {/* Left column */}
           <div className="col-lg-5">
+            {/* Ingest URL */}
             <div className="glass rounded-4 p-4 mb-4">
               <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
                 ◉ Add Knowledge Source
@@ -378,18 +371,22 @@ export default function Home() {
                 {ingesting ? "Ingesting..." : "Ingest URL"}
               </button>
 
-              <button onClick={resetUrl} className="btn contact-btn w-100 mt-3">
+              <button
+                onClick={resetUrl}
+                className="btn contact-btn w-100 mt-3"
+              >
                 Clear URL
               </button>
 
               {ingestResult && (
                 <div className="alert alert-success mt-3 mb-0">
-                  {ingestResult.status} — {ingestResult.chunks_added || 0}{" "}
-                  chunks added
+                  {ingestResult.status} — {ingestResult.chunks_added || 0} chunks
+                  added
                 </div>
               )}
             </div>
 
+            {/* Ask a question */}
             <div className="glass rounded-4 p-4">
               <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
                 ▣ Ask a Question
@@ -420,7 +417,9 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Right column */}
           <div className="col-lg-7">
+            {/* Empty state */}
             {!result && (
               <div className="glass rounded-4 p-5 text-center h-100">
                 <h3>Ready for analysis</h3>
@@ -431,8 +430,10 @@ export default function Home() {
               </div>
             )}
 
+            {/* Results */}
             {result && (
               <div className="d-flex flex-column gap-4">
+                {/* Answer */}
                 <div className="glass rounded-4 p-4">
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <h5 style={{ color: "#d8b4fe" }}>›_ AI Answer</h5>
@@ -440,16 +441,14 @@ export default function Home() {
                       {riskLevel} Risk
                     </span>
                   </div>
-
                   <p className="fs-5 lh-lg mb-0">{result.answer}</p>
                 </div>
 
+                {/* Hallucination + Risk */}
                 <div className="row g-4">
                   <div className="col-md-6">
                     <div className="glass rounded-4 p-4 h-100">
-                      <h5 style={{ color: "#c084fc" }}>
-                        Hallucination Analysis
-                      </h5>
+                      <h5 style={{ color: "#c084fc" }}>Hallucination Analysis</h5>
                       <p>
                         <strong>Score:</strong>{" "}
                         {hallucination?.hallucination_score}
@@ -480,6 +479,7 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* Feedback */}
                 <div className="glass rounded-4 p-4">
                   <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
                     Was this answer useful?
@@ -492,14 +492,12 @@ export default function Home() {
                     >
                       Correct
                     </button>
-
                     <button
                       className="btn btn-warning"
                       onClick={() => submitFeedback("Partially Correct")}
                     >
                       Partially Correct
                     </button>
-
                     <button
                       className="btn btn-danger"
                       onClick={() => submitFeedback("Incorrect")}
@@ -513,6 +511,7 @@ export default function Home() {
                   )}
                 </div>
 
+                {/* Sources */}
                 <div className="glass rounded-4 p-4">
                   <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
                     Retrieved Sources
@@ -539,47 +538,20 @@ export default function Home() {
           </div>
         </div>
 
+        {/* ── FAQ marquee ── */}
         {topQuestions.length > 0 && (
           <div className="glass rounded-4 p-4 mt-5">
-            <h5
-              className="mb-3"
-              style={{
-                color: "#d8b4fe",
-              }}
-            >
+            <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
               Frequently Asked Questions
             </h5>
 
-            <div
-              className="
-faq-marquee
-rounded-4
-p-3
-"
-            >
-              <div
-                className="
-faq-track
-"
-              >
+            <div className="faq-marquee rounded-4 p-3">
+              <div className="faq-track">
                 {[...topQuestions, ...topQuestions].map(
                   (item: any, index: number) => (
-                    <div
-                      key={index}
-                      className="
-faq-card
-"
-                    >
+                    <div key={index} className="faq-card">
                       <span>{item.question}</span>
-
-                      <span
-                        className="
-faq-count
-"
-                      >
-                        Asked
-                        {item.count}×
-                      </span>
+                      <span className="faq-count">Asked {item.count}×</span>
                     </div>
                   ),
                 )}
@@ -588,6 +560,7 @@ faq-count
           </div>
         )}
 
+        {/* ── Audit log dashboard ── */}
         <div className="glass rounded-4 p-4 mt-5">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5 style={{ color: "#d8b4fe" }}>Audit Log Dashboard</h5>
@@ -596,7 +569,6 @@ faq-count
               <button onClick={loadAuditLogs} className="btn purple-btn">
                 {auditLoading ? "Loading..." : "Load Audit Logs"}
               </button>
-
               <button onClick={closeAuditLogs} className="btn contact-btn">
                 Close
               </button>
@@ -619,7 +591,6 @@ faq-count
                       <th>Risk Reason</th>
                     </tr>
                   </thead>
-
                   <tbody>
                     {paginatedAuditLogs.map((log: any, index: number) => (
                       <tr key={index}>
