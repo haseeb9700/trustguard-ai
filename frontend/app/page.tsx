@@ -12,10 +12,10 @@ const phrases = [
 const API_BASE = "https://trustguard-ai-production.up.railway.app";
 
 const FEATURE_CARDS = [
-  ["◎", "Detect", "Identify hallucinations in LLM responses"],
-  ["盾", "Verify", "Trace answers to trusted sources"],
-  ["⌁", "Score", "Assess risk levels automatically"],
-  ["🔒", "Learn", "Collect feedback for future improvement"],
+  { icon: "◎", title: "Detect", desc: "Identify hallucinations in LLM responses" },
+  { icon: "⊡", title: "Verify", desc: "Trace answers to trusted sources" },
+  { icon: "⌁", title: "Score", desc: "Assess risk levels automatically" },
+  { icon: "◈", title: "Learn", desc: "Collect feedback for future improvement" },
 ];
 
 const LOGS_PER_PAGE = 5;
@@ -35,76 +35,60 @@ export default function Home() {
   const [auditPage, setAuditPage] = useState(1);
   const [topQuestions, setTopQuestions] = useState<any[]>([]);
 
-  // ── Typing animation ─────────────────────────────────────────────────────────
   useEffect(() => {
     let i = 0;
     const current = phrases[phraseIndex];
-
     const typing = setInterval(() => {
       setTypedText(current.slice(0, i));
       i++;
-
       if (i > current.length) {
         clearInterval(typing);
         setTimeout(() => {
           setTypedText("");
           setPhraseIndex((prev) => (prev + 1) % phrases.length);
-        }, 1200);
+        }, 1400);
       }
     }, 55);
-
     return () => clearInterval(typing);
   }, [phraseIndex]);
 
-  // ── API helpers ───────────────────────────────────────────────────────────────
   const analyzeQuestion = async () => {
     setLoading(true);
     setResult(null);
     setFeedbackStatus("");
-
     try {
       const response = await fetch(`${API_BASE}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
       });
-
       if (!response.ok) throw new Error("API error");
-
-      const data = await response.json();
-      setResult(data);
+      setResult(await response.json());
     } catch {
       alert("Frontend could not connect to backend.");
     }
-
     setLoading(false);
   };
 
   const ingestUrl = async () => {
     setIngesting(true);
     setIngestResult(null);
-
     try {
       const response = await fetch(`${API_BASE}/ingest-url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
-
       if (!response.ok) throw new Error("API error");
-
-      const data = await response.json();
-      setIngestResult(data);
+      setIngestResult(await response.json());
     } catch {
       alert("Could not ingest this URL.");
     }
-
     setIngesting(false);
   };
 
   const submitFeedback = async (feedback: string) => {
     if (!result) return;
-
     try {
       const response = await fetch(`${API_BASE}/feedback`, {
         method: "POST",
@@ -116,10 +100,8 @@ export default function Home() {
           corrected_answer: "",
         }),
       });
-
       if (!response.ok) throw new Error("Feedback API error");
-
-      setFeedbackStatus(`Feedback saved: ${feedback}`);
+      setFeedbackStatus(`Marked as: ${feedback}`);
     } catch {
       alert("Could not save feedback.");
     }
@@ -127,12 +109,9 @@ export default function Home() {
 
   const loadAuditLogs = async () => {
     setAuditLoading(true);
-
     try {
       const response = await fetch(`${API_BASE}/audit-logs`);
-
       if (!response.ok) throw new Error("Audit API error");
-
       const data = await response.json();
       setAuditLogs(data.logs || []);
       setTopQuestions(data.top_questions || []);
@@ -140,500 +119,477 @@ export default function Home() {
     } catch {
       alert("Could not load audit logs.");
     }
-
     setAuditLoading(false);
   };
 
-  // ── Reset helpers ─────────────────────────────────────────────────────────────
-  const resetQuery = () => {
-    setQuestion("");
-    setResult(null);
-    setFeedbackStatus("");
-  };
+  const resetQuery = () => { setQuestion(""); setResult(null); setFeedbackStatus(""); };
+  const resetUrl = () => { setUrl(""); setIngestResult(null); };
+  const closeAuditLogs = () => { setAuditLogs([]); setTopQuestions([]); setAuditPage(1); };
 
-  const resetUrl = () => {
-    setUrl("");
-    setIngestResult(null);
-  };
-
-  const closeAuditLogs = () => {
-    setAuditLogs([]);
-    setTopQuestions([]);
-    setAuditPage(1);
-  };
-
-  // ── Derived values ────────────────────────────────────────────────────────────
   const hallucination = result?.hallucination_analysis ?? null;
   const riskLevel = result?.risk_analysis?.risk_level;
-  const riskBadge =
-    riskLevel === "Low"
-      ? "success"
-      : riskLevel === "Medium"
-        ? "warning"
-        : "danger";
+  const riskColor =
+    riskLevel === "Low" ? "#16a34a" : riskLevel === "Medium" ? "#d97706" : "#dc2626";
+  const riskBg =
+    riskLevel === "Low" ? "#f0fdf4" : riskLevel === "Medium" ? "#fffbeb" : "#fef2f2";
 
   const sortedAuditLogs = [...auditLogs].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   const totalAuditPages = Math.ceil(sortedAuditLogs.length / LOGS_PER_PAGE);
   const paginatedAuditLogs = sortedAuditLogs.slice(
     (auditPage - 1) * LOGS_PER_PAGE,
-    auditPage * LOGS_PER_PAGE,
+    auditPage * LOGS_PER_PAGE
   );
 
-  // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <main className="min-vh-100 text-light app-bg">
+    <main style={{ minHeight: "100vh", background: "#f8f9fb", fontFamily: "ui-sans-serif, system-ui, sans-serif", color: "#111" }}>
       <style jsx>{`
-        .app-bg {
-          background:
-            radial-gradient(
-              circle at top left,
-              rgba(139, 92, 246, 0.28),
-              transparent 35%
-            ),
-            radial-gradient(
-              circle at top right,
-              rgba(168, 85, 247, 0.18),
-              transparent 35%
-            ),
-            #020204;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-            monospace;
+        * { box-sizing: border-box; }
+
+        .card {
+          background: #fff;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 24px;
         }
 
-        .glass {
-          background: rgba(22, 18, 32, 0.78);
-          border: 1px solid rgba(168, 85, 247, 0.35);
-          box-shadow: 0 0 35px rgba(124, 58, 237, 0.18);
-          backdrop-filter: blur(18px);
+        .label {
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #6b7280;
+          margin-bottom: 8px;
         }
 
-        .purple-btn {
-          background: linear-gradient(90deg, #7c3aed, #a855f7);
+        input, textarea {
+          width: 100%;
+          padding: 10px 14px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+          background: #fafafa;
+          color: #111;
+          outline: none;
+          font-family: inherit;
+          transition: border-color 0.15s;
+        }
+        input:focus, textarea:focus {
+          border-color: #6366f1;
+          background: #fff;
+        }
+
+        .btn-primary {
+          background: #6366f1;
+          color: #fff;
           border: none;
-          color: white;
+          border-radius: 8px;
+          padding: 10px 18px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          width: 100%;
+          transition: background 0.15s;
         }
+        .btn-primary:hover:not(:disabled) { background: #4f46e5; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .purple-btn:hover {
-          background: linear-gradient(90deg, #6d28d9, #9333ea);
-          color: white;
-        }
-
-        .terminal-box {
-          border: 1px solid rgba(168, 85, 247, 0.7);
-          background: rgba(8, 6, 14, 0.85);
-          box-shadow: 0 0 40px rgba(168, 85, 247, 0.22);
-        }
-
-        .typing {
-          color: #c084fc;
-          min-height: 42px;
-        }
-
-        .cursor {
-          animation: blink 0.8s infinite;
-        }
-
-        @keyframes blink {
-          50% {
-            opacity: 0;
-          }
-        }
-
-        .contact-btn {
-          border: 1px solid rgba(216, 180, 254, 0.7);
-          color: #d8b4fe;
+        .btn-ghost {
           background: transparent;
+          color: #6b7280;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          padding: 10px 18px;
+          font-size: 14px;
+          cursor: pointer;
+          width: 100%;
+          transition: border-color 0.15s, color 0.15s;
+        }
+        .btn-ghost:hover { border-color: #6366f1; color: #6366f1; }
+        .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-sm {
+          padding: 6px 14px;
+          font-size: 13px;
+          width: auto;
         }
 
-        .contact-btn:hover {
-          background: #a855f7;
-          color: white;
+        .divider { height: 1px; background: #f0f0f0; margin: 0; }
+
+        .badge {
+          display: inline-block;
+          padding: 3px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 600;
         }
 
-        .faq-marquee {
-          overflow: hidden;
-          white-space: nowrap;
-          border: 1px solid rgba(168, 85, 247, 0.35);
-          background: rgba(8, 6, 14, 0.85);
+        .section-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: #374151;
+          margin: 0 0 16px 0;
         }
+
+        .feedback-btn {
+          border: 1px solid #e5e7eb;
+          background: #fff;
+          border-radius: 8px;
+          padding: 8px 16px;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.15s;
+          font-weight: 500;
+        }
+        .feedback-btn.correct:hover { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
+        .feedback-btn.partial:hover { border-color: #d97706; color: #d97706; background: #fffbeb; }
+        .feedback-btn.incorrect:hover { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
+
+        .source-item {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 10px 12px;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          text-decoration: none;
+          color: #111;
+          font-size: 13px;
+          transition: border-color 0.15s;
+        }
+        .source-item:hover { border-color: #6366f1; }
+        .source-url { color: #6366f1; font-size: 11px; }
+
+        .audit-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .audit-table th { text-align: left; padding: 8px 12px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb; }
+        .audit-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: top; }
 
         .faq-track {
           display: inline-flex;
-          gap: 18px;
+          gap: 12px;
           animation: scrollFaq 80s linear infinite;
         }
-
-        .faq-card {
+        .faq-pill {
           display: inline-flex;
           align-items: center;
-          gap: 12px;
-          padding: 12px 18px;
+          gap: 10px;
+          padding: 8px 16px;
           border-radius: 999px;
-          background: rgba(22, 18, 32, 0.95);
-          border: 1px solid rgba(216, 180, 254, 0.35);
-          min-width: max-content;
-          color: #e9d5ff;
-        }
-
-        .faq-count {
-          color: #c084fc;
+          border: 1px solid #e5e7eb;
+          background: #fff;
           font-size: 13px;
+          color: #374151;
+          white-space: nowrap;
         }
+        .faq-count { color: #6366f1; font-size: 12px; font-weight: 600; }
 
         @keyframes scrollFaq {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
         }
+
+        .typing-line {
+          font-size: 20px;
+          font-weight: 500;
+          color: #111;
+          min-height: 32px;
+          font-family: ui-monospace, monospace;
+        }
+        .cursor { animation: blink 0.8s infinite; color: #6366f1; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0 40px; }
+        .nav-logo { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; }
+        .nav-contact {
+          border: 1px solid #d1d5db;
+          background: #fff;
+          color: #374151;
+          border-radius: 8px;
+          padding: 8px 18px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          text-decoration: none;
+          transition: border-color 0.15s;
+        }
+        .nav-contact:hover { border-color: #6366f1; color: #6366f1; }
+
+        .hero-tag {
+          display: inline-block;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #6366f1;
+          background: #eef2ff;
+          padding: 4px 12px;
+          border-radius: 999px;
+          margin-bottom: 20px;
+        }
+
+        .feature-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-bottom: 40px;
+        }
+        @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 540px) { .feature-grid { grid-template-columns: 1fr; } }
+
+        .feature-card {
+          background: #fff;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 18px;
+        }
+        .feature-icon { font-size: 20px; color: #6366f1; margin-bottom: 8px; }
+        .feature-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 4px; }
+        .feature-desc { font-size: 12px; color: #9ca3af; }
+
+        .main-grid {
+          display: grid;
+          grid-template-columns: 380px 1fr;
+          gap: 20px;
+          margin-bottom: 40px;
+        }
+        @media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .result-meta {
+          display: flex;
+          gap: 16px;
+          padding: 16px 20px;
+          background: #fafafa;
+          border-radius: 8px;
+          border: 1px solid #e5e7eb;
+          margin-top: 16px;
+        }
+        .meta-item { flex: 1; }
+        .meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #9ca3af; font-weight: 600; margin-bottom: 4px; }
+        .meta-value { font-size: 14px; font-weight: 600; color: #111; }
+        .meta-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
       `}</style>
 
-      <div className="container py-5">
-        {/* ── Navbar ── */}
-        <nav className="d-flex justify-content-between align-items-center mb-5">
-          <div className="fw-bold fs-4">TrustGuard AI</div>
-          <a
-            href="mailto:m.haseeb311@gmail.com"
-            className="btn contact-btn rounded-pill px-4"
-          >
-            Contact Us
-          </a>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+
+        {/* Nav */}
+        <nav className="nav">
+          <span className="nav-logo">TrustGuard AI</span>
+          <a href="mailto:m.haseeb311@gmail.com" className="nav-contact">Contact</a>
         </nav>
 
-        {/* ── Hero ── */}
-        <section className="mb-5">
-          <span className="badge rounded-pill px-3 py-2 mb-4 glass text-light">
-            ● AI GOVERNANCE PLATFORM
-          </span>
-
-          <h1 className="display-3 fw-bold mb-4">
-            Engineering trust <br />
-            in every <span style={{ color: "#a855f7" }}>AI response.</span>
+        {/* Hero */}
+        <section style={{ marginBottom: 40 }}>
+          <div className="hero-tag">AI Governance Platform</div>
+          <h1 style={{ fontSize: 42, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 16 }}>
+            Engineering trust<br />
+            in every <span style={{ color: "#6366f1" }}>AI response.</span>
           </h1>
-
-          <p className="fs-5 text-secondary mb-4" style={{ maxWidth: "780px" }}>
-            TrustGuard AI helps teams detect hallucinations, verify sources,
-            score AI risk, and create audit-ready governance workflows.
+          <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 560, marginBottom: 24, lineHeight: 1.6 }}>
+            Detect hallucinations, verify sources, score AI risk, and create audit-ready governance workflows for enterprise LLM systems.
           </p>
-
-          <div className="terminal-box rounded-4 p-4 mb-4">
-            <div className="d-flex align-items-center gap-3">
-              <span className="text-secondary">›</span>
-              <span className="typing fs-4">
-                {typedText}
-                <span className="cursor text-light">|</span>
-              </span>
-            </div>
+          <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "14px 20px" }}>
+            <span style={{ color: "#9ca3af", fontFamily: "ui-monospace, monospace", fontSize: 13, marginRight: 8 }}>›</span>
+            <span className="typing-line">
+              {typedText}<span className="cursor">|</span>
+            </span>
           </div>
         </section>
 
-        {/* ── Feature cards ── */}
-        <div className="row g-4 mb-5 text-center">
-          {FEATURE_CARDS.map(([icon, title, description], index) => (
-            <div className="col-md-3" key={index}>
-              <div className="glass rounded-4 p-4 h-100">
-                <div className="fs-2 mb-2" style={{ color: "#c084fc" }}>
-                  {icon}
-                </div>
-                <h5 style={{ color: "#d8b4fe" }}>{title}</h5>
-                <p className="text-secondary small mb-0">{description}</p>
-              </div>
+        {/* Feature cards */}
+        <div className="feature-grid">
+          {FEATURE_CARDS.map(({ icon, title, desc }) => (
+            <div className="feature-card" key={title}>
+              <div className="feature-icon">{icon}</div>
+              <div className="feature-title">{title}</div>
+              <div className="feature-desc">{desc}</div>
             </div>
           ))}
         </div>
 
-        {/* ── Main panel ── */}
-        <div className="row g-4">
-          {/* Left column */}
-          <div className="col-lg-5">
-            {/* Ingest URL */}
-            <div className="glass rounded-4 p-4 mb-4">
-              <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
-                ◉ Add Knowledge Source
-              </h5>
+        {/* Main panel */}
+        <div className="main-grid">
 
+          {/* Left: inputs */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+            {/* Ingest */}
+            <div className="card">
+              <p className="label">Knowledge Source</p>
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="form-control bg-black text-light border-secondary mb-3"
                 placeholder="https://example.gov/policy"
+                style={{ marginBottom: 10 }}
               />
-
-              <button
-                onClick={ingestUrl}
-                disabled={ingesting || !url}
-                className="btn purple-btn w-100"
-              >
-                {ingesting ? "Ingesting..." : "Ingest URL"}
+              <button onClick={ingestUrl} disabled={ingesting || !url} className="btn-primary" style={{ marginBottom: 8 }}>
+                {ingesting ? "Ingesting…" : "Ingest URL"}
               </button>
-
-              <button
-                onClick={resetUrl}
-                className="btn contact-btn w-100 mt-3"
-              >
-                Clear URL
-              </button>
-
+              <button onClick={resetUrl} className="btn-ghost">Clear</button>
               {ingestResult && (
-                <div className="alert alert-success mt-3 mb-0">
-                  {ingestResult.status} — {ingestResult.chunks_added || 0} chunks
-                  added
+                <div style={{ marginTop: 12, padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, fontSize: 13, color: "#16a34a" }}>
+                  {ingestResult.status} — {ingestResult.chunks_added || 0} chunks added
                 </div>
               )}
             </div>
 
-            {/* Ask a question */}
-            <div className="glass rounded-4 p-4">
-              <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
-                ▣ Ask a Question
-              </h5>
-
+            {/* Query */}
+            <div className="card">
+              <p className="label">Ask a Question</p>
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="form-control bg-black text-light border-secondary mb-3"
                 rows={7}
-                placeholder="Ask a governance, policy, or compliance question..."
+                placeholder="Ask a governance, policy, or compliance question…"
+                style={{ marginBottom: 10, resize: "vertical" }}
               />
-
-              <button
-                onClick={analyzeQuestion}
-                disabled={loading || !question}
-                className="btn purple-btn w-100 btn-lg"
-              >
-                {loading ? "Analyzing..." : "Analyze Query"}
+              <button onClick={analyzeQuestion} disabled={loading || !question} className="btn-primary" style={{ marginBottom: 8 }}>
+                {loading ? "Analyzing…" : "Analyze Query"}
               </button>
-
-              <button
-                onClick={resetQuery}
-                className="btn contact-btn w-100 mt-3"
-              >
-                Clear Query
-              </button>
+              <button onClick={resetQuery} className="btn-ghost">Clear</button>
             </div>
           </div>
 
-          {/* Right column */}
-          <div className="col-lg-7">
-            {/* Empty state */}
-            {!result && (
-              <div className="glass rounded-4 p-5 text-center h-100">
-                <h3>Ready for analysis</h3>
-                <p className="text-secondary">
-                  Ask a question to generate a grounded answer, hallucination
-                  score, risk level, and retrieved sources.
-                </p>
+          {/* Right: results */}
+          <div>
+            {!result ? (
+              <div className="card" style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 48, color: "#9ca3af" }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>◎</div>
+                <div style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>Ready for analysis</div>
+                <div style={{ fontSize: 14 }}>Ask a question to see the grounded answer, hallucination score, risk level, and sources.</div>
               </div>
-            )}
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* Results */}
-            {result && (
-              <div className="d-flex flex-column gap-4">
-                {/* Answer */}
-                <div className="glass rounded-4 p-4">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 style={{ color: "#d8b4fe" }}>›_ AI Answer</h5>
-                    <span className={`badge text-bg-${riskBadge}`}>
-                      {riskLevel} Risk
-                    </span>
+                {/* Answer + meta */}
+                <div className="card">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                    <p className="label" style={{ marginBottom: 0 }}>AI Answer</p>
+                    <span className="badge" style={{ background: riskBg, color: riskColor }}>{riskLevel} Risk</span>
                   </div>
-                  <p className="fs-5 lh-lg mb-0">{result.answer}</p>
-                </div>
+                  <p style={{ fontSize: 15, lineHeight: 1.7, color: "#111", margin: 0 }}>{result.answer}</p>
 
-                {/* Hallucination + Risk */}
-                <div className="row g-4">
-                  <div className="col-md-6">
-                    <div className="glass rounded-4 p-4 h-100">
-                      <h5 style={{ color: "#c084fc" }}>Hallucination Analysis</h5>
-                      <p>
-                        <strong>Score:</strong>{" "}
-                        {hallucination?.hallucination_score}
-                      </p>
-                      <p className="text-secondary mb-0">
-                        {hallucination?.reason}
-                      </p>
+                  {/* Hallucination + Risk inline */}
+                  <div className="result-meta">
+                    <div className="meta-item">
+                      <div className="meta-label">Hallucination Score</div>
+                      <div className="meta-value">{hallucination?.hallucination_score ?? "—"}</div>
+                      <div className="meta-sub">{hallucination?.reason}</div>
+                    </div>
+                    <div style={{ width: 1, background: "#e5e7eb" }} />
+                    <div className="meta-item">
+                      <div className="meta-label">Risk Status</div>
+                      <div className="meta-value" style={{ color: riskColor }}>{result.risk_analysis?.risk_status}</div>
+                      <div className="meta-sub">{result.risk_analysis?.risk_reason}</div>
                     </div>
                   </div>
-
-                  <div className="col-md-6">
-                    <div className="glass rounded-4 p-4 h-100">
-                      <h5 style={{ color: "#c084fc" }}>Risk Analysis</h5>
-                      <p>
-                        <strong>Level:</strong>{" "}
-                        <span className={`badge text-bg-${riskBadge}`}>
-                          {riskLevel}
-                        </span>
-                      </p>
-                      <p>
-                        <strong>Status:</strong>{" "}
-                        {result.risk_analysis.risk_status}
-                      </p>
-                      <p className="text-secondary mb-0">
-                        {result.risk_analysis.risk_reason}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Feedback */}
-                <div className="glass rounded-4 p-4">
-                  <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
-                    Was this answer useful?
-                  </h5>
-
-                  <div className="d-flex gap-3 flex-wrap">
-                    <button
-                      className="btn btn-success"
-                      onClick={() => submitFeedback("Correct")}
-                    >
-                      Correct
-                    </button>
-                    <button
-                      className="btn btn-warning"
-                      onClick={() => submitFeedback("Partially Correct")}
-                    >
-                      Partially Correct
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => submitFeedback("Incorrect")}
-                    >
-                      Incorrect
-                    </button>
-                  </div>
-
-                  {feedbackStatus && (
-                    <p className="text-success mt-3 mb-0">{feedbackStatus}</p>
-                  )}
                 </div>
 
                 {/* Sources */}
-                <div className="glass rounded-4 p-4">
-                  <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
-                    Retrieved Sources
-                  </h5>
-
-                  <div className="list-group">
-                    {result.sources?.map((source: any, index: number) => (
-                      <a
-                        key={index}
-                        href={source.url}
-                        target="_blank"
-                        className="list-group-item list-group-item-action bg-black text-light border-secondary"
-                      >
-                        <div>
-                          {index + 1}. {source.title || "No Title"}
-                        </div>
-                        <small style={{ color: "#c084fc" }}>{source.url}</small>
-                      </a>
-                    ))}
+                {result.sources?.length > 0 && (
+                  <div className="card">
+                    <p className="section-title">Retrieved Sources</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {result.sources.map((source: any, i: number) => (
+                        <a key={i} href={source.url} target="_blank" className="source-item">
+                          <span>{i + 1}. {source.title || "No Title"}</span>
+                          <span className="source-url">{source.url}</span>
+                        </a>
+                      ))}
+                    </div>
                   </div>
+                )}
+
+                {/* Feedback */}
+                <div className="card">
+                  <p className="section-title" style={{ marginBottom: 12 }}>Was this answer useful?</p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button className="feedback-btn correct" onClick={() => submitFeedback("Correct")}>✓ Correct</button>
+                    <button className="feedback-btn partial" onClick={() => submitFeedback("Partially Correct")}>~ Partially Correct</button>
+                    <button className="feedback-btn incorrect" onClick={() => submitFeedback("Incorrect")}>✕ Incorrect</button>
+                  </div>
+                  {feedbackStatus && (
+                    <p style={{ marginTop: 10, marginBottom: 0, fontSize: 13, color: "#6366f1" }}>{feedbackStatus}</p>
+                  )}
                 </div>
+
               </div>
             )}
           </div>
         </div>
 
-        {/* ── FAQ marquee ── */}
+        {/* FAQ marquee */}
         {topQuestions.length > 0 && (
-          <div className="glass rounded-4 p-4 mt-5">
-            <h5 className="mb-3" style={{ color: "#d8b4fe" }}>
-              Frequently Asked Questions
-            </h5>
-
-            <div className="faq-marquee rounded-4 p-3">
+          <div className="card" style={{ marginBottom: 20, overflow: "hidden" }}>
+            <p className="section-title">Frequently Asked Questions</p>
+            <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
               <div className="faq-track">
-                {[...topQuestions, ...topQuestions].map(
-                  (item: any, index: number) => (
-                    <div key={index} className="faq-card">
-                      <span>{item.question}</span>
-                      <span className="faq-count">Asked {item.count}×</span>
-                    </div>
-                  ),
-                )}
+                {[...topQuestions, ...topQuestions].map((item: any, i: number) => (
+                  <div key={i} className="faq-pill">
+                    <span>{item.question}</span>
+                    <span className="faq-count">{item.count}×</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        {/* ── Audit log dashboard ── */}
-        <div className="glass rounded-4 p-4 mt-5">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 style={{ color: "#d8b4fe" }}>Audit Log Dashboard</h5>
-
-            <div className="d-flex gap-2">
-              <button onClick={loadAuditLogs} className="btn purple-btn">
-                {auditLoading ? "Loading..." : "Load Audit Logs"}
+        {/* Audit logs */}
+        <div className="card" style={{ marginBottom: 40 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <p className="section-title" style={{ marginBottom: 0 }}>Audit Log</p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={loadAuditLogs} className="btn-primary btn-sm">
+                {auditLoading ? "Loading…" : "Load Logs"}
               </button>
-              <button onClick={closeAuditLogs} className="btn contact-btn">
-                Close
-              </button>
+              <button onClick={closeAuditLogs} className="btn-ghost btn-sm">Clear</button>
             </div>
           </div>
 
-          {auditLogs.length === 0 && (
-            <p className="text-secondary mb-0">No audit logs loaded yet.</p>
-          )}
-
-          {auditLogs.length > 0 && (
+          {auditLogs.length === 0 ? (
+            <p style={{ color: "#9ca3af", fontSize: 13, margin: 0 }}>No audit logs loaded.</p>
+          ) : (
             <>
-              <div className="table-responsive">
-                <table className="table table-dark table-hover align-middle">
+              <div style={{ overflowX: "auto" }}>
+                <table className="audit-table">
                   <thead>
                     <tr>
                       <th>Time</th>
                       <th>Question</th>
-                      <th>Risk Level</th>
-                      <th>Risk Reason</th>
+                      <th>Risk</th>
+                      <th>Reason</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedAuditLogs.map((log: any, index: number) => (
-                      <tr key={index}>
-                        <td className="small">{log.timestamp}</td>
+                    {paginatedAuditLogs.map((log: any, i: number) => (
+                      <tr key={i}>
+                        <td style={{ whiteSpace: "nowrap", color: "#9ca3af" }}>{log.timestamp}</td>
                         <td>{log.query}</td>
                         <td>
-                          <span className="badge text-bg-info">
+                          <span className="badge" style={{
+                            background: log.risk_level === "Low" ? "#f0fdf4" : log.risk_level === "Medium" ? "#fffbeb" : "#fef2f2",
+                            color: log.risk_level === "Low" ? "#16a34a" : log.risk_level === "Medium" ? "#d97706" : "#dc2626"
+                          }}>
                             {log.risk_level}
                           </span>
                         </td>
-                        <td className="small text-secondary">
-                          {log.risk_reason}
-                        </td>
+                        <td style={{ color: "#6b7280" }}>{log.risk_reason}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="d-flex justify-content-between align-items-center mt-4">
-                <button
-                  className="btn btn-sm contact-btn"
-                  disabled={auditPage === 1}
-                  onClick={() => setAuditPage(auditPage - 1)}
-                >
-                  Previous
-                </button>
-
-                <span className="text-secondary">
-                  Page {auditPage} of {totalAuditPages || 1}
-                </span>
-
-                <button
-                  className="btn btn-sm contact-btn"
-                  disabled={auditPage >= totalAuditPages}
-                  onClick={() => setAuditPage(auditPage + 1)}
-                >
-                  Next
-                </button>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
+                <button className="btn-ghost btn-sm" disabled={auditPage === 1} onClick={() => setAuditPage(auditPage - 1)}>← Previous</button>
+                <span style={{ fontSize: 13, color: "#9ca3af" }}>Page {auditPage} of {totalAuditPages || 1}</span>
+                <button className="btn-ghost btn-sm" disabled={auditPage >= totalAuditPages} onClick={() => setAuditPage(auditPage + 1)}>Next →</button>
               </div>
             </>
           )}
         </div>
+
       </div>
     </main>
   );
