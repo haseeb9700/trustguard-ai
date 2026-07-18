@@ -58,6 +58,7 @@ User
 | `POST` | `/ingest-url` | Scrape, chunk, embed, and store a trusted URL |
 | `POST` | `/feedback` | Record human feedback on an answer |
 | `GET` | `/audit-logs` | Retrieve recent audit entries and top questions |
+| `GET` | `/cache-stats` | Answer/embedding cache hit-rate statistics |
 
 ## Getting Started
 
@@ -98,6 +99,22 @@ npm run dev
 ```
 
 The dashboard runs at `http://localhost:3000`.
+
+## Performance & Caching
+
+Repeated questions skip the entire rewrite → retrieve → answer → verify → score
+pipeline via a process-local LRU cache (`modules/cache.py`):
+
+- **Answer cache** — full workflow results keyed by the normalized question
+  (TTL-bounded). Cleared automatically whenever a source is ingested or
+  deleted, so cached answers never go stale against the knowledge base.
+- **Embedding cache** — query embeddings keyed by text. Knowledge-base
+  independent, so it persists across ingestions.
+
+The audit log is still written on every request, including cache hits, so the
+governance trail stays complete. `GET /cache-stats` exposes live hit rates.
+Tunable via env: `CACHE_ENABLED`, `ANSWER_CACHE_TTL`, `EMBED_CACHE_SIZE`,
+`ANSWER_CACHE_SIZE`.
 
 ## Evaluation
 

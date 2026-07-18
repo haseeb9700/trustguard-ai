@@ -29,6 +29,7 @@ if os.getenv("SENTRY_DSN"):
 
 from agents.orchestrator import run_agentic_workflow
 from modules.audit_reader import get_audit_logs, get_stats
+from modules.cache import cache_stats, invalidate_answers
 from modules.feedback_logger import save_feedback
 from modules.source_manager import delete_source, list_sources
 from modules.url_guard import validate_public_url
@@ -200,6 +201,7 @@ def analyze_query(request: Request, query: QueryRequest) -> dict:
         "workflow": result.get("workflow", {}),
         "retrieved_context_count": result.get("retrieved_context_count", 0),
         "sources": get_unique_sources(result.get("sources", []), max_sources=5),
+        "cached": result.get("cache_hit", False),
     }
 
     return clean_json(response)
@@ -235,6 +237,9 @@ def ingest_source(
             status_code=502,
             detail="Could not ingest this URL. Verify it is reachable and try again.",
         )
+
+    # The knowledge base changed — cached answers may now be stale.
+    invalidate_answers()
 
     return clean_json(result)
 
@@ -295,4 +300,13 @@ def remove_source(url: str, x_api_key: Optional[str] = Header(None)) -> dict:
         logger.exception("Failed to delete source: %s", url)
         raise HTTPException(status_code=500, detail="Could not delete this source.")
 
+    # The knowledge base changed — cached answers may now be stale.
+    invalidate_answers()
+
     return {"status": "success", "deleted_chunks": deleted}
+
+
+@app.get("/cache-stats")
+def cache_statistics() -> dict:
+    """Return cache hit/miss statistics for the answer and embedding caches."""
+    return clean_json(cache_stats())

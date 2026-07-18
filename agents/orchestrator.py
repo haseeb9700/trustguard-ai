@@ -13,6 +13,7 @@ from agents.evaluation_agent import run_evaluation_agent
 from agents.query_rewrite_agent import run_query_rewrite_agent
 from agents.retrieval_agent import run_retrieval_agent
 from agents.risk_agent import run_risk_agent
+from modules.cache import get_cached_answer, set_cached_answer
 from modules.claim_verifier import verify_claims
 from modules.risk_score import apply_claim_escalation
 
@@ -42,6 +43,16 @@ def run_agentic_workflow(query: str) -> dict:
         hallucination analysis, risk analysis, and workflow metadata.
         Every result is persisted to the audit log before returning.
     """
+    # Serve identical repeat questions from cache, skipping the entire
+    # rewrite → retrieve → answer → verify → score pipeline. The audit log
+    # is still written on every call, so the governance trail stays complete.
+    cached = get_cached_answer(query)
+    if cached is not None:
+        result = dict(cached)
+        result["cache_hit"] = True
+        run_audit_agent(result)
+        return result
+
     rewritten_query = run_query_rewrite_agent(query)
     contexts = run_retrieval_agent(rewritten_query)
 
@@ -95,5 +106,6 @@ def run_agentic_workflow(query: str) -> dict:
         "workflow": WORKFLOW_METADATA,
     }
 
+    set_cached_answer(query, result)
     run_audit_agent(result)
     return result

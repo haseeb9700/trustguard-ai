@@ -2,6 +2,7 @@ from modules.hallucination_checker import evaluate_hallucination
 from modules.risk_score import calculate_risk
 from modules.audit_logger import log_audit
 from modules.reranker import rerank_contexts
+from modules.cache import get_cached_embedding, set_cached_embedding
 
 import os
 import json
@@ -46,7 +47,11 @@ def cosine_similarity(a, b):
 
 
 def retrieve_context(query, top_k=10):
-    query_embedding = _get_embedding_model().encode([query]).tolist()[0]
+    # Query embedding is knowledge-base independent, so cache it by text.
+    query_embedding = get_cached_embedding(query)
+    if query_embedding is None:
+        query_embedding = _get_embedding_model().encode([query]).tolist()[0]
+        set_cached_embedding(query, query_embedding)
 
     conn = get_connection()
     cur = conn.cursor()
