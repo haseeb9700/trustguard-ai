@@ -11,11 +11,11 @@ const phrases = [
 
 const API_BASE = "https://trustguard-ai-production.up.railway.app";
 
-const FEATURE_CARDS = [
-  { icon: "◎", title: "Detect", desc: "Identify hallucinations in LLM responses" },
-  { icon: "⊡", title: "Verify", desc: "Trace answers to trusted sources" },
-  { icon: "⌁", title: "Score", desc: "Assess risk levels automatically" },
-  { icon: "◈", title: "Learn", desc: "Collect feedback for future improvement" },
+const PRODUCT_CARDS = [
+  { title: "Detect", desc: "Identify hallucinations in LLM responses", bg: "linear-gradient(135deg, #ff5530 0%, #ff7a45 100%)", badge: "Core" },
+  { title: "Verify", desc: "Trace answers to trusted sources", bg: "linear-gradient(135deg, #ea5ec1 0%, #a855f7 100%)", badge: null },
+  { title: "Score", desc: "Assess risk levels automatically", bg: "linear-gradient(135deg, #1456f0 0%, #3daeff 100%)", badge: null },
+  { title: "Learn", desc: "Collect feedback for future improvement", bg: "linear-gradient(135deg, #a855f7 0%, #6d28d9 100%)", badge: null },
 ];
 
 const LOGS_PER_PAGE = 5;
@@ -132,7 +132,7 @@ export default function Home() {
   const hallucination = result?.hallucination_analysis ?? null;
   const riskLevel = result?.risk_analysis?.risk_level;
   const riskStyles: Record<string, { color: string; bg: string; border: string }> = {
-    Low:    { color: "#16a34a", bg: "#f0fdf4", border: "#86efac" },
+    Low:    { color: "#1ba673", bg: "#e8ffea", border: "#b5e8c4" },
     Medium: { color: "#d97706", bg: "#fffbeb", border: "#fcd34d" },
     High:   { color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" },
   };
@@ -143,249 +143,297 @@ export default function Home() {
   const paginated = sorted.slice((auditPage - 1) * LOGS_PER_PAGE, auditPage * LOGS_PER_PAGE);
 
   return (
-    <main style={{ minHeight: "100vh", background: "#f5f4f7", fontFamily: "ui-sans-serif, system-ui, sans-serif", color: "#1a1523" }}>
+    <main style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "var(--font-dm-sans), 'DM Sans', Inter, ui-sans-serif, system-ui, sans-serif", color: "#0a0a0a" }}>
       <style jsx>{`
         * { box-sizing: border-box; }
 
+        .promo-banner {
+          background: #0a0a0a;
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 500;
+          text-align: center;
+          padding: 10px 20px;
+          letter-spacing: 0.01em;
+        }
+        .promo-banner span { color: #a8aab2; }
+
         .card {
-          background: #fff;
-          border: 1px solid #e8e4f2;
-          border-radius: 14px;
-          padding: 20px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 24px;
         }
         .card-accent {
-          background: #fff;
-          border: 1.5px solid #c4b5fd;
-          border-radius: 14px;
-          padding: 20px;
-          box-shadow: 0 2px 16px rgba(124,58,237,.1);
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: rgba(0, 0, 0, 0.08) 0px 4px 6px 0px;
         }
 
         .lbl {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .1em;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: .02em;
           text-transform: uppercase;
-          color: #a78bfa;
-          margin-bottom: 10px;
+          color: #5f5f5f;
+          margin-bottom: 12px;
         }
 
         input, textarea {
           width: 100%;
-          padding: 10px 13px;
+          padding: 10px 16px;
           border: 1px solid #e5e7eb;
           border-radius: 8px;
           font-size: 14px;
-          background: #fafafa;
-          color: #1a1523;
+          background: #ffffff;
+          color: #0a0a0a;
           outline: none;
           font-family: inherit;
-          margin-bottom: 8px;
-          transition: border-color .15s, box-shadow .15s;
+          margin-bottom: 10px;
+          transition: border-color .18s, box-shadow .18s;
         }
-        input::placeholder, textarea::placeholder { color: #c4b5fd; }
+        input::placeholder, textarea::placeholder { color: #a8aab2; }
         input:focus, textarea:focus {
-          border-color: #a78bfa;
-          background: #fff;
-          box-shadow: 0 0 0 3px rgba(124,58,237,.1);
+          border-color: #1d4ed8;
+          box-shadow: 0 0 0 1px #1d4ed8;
         }
 
         .btn-primary {
-          background: #7c3aed;
-          color: #fff;
+          background: #0a0a0a;
+          color: #ffffff;
           border: none;
-          border-radius: 8px;
-          padding: 10px 16px;
+          border-radius: 9999px;
+          padding: 11px 24px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           width: 100%;
           margin-bottom: 8px;
-          box-shadow: 0 2px 12px rgba(124,58,237,.25);
-          transition: background .15s, box-shadow .15s;
+          font-family: inherit;
+          transition: background .18s;
         }
-        .btn-primary:hover:not(:disabled) { background: #6d28d9; box-shadow: 0 4px 18px rgba(124,58,237,.35); }
-        .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+        .btn-primary:hover:not(:disabled) { background: #222222; }
+        .btn-primary:disabled { background: #e5e7eb; color: #a8aab2; cursor: not-allowed; }
 
         .btn-ghost {
-          background: #fff;
-          color: #6b7280;
+          background: transparent;
+          color: #0a0a0a;
           border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 10px 16px;
+          border-radius: 9999px;
+          padding: 11px 24px;
           font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
           width: 100%;
-          transition: border-color .15s, color .15s, background .15s;
+          font-family: inherit;
+          transition: border-color .18s, background .18s;
         }
-        .btn-ghost:hover { border-color: #a78bfa; color: #7c3aed; background: #faf5ff; }
+        .btn-ghost:hover:not(:disabled) { border-color: #0a0a0a; background: #f7f8fa; }
         .btn-ghost:disabled { opacity: .35; cursor: not-allowed; }
 
-        .btn-sm { padding: 6px 14px; font-size: 13px; width: auto; }
+        .btn-sm { padding: 8px 18px; font-size: 13px; width: auto; margin-bottom: 0; }
 
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 0 40px; }
-        .logo { font-weight: 900; font-size: 18px; letter-spacing: -.03em; color: #1a1523; }
-        .logo-accent { color: #7c3aed; }
+        .nav {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 0;
+          border-bottom: 1px solid #eaecf0;
+        }
+        .logo { font-weight: 700; font-size: 18px; letter-spacing: -.02em; color: #0a0a0a; }
         .nav-contact {
-          border: 1px solid #d4c9f0;
-          background: #fff;
-          color: #7c3aed;
-          border-radius: 8px;
-          padding: 7px 18px;
-          font-size: 13px;
-          font-weight: 500;
+          background: #0a0a0a;
+          color: #ffffff;
+          border-radius: 9999px;
+          padding: 9px 22px;
+          font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
           text-decoration: none;
-          transition: background .15s, border-color .15s;
+          transition: background .18s;
         }
-        .nav-contact:hover { background: #f3effe; border-color: #7c3aed; }
+        .nav-contact:hover { background: #222222; color: #ffffff; }
 
-        .hero-tag {
-          display: inline-block;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .1em;
-          text-transform: uppercase;
-          color: #7c3aed;
-          background: #ede9fe;
-          border: 1px solid #c4b5fd;
-          padding: 4px 12px;
-          border-radius: 999px;
-          margin-bottom: 18px;
+        .hero { padding: 96px 0 64px; text-align: left; }
+        .hero h1 {
+          font-size: clamp(40px, 7vw, 80px);
+          font-weight: 600;
+          letter-spacing: -2px;
+          line-height: 1.10;
+          margin: 0 0 20px;
+          color: #0a0a0a;
+        }
+        .hero-sub {
+          font-size: 18px;
+          font-weight: 500;
+          color: #5f5f5f;
+          max-width: 560px;
+          margin: 0 0 32px;
+          line-height: 1.5;
         }
 
         .terminal {
-          background: #fff;
-          border: 1px solid #e5e0f5;
-          border-radius: 10px;
-          padding: 13px 18px;
-          margin-bottom: 36px;
-          box-shadow: 0 1px 8px rgba(124,58,237,.07);
+          background: #f7f8fa;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 14px 20px;
+          margin-bottom: 0;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
+          max-width: 560px;
         }
-        .typing-text { font-size: 16px; font-family: ui-monospace, monospace; color: #1a1523; font-weight: 500; min-height: 26px; }
-        .cursor { animation: blink .8s infinite; color: #7c3aed; }
+        .typing-text { font-size: 15px; font-family: ui-monospace, monospace; color: #0a0a0a; font-weight: 500; min-height: 24px; }
+        .cursor { animation: blink .8s infinite; color: #0a0a0a; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        .feature-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 36px; }
-        @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2,1fr); } }
-        @media (max-width: 540px) { .feature-grid { grid-template-columns: 1fr; } }
-
-        .feat-card {
-          background: #fff;
-          border: 1px solid #ede9fe;
-          border-radius: 12px;
-          padding: 18px;
-          transition: border-color .2s, box-shadow .2s;
+        .section-title {
+          font-size: 32px;
+          font-weight: 600;
+          letter-spacing: -0.5px;
+          line-height: 1.25;
+          color: #0a0a0a;
+          margin: 0 0 8px;
         }
-        .feat-card:hover { border-color: #a78bfa; box-shadow: 0 2px 12px rgba(124,58,237,.1); }
-        .feat-icon { font-size: 18px; color: #7c3aed; margin-bottom: 8px; }
-        .feat-title { font-size: 13px; font-weight: 700; color: #1a1523; margin-bottom: 3px; }
-        .feat-desc { font-size: 12px; color: #9ca3af; line-height: 1.5; }
+        .section-sub { font-size: 14px; color: #5f5f5f; margin: 0 0 28px; }
 
-        .main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; margin-bottom: 36px; align-items: start; }
+        .product-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 80px; }
+        @media (max-width: 1023px) { .product-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 540px) { .product-grid { grid-template-columns: 1fr; } }
+
+        .product-card {
+          border-radius: 32px;
+          padding: 32px 28px;
+          min-height: 210px;
+          color: #ffffff;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          position: relative;
+          overflow: hidden;
+        }
+        .product-title { font-size: 32px; font-weight: 600; letter-spacing: -1px; line-height: 1.1; margin-bottom: 6px; }
+        .product-desc { font-size: 14px; opacity: .85; line-height: 1.5; }
+        .product-badge {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          background: rgba(255,255,255,.2);
+          backdrop-filter: blur(4px);
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 4px 12px;
+          border-radius: 9999px;
+        }
+
+        .main-grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; margin-bottom: 80px; align-items: start; }
         @media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
 
         .risk-badge {
           display: inline-block;
-          padding: 3px 12px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 700;
+          padding: 4px 12px;
+          border-radius: 9999px;
+          font-size: 13px;
+          font-weight: 600;
           border: 1px solid;
         }
 
         .meta-row {
           display: grid;
           grid-template-columns: 1fr 1px 1fr;
-          background: #faf9ff;
-          border: 1px solid #ede9fe;
-          border-radius: 8px;
-          margin-top: 14px;
+          background: #f7f8fa;
+          border: 1px solid #eaecf0;
+          border-radius: 12px;
+          margin-top: 16px;
           overflow: hidden;
         }
-        .meta-col { padding: 12px 14px; }
-        .meta-div { background: #ede9fe; }
-        .meta-label { font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a78bfa; margin-bottom: 4px; }
-        .meta-val { font-size: 14px; font-weight: 700; color: #1a1523; }
-        .meta-sub { font-size: 11px; color: #9ca3af; margin-top: 2px; line-height: 1.4; }
+        .meta-col { padding: 14px 16px; }
+        .meta-div { background: #eaecf0; }
+        .meta-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; color: #8e8e93; margin-bottom: 4px; }
+        .meta-val { font-size: 16px; font-weight: 700; color: #0a0a0a; }
+        .meta-sub { font-size: 13px; color: #5f5f5f; margin-top: 2px; line-height: 1.5; }
 
-        .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+        .tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 1px solid #e5e7eb; }
         .tab {
-          border: 1px solid #e5e7eb;
-          background: #fff;
-          border-radius: 6px;
-          padding: 5px 14px;
-          font-size: 12px;
+          border: none;
+          border-bottom: 2px solid transparent;
+          background: transparent;
+          padding: 12px 20px;
+          font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
-          color: #9ca3af;
-          font-weight: 500;
-          transition: .15s;
+          color: #5f5f5f;
+          font-family: inherit;
+          transition: color .15s, border-color .15s;
         }
-        .tab.active { background: #ede9fe; border-color: #c4b5fd; color: #7c3aed; }
+        .tab.active { color: #0a0a0a; border-bottom-color: #0a0a0a; }
 
         .source-item {
           display: flex;
           flex-direction: column;
           gap: 2px;
-          padding: 10px 13px;
-          border: 1px solid #e8e4f2;
-          border-radius: 8px;
-          background: #fafafa;
+          padding: 12px 16px;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          background: #ffffff;
           text-decoration: none;
           transition: border-color .15s, background .15s;
-          margin-bottom: 7px;
+          margin-bottom: 8px;
         }
         .source-item:last-child { margin-bottom: 0; }
-        .source-item:hover { border-color: #a78bfa; background: #faf5ff; }
-        .source-title { font-size: 13px; color: #374151; }
-        .source-url { font-size: 11px; color: #7c3aed; }
+        .source-item:hover { border-color: #0a0a0a; background: #f7f8fa; }
+        .source-title { font-size: 14px; font-weight: 500; color: #222222; }
+        .source-url { font-size: 13px; color: #1d4ed8; }
 
         .fb-btn {
           border: 1px solid #e5e7eb;
-          background: #fff;
-          border-radius: 8px;
-          padding: 8px 16px;
+          background: #ffffff;
+          border-radius: 9999px;
+          padding: 9px 18px;
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
-          color: #6b7280;
+          color: #45515e;
+          font-family: inherit;
           transition: .15s;
         }
-        .fb-btn.correct:hover { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
+        .fb-btn.correct:hover { background: #e8ffea; border-color: #1ba673; color: #1ba673; }
         .fb-btn.partial:hover { background: #fffbeb; border-color: #d97706; color: #d97706; }
         .fb-btn.wrong:hover   { background: #fef2f2; border-color: #dc2626; color: #dc2626; }
 
-        .sec-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 12px; }
+        .sec-title { font-size: 20px; font-weight: 600; letter-spacing: -.02em; color: #0a0a0a; margin-bottom: 12px; }
 
+        .audit-table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
         .audit-th {
           text-align: left;
-          padding: 8px 12px;
-          color: #9ca3af;
-          font-size: 10px;
-          letter-spacing: .07em;
-          text-transform: uppercase;
-          border-bottom: 1px solid #f3f4f6;
+          padding: 12px 16px;
+          background: #f7f8fa;
+          color: #5f5f5f;
+          font-size: 13px;
           font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: .02em;
+          border-bottom: 1px solid #e5e7eb;
         }
-        .audit-td { padding: 10px 12px; color: #374151; font-size: 13px; border-bottom: 1px solid #f9fafb; vertical-align: top; }
+        .audit-td { padding: 14px 16px; color: #222222; font-size: 14px; border-bottom: 1px solid #eaecf0; vertical-align: top; }
 
         .faq-track { display: inline-flex; gap: 10px; animation: scrollFaq 80s linear infinite; }
         .faq-pill {
           display: inline-flex;
           align-items: center;
           gap: 10px;
-          padding: 8px 16px;
-          border-radius: 999px;
-          border: 1px solid #ede9fe;
-          background: #fff;
-          font-size: 13px;
-          color: #374151;
+          padding: 9px 18px;
+          border-radius: 9999px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
+          font-size: 14px;
+          color: #222222;
           white-space: nowrap;
         }
-        .faq-count { color: #7c3aed; font-size: 12px; font-weight: 700; }
+        .faq-count { color: #5f5f5f; font-size: 13px; font-weight: 600; }
         @keyframes scrollFaq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
         .empty-state {
@@ -397,46 +445,65 @@ export default function Home() {
           text-align: center;
           gap: 10px;
         }
+
+        .footer {
+          background: #0a0a0a;
+          color: #ffffff;
+          margin-top: 96px;
+          padding: 64px 0;
+        }
+        .footer-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+        .footer-brand { font-size: 20px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+        .footer-tag { font-size: 14px; color: #a8aab2; margin-bottom: 32px; }
+        .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid #222222; padding-top: 24px; }
+        .footer-link { color: #a8aab2; font-size: 14px; text-decoration: none; }
+        .footer-link:hover { color: #ffffff; }
+        .footer-micro { font-size: 12px; color: #a8aab2; }
       `}</style>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+      {/* Promo banner */}
+      <div className="promo-banner">
+        TrustGuard AI <span>— Audit-ready governance for enterprise LLM systems</span>
+      </div>
+
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px" }}>
 
         {/* Nav */}
         <nav className="nav">
-          <span className="logo">Trust<span className="logo-accent">Guard</span> AI</span>
-          <a href="mailto:m.haseeb311@gmail.com" className="nav-contact">Contact</a>
+          <span className="logo">TrustGuard AI</span>
+          <a href="mailto:m.haseeb311@gmail.com" className="nav-contact">Contact Us</a>
         </nav>
 
         {/* Hero */}
-        <section style={{ marginBottom: 36 }}>
-          <div className="hero-tag">● AI Governance Platform</div>
-          <h1 style={{ fontSize: 44, fontWeight: 900, letterSpacing: "-.04em", lineHeight: 1.05, marginBottom: 14 }}>
-            Engineering trust<br />
-            in every <span style={{ color: "#7c3aed" }}>AI response.</span>
-          </h1>
-          <p style={{ fontSize: 16, color: "#6b7280", maxWidth: 540, marginBottom: 24, lineHeight: 1.7 }}>
+        <section className="hero">
+          <h1>Engineering trust<br />in every AI response.</h1>
+          <p className="hero-sub">
             Detect hallucinations, verify sources, score risk, and create audit-ready governance workflows for enterprise LLM systems.
           </p>
           <div className="terminal">
-            <span style={{ color: "#a78bfa", fontFamily: "monospace", fontSize: 15 }}>›</span>
+            <span style={{ color: "#5f5f5f", fontFamily: "monospace", fontSize: 15 }}>›</span>
             <span className="typing-text">
               {typedText}<span className="cursor">|</span>
             </span>
           </div>
         </section>
 
-        {/* Feature cards */}
-        <div className="feature-grid">
-          {FEATURE_CARDS.map(({ icon, title, desc }) => (
-            <div className="feat-card" key={title}>
-              <div className="feat-icon">{icon}</div>
-              <div className="feat-title">{title}</div>
-              <div className="feat-desc">{desc}</div>
+        {/* Product matrix */}
+        <h2 className="section-title">Full-stack governance matrix</h2>
+        <p className="section-sub">Every response passes through four dedicated stages.</p>
+        <div className="product-grid">
+          {PRODUCT_CARDS.map(({ title, desc, bg, badge }) => (
+            <div className="product-card" style={{ background: bg }} key={title}>
+              {badge && <span className="product-badge">{badge}</span>}
+              <div className="product-title">{title}</div>
+              <div className="product-desc">{desc}</div>
             </div>
           ))}
         </div>
 
         {/* Main panel */}
+        <h2 className="section-title">Run an analysis</h2>
+        <p className="section-sub">Ingest a trusted source, then ask a question to see grounding, risk, and citations.</p>
         <div className="main-grid">
 
           {/* Left */}
@@ -450,17 +517,17 @@ export default function Home() {
               <button onClick={resetUrl} className="btn-ghost">Clear</button>
               {ingestResult && (
                 ingestResult.status === "success" ? (
-                  <div style={{ marginTop: 10, padding: "10px 13px", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 8, fontSize: 13, color: "#16a34a" }}>
+                  <div style={{ marginTop: 12, padding: "10px 16px", background: "#e8ffea", border: "1px solid #b5e8c4", borderRadius: 8, fontSize: 13, color: "#1ba673", fontWeight: 500 }}>
                     Source ingested successfully — {ingestResult.chunks_added || 0} chunks added
                   </div>
                 ) : (
-                  <div style={{ marginTop: 10, padding: "10px 13px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, fontSize: 13, color: "#d97706" }}>
+                  <div style={{ marginTop: 12, padding: "10px 16px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, fontSize: 13, color: "#d97706", fontWeight: 500 }}>
                     {ingestResult.message || "Ingestion did not complete."}
                   </div>
                 )
               )}
               {ingestError && (
-                <div style={{ marginTop: 10, padding: "10px 13px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 13, color: "#dc2626" }}>
+                <div style={{ marginTop: 12, padding: "10px 16px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 13, color: "#dc2626", fontWeight: 500 }}>
                   {ingestError}
                 </div>
               )}
@@ -479,15 +546,15 @@ export default function Home() {
           {/* Right */}
           <div>
             {analyzeError && (
-              <div style={{ marginBottom: 14, padding: "12px 16px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 10, fontSize: 13, color: "#dc2626" }}>
+              <div style={{ marginBottom: 14, padding: "12px 16px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 12, fontSize: 13, color: "#dc2626", fontWeight: 500 }}>
                 {analyzeError}
               </div>
             )}
             {!result ? (
               <div className="card empty-state">
-                <div style={{ fontSize: 30, color: "#c4b5fd" }}>◎</div>
-                <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>Ready for analysis</div>
-                <div style={{ fontSize: 13, color: "#9ca3af", maxWidth: 260, lineHeight: 1.6 }}>
+                <div style={{ fontSize: 28, color: "#a8aab2" }}>◎</div>
+                <div style={{ fontWeight: 600, color: "#45515e", fontSize: 16 }}>Ready for analysis</div>
+                <div style={{ fontSize: 14, color: "#8e8e93", maxWidth: 280, lineHeight: 1.6 }}>
                   Ask a question to see a grounded answer, hallucination score, risk level, and sources.
                 </div>
               </div>
@@ -502,7 +569,7 @@ export default function Home() {
                       {riskLevel} Risk
                     </span>
                   </div>
-                  <p style={{ fontSize: 15, lineHeight: 1.75, color: "#374151", margin: 0 }}>{result.answer}</p>
+                  <p style={{ fontSize: 16, lineHeight: 1.6, color: "#222222", margin: 0 }}>{result.answer}</p>
                   <div className="meta-row">
                     <div className="meta-col">
                       <div className="meta-label">Hallucination Score</div>
@@ -534,25 +601,25 @@ export default function Home() {
                       {result.sources?.length > 0 ? (
                         result.sources.map((src: any, i: number) => (
                           <a key={i} href={src.url} target="_blank" className="source-item">
-                            <span className="source-title">{i + 1}. {src.title || "No Title"}</span>
+                            <span className="source-title">{i + 1}. {src.title || "Untitled Source"}</span>
                             <span className="source-url">{src.url}</span>
                           </a>
                         ))
                       ) : (
-                        <p style={{ fontSize: 13, color: "#9ca3af", margin: 0 }}>No sources retrieved.</p>
+                        <p style={{ fontSize: 14, color: "#8e8e93", margin: 0 }}>No sources retrieved.</p>
                       )}
                     </div>
                   )}
 
                   {activeTab === "feedback" && (
                     <div>
-                      <p className="sec-title">Was this answer useful?</p>
+                      <p className="sec-title" style={{ fontSize: 15 }}>Was this answer useful?</p>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <button className="fb-btn correct" onClick={() => submitFeedback("Correct")}>✓ Correct</button>
                         <button className="fb-btn partial" onClick={() => submitFeedback("Partially Correct")}>~ Partially Correct</button>
                         <button className="fb-btn wrong" onClick={() => submitFeedback("Incorrect")}>✕ Incorrect</button>
                       </div>
-                      {feedbackStatus && <p style={{ marginTop: 10, marginBottom: 0, fontSize: 13, color: "#7c3aed" }}>{feedbackStatus}</p>}
+                      {feedbackStatus && <p style={{ marginTop: 12, marginBottom: 0, fontSize: 14, color: "#0a0a0a", fontWeight: 500 }}>{feedbackStatus}</p>}
                     </div>
                   )}
                 </div>
@@ -564,7 +631,7 @@ export default function Home() {
 
         {/* FAQ marquee */}
         {topQuestions.length > 0 && (
-          <div className="card" style={{ marginBottom: 16, overflow: "hidden" }}>
+          <div style={{ marginBottom: 48, overflow: "hidden" }}>
             <p className="sec-title">Frequently Asked Questions</p>
             <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
               <div className="faq-track">
@@ -580,9 +647,12 @@ export default function Home() {
         )}
 
         {/* Audit log */}
-        <div className="card" style={{ marginBottom: 48 }}>
+        <div style={{ marginBottom: 48 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <p className="sec-title" style={{ marginBottom: 0 }}>Audit Log</p>
+            <div>
+              <h2 className="section-title" style={{ marginBottom: 4 }}>Audit log</h2>
+              <p className="section-sub" style={{ marginBottom: 0 }}>Full traceability of every query, answer, and risk decision.</p>
+            </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={loadAuditLogs} className="btn-primary btn-sm">{auditLoading ? "Loading…" : "Load Logs"}</button>
               <button onClick={closeAuditLogs} className="btn-ghost btn-sm">Clear</button>
@@ -590,14 +660,16 @@ export default function Home() {
           </div>
 
           {auditError && (
-            <p style={{ color: "#dc2626", fontSize: 13, marginTop: 0, marginBottom: 10 }}>{auditError}</p>
+            <p style={{ color: "#dc2626", fontSize: 13, marginTop: 0, marginBottom: 10, fontWeight: 500 }}>{auditError}</p>
           )}
           {auditLogs.length === 0 ? (
-            <p style={{ color: "#9ca3af", fontSize: 13, margin: 0 }}>No audit logs loaded.</p>
+            <div className="card" style={{ textAlign: "center", padding: 40 }}>
+              <p style={{ color: "#8e8e93", fontSize: 14, margin: 0 }}>No audit logs loaded.</p>
+            </div>
           ) : (
             <>
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <table className="audit-table">
                   <thead>
                     <tr>
                       <th className="audit-th">Time</th>
@@ -611,14 +683,14 @@ export default function Home() {
                       const s = riskStyles[log.risk_level] ?? riskStyles["Low"];
                       return (
                         <tr key={i}>
-                          <td className="audit-td" style={{ whiteSpace: "nowrap", color: "#9ca3af", fontSize: 12 }}>{log.timestamp}</td>
+                          <td className="audit-td" style={{ whiteSpace: "nowrap", color: "#8e8e93", fontSize: 13 }}>{log.timestamp}</td>
                           <td className="audit-td">{log.query}</td>
                           <td className="audit-td">
-                            <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
+                            <span style={{ display: "inline-block", padding: "3px 12px", borderRadius: 9999, fontSize: 13, fontWeight: 600, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
                               {log.risk_level}
                             </span>
                           </td>
-                          <td className="audit-td" style={{ color: "#6b7280" }}>{log.risk_reason}</td>
+                          <td className="audit-td" style={{ color: "#5f5f5f" }}>{log.risk_reason}</td>
                         </tr>
                       );
                     })}
@@ -627,24 +699,29 @@ export default function Home() {
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
                 <button className="btn-ghost btn-sm" disabled={auditPage === 1} onClick={() => setAuditPage(auditPage - 1)}>← Previous</button>
-                <span style={{ fontSize: 13, color: "#9ca3af" }}>Page {auditPage} of {totalPages || 1}</span>
+                <span style={{ fontSize: 13, color: "#8e8e93" }}>Page {auditPage} of {totalPages || 1}</span>
                 <button className="btn-ghost btn-sm" disabled={auditPage >= totalPages} onClick={() => setAuditPage(auditPage + 1)}>Next →</button>
               </div>
             </>
           )}
         </div>
 
-        {/* Footer */}
-        <footer style={{ borderTop: "1px solid #e8e4f2", padding: "20px 0 28px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-          <span style={{ fontSize: 12, color: "#9ca3af" }}>
-            © {new Date().getFullYear()} TrustGuard AI — Enterprise AI Governance Platform
-          </span>
-          <span style={{ fontSize: 12, color: "#9ca3af" }}>
-            Built with Next.js, FastAPI &amp; OpenAI
-          </span>
-        </footer>
-
       </div>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-inner">
+          <div className="footer-brand">TrustGuard AI</div>
+          <div className="footer-tag">Trust with every response.</div>
+          <div className="footer-row">
+            <span className="footer-micro">© {new Date().getFullYear()} TrustGuard AI — Enterprise AI Governance Platform</span>
+            <div style={{ display: "flex", gap: 20 }}>
+              <a className="footer-link" href="mailto:m.haseeb311@gmail.com">Contact</a>
+              <span className="footer-micro" style={{ alignSelf: "center" }}>Built with Next.js, FastAPI &amp; OpenAI</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
