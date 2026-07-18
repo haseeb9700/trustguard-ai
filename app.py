@@ -25,7 +25,7 @@ if os.getenv("SENTRY_DSN"):
         pass
 
 from agents.orchestrator import run_agentic_workflow
-from modules.audit_reader import get_audit_logs
+from modules.audit_reader import get_audit_logs, get_stats
 from modules.feedback_logger import save_feedback
 from modules.url_ingestor import ingest_url
 
@@ -179,6 +179,7 @@ def analyze_query(request: QueryRequest) -> dict:
             result.get("hallucination_analysis", {})
         ),
         "risk_analysis": result.get("risk_analysis", {}),
+        "claim_verification": result.get("claim_verification", []),
         "workflow": result.get("workflow", {}),
         "retrieved_context_count": result.get("retrieved_context_count", 0),
         "sources": get_unique_sources(result.get("sources", []), max_sources=5),
@@ -235,3 +236,9 @@ def submit_feedback(request: FeedbackRequest) -> dict:
 def audit_logs() -> dict:
     """Return recent audit log entries and the most frequently asked questions."""
     return clean_json(get_audit_logs())
+
+
+@app.get("/stats")
+def stats() -> dict:
+    """Return aggregate accuracy statistics computed from the audit log."""
+    return clean_json(get_stats())

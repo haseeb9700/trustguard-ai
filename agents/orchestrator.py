@@ -10,6 +10,8 @@ from agents.evaluation_agent import run_evaluation_agent
 from agents.query_rewrite_agent import run_query_rewrite_agent
 from agents.retrieval_agent import run_retrieval_agent
 from agents.risk_agent import run_risk_agent
+from modules.claim_verifier import verify_claims
+from modules.risk_score import apply_claim_escalation
 
 AGENTS_USED = [
     "query_rewrite_agent",
@@ -66,7 +68,11 @@ def run_agentic_workflow(query: str) -> dict:
 
     answer = run_answer_agent(query, contexts)
     hallucination_analysis = run_evaluation_agent(query, answer, contexts)
-    risk_analysis = run_risk_agent(hallucination_analysis, answer)
+    claim_verification = verify_claims(answer, contexts)
+    risk_analysis = apply_claim_escalation(
+        run_risk_agent(hallucination_analysis, answer),
+        claim_verification,
+    )
 
     result = {
         "query": query,
@@ -75,6 +81,7 @@ def run_agentic_workflow(query: str) -> dict:
         "sources": contexts,
         "hallucination_analysis": hallucination_analysis,
         "risk_analysis": risk_analysis,
+        "claim_verification": claim_verification,
         "workflow": WORKFLOW_METADATA,
     }
 

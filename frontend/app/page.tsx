@@ -20,6 +20,12 @@ const PRODUCT_CARDS = [
 
 const LOGS_PER_PAGE = 5;
 
+const TRICK_QUESTIONS = [
+  "What was this policy's budget allocation for 2031?",
+  "Who personally signed off on this policy?",
+  "What is the penalty under section 99 of this document?",
+];
+
 export default function Home() {
   const [question, setQuestion] = useState("");
   const [url, setUrl] = useState("");
@@ -38,6 +44,14 @@ export default function Home() {
   const [auditPage, setAuditPage] = useState(1);
   const [topQuestions, setTopQuestions] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"sources" | "feedback">("sources");
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/stats`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data?.total_queries > 0) setStats(data); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let i = 0;
@@ -56,7 +70,9 @@ export default function Home() {
     return () => clearInterval(typing);
   }, [phraseIndex]);
 
-  const analyzeQuestion = async () => {
+  const analyzeQuestion = async (overrideQuestion?: string) => {
+    const q = overrideQuestion ?? question;
+    if (overrideQuestion) setQuestion(overrideQuestion);
     setLoading(true);
     setResult(null);
     setFeedbackStatus("");
@@ -66,7 +82,7 @@ export default function Home() {
       const res = await fetch(`${API_BASE}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question: q }),
       });
       if (!res.ok) throw new Error();
       setResult(await res.json());
@@ -436,6 +452,57 @@ export default function Home() {
         .faq-count { color: #5f5f5f; font-size: 13px; font-weight: 600; }
         @keyframes scrollFaq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
+        .trick-pill {
+          text-align: left;
+          background: #f7f8fa;
+          border: 1px solid #e5e7eb;
+          border-radius: 9999px;
+          padding: 8px 16px;
+          font-size: 13px;
+          color: #45515e;
+          cursor: pointer;
+          font-family: inherit;
+          transition: border-color .15s, background .15s;
+        }
+        .trick-pill:hover:not(:disabled) { border-color: #0a0a0a; background: #ffffff; }
+        .trick-pill:disabled { opacity: .5; cursor: not-allowed; }
+
+        .claim-row {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          padding: 12px 14px;
+          background: #ffffff;
+          border: 1px solid #eaecf0;
+          border-radius: 12px;
+        }
+        .claim-chip {
+          flex-shrink: 0;
+          display: inline-block;
+          padding: 3px 10px;
+          border-radius: 9999px;
+          font-size: 12px;
+          font-weight: 600;
+          border: 1px solid;
+          white-space: nowrap;
+        }
+
+        .stats-row {
+          display: grid;
+          grid-template-columns: repeat(4,1fr);
+          gap: 12px;
+          margin-bottom: 64px;
+        }
+        @media (max-width: 767px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+        .stat-cell {
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 24px;
+          text-align: center;
+        }
+        .stat-num { font-size: 40px; font-weight: 600; letter-spacing: -1px; color: #0a0a0a; line-height: 1.2; }
+        .stat-lbl { font-size: 14px; color: #5f5f5f; margin-top: 4px; }
+
         .empty-state {
           min-height: 300px;
           display: flex;
@@ -534,10 +601,22 @@ export default function Home() {
             <div className="card">
               <p className="lbl">Ask a Question</p>
               <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={7} placeholder="Ask a governance, policy, or compliance question…" style={{ resize: "vertical" }} />
-              <button onClick={analyzeQuestion} disabled={loading || !question} className="btn-primary">
+              <button onClick={() => analyzeQuestion()} disabled={loading || !question} className="btn-primary">
                 {loading ? "Analyzing…" : "Analyze Query"}
               </button>
               <button onClick={resetQuery} className="btn-ghost">Clear</button>
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #eaecf0" }}>
+                <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".02em", color: "#8e8e93", marginBottom: 8 }}>
+                  Try to trick it
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {TRICK_QUESTIONS.map((tq) => (
+                    <button key={tq} className="trick-pill" disabled={loading} onClick={() => analyzeQuestion(tq)}>
+                      {tq}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -581,6 +660,36 @@ export default function Home() {
                       <div className="meta-sub">{result.risk_analysis?.risk_reason}</div>
                     </div>
                   </div>
+
+                  {result.claim_verification?.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <p className="lbl" style={{ marginBottom: 10 }}>Claim Verification</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {result.claim_verification.map((c: any, i: number) => {
+                          const v = (c.verdict === "entailed" || c.verdict === "supported")
+                            ? { icon: "✓", label: "Entailed", color: "#1ba673", bg: "#e8ffea", border: "#b5e8c4" }
+                            : (c.verdict === "baseless" || c.verdict === "partial")
+                            ? { icon: "~", label: "Not in context", color: "#d97706", bg: "#fffbeb", border: "#fcd34d" }
+                            : { icon: "✕", label: "Contradicted", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" };
+                          return (
+                            <div key={i} className="claim-row">
+                              <span className="claim-chip" style={{ color: v.color, background: v.bg, borderColor: v.border }}>
+                                {v.icon} {v.label}
+                              </span>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 14, color: "#222222", lineHeight: 1.5 }}>{c.claim}</div>
+                                {c.evidence && (
+                                  <div style={{ fontSize: 13, color: "#8e8e93", marginTop: 3, lineHeight: 1.5 }}>
+                                    “{c.evidence}”{c.source_title ? ` — ${c.source_title}` : ""}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Sources + Feedback tabs */}
@@ -640,6 +749,28 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Accuracy stats */}
+        {stats && (
+          <div className="stats-row">
+            <div className="stat-cell">
+              <div className="stat-num">{stats.total_queries}</div>
+              <div className="stat-lbl">Queries analyzed</div>
+            </div>
+            <div className="stat-cell">
+              <div className="stat-num" style={{ color: "#1ba673" }}>{stats.grounded_pct ?? "—"}%</div>
+              <div className="stat-lbl">Fully grounded</div>
+            </div>
+            <div className="stat-cell">
+              <div className="stat-num" style={{ color: "#d97706" }}>{stats.risk_counts?.Medium ?? 0}</div>
+              <div className="stat-lbl">Medium risk flagged</div>
+            </div>
+            <div className="stat-cell">
+              <div className="stat-num" style={{ color: "#dc2626" }}>{stats.risk_counts?.High ?? 0}</div>
+              <div className="stat-lbl">High risk caught</div>
             </div>
           </div>
         )}
