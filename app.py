@@ -8,11 +8,21 @@ and audit-log retrieval.
 import json
 import logging
 import math
+import os
 from typing import Any, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+
+# Optional error tracking: set SENTRY_DSN in the environment to enable.
+if os.getenv("SENTRY_DSN"):
+    try:
+        import sentry_sdk
+
+        sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"), traces_sample_rate=0.1)
+    except ImportError:
+        pass
 
 from agents.orchestrator import run_agentic_workflow
 from modules.audit_reader import get_audit_logs
@@ -34,9 +44,17 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Restrict CORS via env, e.g. ALLOWED_ORIGINS=https://your-frontend.vercel.app
+# Defaults to "*" for local development.
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "*").split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -170,8 +188,20 @@ def analyze_query(request: QueryRequest) -> dict:
 
 
 @app.post("/ingest-url")
-def ingest_source(request: UrlIngestRequest) -> dict:
-    """Scrape a URL, chunk and embed its content, and store it as a trusted source."""
+def ingest_source(
+    request: UrlIngestRequest,
+    x_api_key: Optional[str] = Header(None),
+) -> dict:
+    """Scrape a URL, chunk and embed its content, and store it as a trusted source.
+
+    If ADMIN_API_KEY is set in the environment, this endpoint requires a
+    matching X-API-Key header — ingestion modifies the knowledge base, so it
+    should not be open to the public.
+    """
+    admin_key = os.getenv("ADMIN_API_KEY")
+    if admin_key and x_api_key != admin_key:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key.")
+
     try:
         result = ingest_url(request.url)
     except Exception:

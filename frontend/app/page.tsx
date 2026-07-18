@@ -299,14 +299,14 @@ export default function Home() {
         }
         .section-sub { font-size: 14px; color: #5f5f5f; margin: 0 0 28px; }
 
-        .product-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 80px; }
+        .product-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 64px; }
         @media (max-width: 1023px) { .product-grid { grid-template-columns: repeat(2,1fr); } }
         @media (max-width: 540px) { .product-grid { grid-template-columns: 1fr; } }
 
         .product-card {
-          border-radius: 32px;
-          padding: 32px 28px;
-          min-height: 210px;
+          border-radius: 16px;
+          padding: 18px 20px;
+          min-height: 96px;
           color: #ffffff;
           display: flex;
           flex-direction: column;
@@ -314,18 +314,18 @@ export default function Home() {
           position: relative;
           overflow: hidden;
         }
-        .product-title { font-size: 32px; font-weight: 600; letter-spacing: -1px; line-height: 1.1; margin-bottom: 6px; }
-        .product-desc { font-size: 14px; opacity: .85; line-height: 1.5; }
+        .product-title { font-size: 17px; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 3px; }
+        .product-desc { font-size: 13px; opacity: .85; line-height: 1.45; }
         .product-badge {
           position: absolute;
-          top: 20px;
-          right: 20px;
+          top: 12px;
+          right: 14px;
           background: rgba(255,255,255,.2);
           backdrop-filter: blur(4px);
           color: #ffffff;
-          font-size: 13px;
+          font-size: 11px;
           font-weight: 600;
-          padding: 4px 12px;
+          padding: 2px 10px;
           border-radius: 9999px;
         }
 
@@ -489,8 +489,6 @@ export default function Home() {
         </section>
 
         {/* Product matrix */}
-        <h2 className="section-title">Full-stack governance matrix</h2>
-        <p className="section-sub">Every response passes through four dedicated stages.</p>
         <div className="product-grid">
           {PRODUCT_CARDS.map(({ title, desc, bg, badge }) => (
             <div className="product-card" style={{ background: bg }} key={title}>
@@ -502,8 +500,8 @@ export default function Home() {
         </div>
 
         {/* Main panel */}
-        <h2 className="section-title">Run an analysis</h2>
-        <p className="section-sub">Ingest a trusted source, then ask a question to see grounding, risk, and citations.</p>
+        <h2 className="section-title">Ask. Verify. Trust.</h2>
+        <p className="section-sub">Feed it a trusted source, ask anything — get a grounded answer with risk scored and receipts attached.</p>
         <div className="main-grid">
 
           {/* Left */}
@@ -650,7 +648,7 @@ export default function Home() {
         <div style={{ marginBottom: 48 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <div>
-              <h2 className="section-title" style={{ marginBottom: 4 }}>Audit log</h2>
+              <h2 className="section-title" style={{ marginBottom: 4 }}>Every answer, on the record.</h2>
               <p className="section-sub" style={{ marginBottom: 0 }}>Full traceability of every query, answer, and risk decision.</p>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
