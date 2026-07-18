@@ -1,10 +1,18 @@
 """Cross-encoder reranking to improve retrieval precision."""
 
-from sentence_transformers import CrossEncoder
-
 RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
-reranker_model = CrossEncoder(RERANKER_MODEL_NAME)
+_reranker_model = None
+
+
+def _get_model():
+    """Lazy-load the cross-encoder on first use (keeps startup fast)."""
+    global _reranker_model
+    if _reranker_model is None:
+        from sentence_transformers import CrossEncoder
+
+        _reranker_model = CrossEncoder(RERANKER_MODEL_NAME)
+    return _reranker_model
 
 
 def rerank_contexts(query: str, contexts: list, top_k: int = 10) -> list:
@@ -20,7 +28,7 @@ def rerank_contexts(query: str, contexts: list, top_k: int = 10) -> list:
     """
     pairs = [[query, context["text"]] for context in contexts]
 
-    scores = reranker_model.predict(pairs)
+    scores = _get_model().predict(pairs)
 
     scored_contexts = [
         {**context, "rerank_score": float(score)}

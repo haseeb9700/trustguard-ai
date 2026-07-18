@@ -11,9 +11,12 @@ import math
 import os
 from typing import Any, Optional
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 # Optional error tracking: set SENTRY_DSN in the environment to enable.
 if os.getenv("SENTRY_DSN"):
@@ -35,6 +38,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("trustguard")
 
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
     title="TrustGuard AI",
     description=(
@@ -43,6 +48,9 @@ app = FastAPI(
     ),
     version="1.0.0",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Restrict CORS via env, e.g. ALLOWED_ORIGINS=https://your-frontend.vercel.app
 # Defaults to "*" for local development.
@@ -156,16 +164,18 @@ def home() -> dict:
 
 
 @app.post("/analyze")
-def analyze_query(request: QueryRequest) -> dict:
+@limiter.limit("10/minute")
+def analyze_query(request: Request, query: QueryRequest) -> dict:
     """Run the full governance workflow for a question.
 
     Returns the grounded answer along with hallucination analysis,
     risk assessment, and deduplicated source citations.
+    Rate limited to 10 requests/minute per IP.
     """
     try:
-        result = run_agentic_workflow(request.question)
+        result = run_agentic_workflow(query.question)
     except Exception:
-        logger.exception("Analysis workflow failed for question: %r", request.question)
+        logger.exception("Analysis workflow failed for question: %r", query.question)
         raise HTTPException(
             status_code=500,
             detail="Analysis failed. Please try again shortly.",
@@ -189,24 +199,26 @@ def analyze_query(request: QueryRequest) -> dict:
 
 
 @app.post("/ingest-url")
+@limiter.limit("5/minute")
 def ingest_source(
-    request: UrlIngestRequest,
+    request: Request,
+    ingest: UrlIngestRequest,
     x_api_key: Optional[str] = Header(None),
 ) -> dict:
-    """Scrape a URL, chunk and embed its content, and store it as a trusted source.
+    """Scrape a URL (HTML or PDF), chunk and embed it as a trusted source.
 
     If ADMIN_API_KEY is set in the environment, this endpoint requires a
     matching X-API-Key header — ingestion modifies the knowledge base, so it
-    should not be open to the public.
+    should not be open to the public. Rate limited to 5 requests/minute per IP.
     """
     admin_key = os.getenv("ADMIN_API_KEY")
     if admin_key and x_api_key != admin_key:
         raise HTTPException(status_code=401, detail="Invalid or missing API key.")
 
     try:
-        result = ingest_url(request.url)
+        result = ingest_url(ingest.url)
     except Exception:
-        logger.exception("URL ingestion failed for: %s", request.url)
+        logger.exception("URL ingestion failed for: %s", ingest.url)
         raise HTTPException(
             status_code=502,
             detail="Could not ingest this URL. Verify it is reachable and try again.",

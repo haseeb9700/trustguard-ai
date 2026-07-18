@@ -20,6 +20,16 @@ const PRODUCT_CARDS = [
 
 const LOGS_PER_PAGE = 5;
 
+const DEMO_SOURCE_URL = "https://en.wikipedia.org/wiki/General_Data_Protection_Regulation";
+
+const PIPELINE_STAGES = [
+  "Rewriting query",
+  "Retrieving sources",
+  "Generating answer",
+  "Verifying claims",
+  "Scoring risk",
+];
+
 const HOW_IT_WORKS = [
   { step: "01", title: "Ingest a trusted source", desc: "Paste a URL — the content is scraped, chunked, and embedded as the only allowed evidence." },
   { step: "02", title: "Ask anything", desc: "Your question is rewritten, matched against the source, and answered strictly from it." },
@@ -47,6 +57,15 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"sources" | "feedback">("sources");
   const [stats, setStats] = useState<any>(null);
   const [trickQuestions, setTrickQuestions] = useState<string[]>([]);
+  const [pipelineStage, setPipelineStage] = useState(0);
+
+  useEffect(() => {
+    if (!loading) { setPipelineStage(0); return; }
+    const timer = setInterval(() => {
+      setPipelineStage((s) => Math.min(s + 1, PIPELINE_STAGES.length - 1));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [loading]);
 
   useEffect(() => {
     fetch(`${API_BASE}/stats`)
@@ -94,7 +113,9 @@ export default function Home() {
     setLoading(false);
   };
 
-  const ingestUrl = async () => {
+  const ingestUrl = async (overrideUrl?: string) => {
+    const target = overrideUrl ?? url;
+    if (overrideUrl) setUrl(overrideUrl);
     setIngesting(true);
     setIngestResult(null);
     setIngestError("");
@@ -102,7 +123,7 @@ export default function Home() {
       const res = await fetch(`${API_BASE}/ingest-url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: target }),
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
@@ -600,11 +621,18 @@ export default function Home() {
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div className="card">
               <p className="lbl">Knowledge Source</p>
-              <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.gov/policy" />
-              <button onClick={ingestUrl} disabled={ingesting || !url} className="btn-primary">
+              <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.gov/policy or a PDF link" />
+              <button onClick={() => ingestUrl()} disabled={ingesting || !url} className="btn-primary">
                 {ingesting ? "Ingesting…" : "Ingest URL"}
               </button>
               <button onClick={resetUrl} className="btn-ghost">Clear</button>
+              <button
+                onClick={() => ingestUrl(DEMO_SOURCE_URL)}
+                disabled={ingesting}
+                style={{ background: "none", border: "none", padding: "8px 0 0", fontSize: 13, color: "#1d4ed8", cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", textUnderlineOffset: 3 }}
+              >
+                No source handy? Load a demo source (GDPR)
+              </button>
               {ingestResult && (
                 ingestResult.status === "success" ? (
                   <div style={{ marginTop: 12, padding: "10px 16px", background: "#e8ffea", border: "1px solid #b5e8c4", borderRadius: 8, fontSize: 13, color: "#1ba673", fontWeight: 500 }}>
@@ -657,12 +685,36 @@ export default function Home() {
                 {analyzeError}
               </div>
             )}
-            {!result ? (
+            {loading ? (
+              <div className="card empty-state">
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
+                  {PIPELINE_STAGES.map((stage, i) => (
+                    <div key={stage} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
+                      <span style={{
+                        width: 22, height: 22, borderRadius: 9999, display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 12, fontWeight: 600,
+                        background: i < pipelineStage ? "#0a0a0a" : i === pipelineStage ? "#e5e7eb" : "#f7f8fa",
+                        color: i < pipelineStage ? "#ffffff" : "#5f5f5f",
+                        border: i === pipelineStage ? "1px solid #0a0a0a" : "1px solid #e5e7eb",
+                      }}>
+                        {i < pipelineStage ? "✓" : i + 1}
+                      </span>
+                      <span style={{
+                        color: i === pipelineStage ? "#0a0a0a" : i < pipelineStage ? "#45515e" : "#a8aab2",
+                        fontWeight: i === pipelineStage ? 600 : 400,
+                      }}>
+                        {stage}{i === pipelineStage ? "…" : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : !result ? (
               <div className="card empty-state">
                 <div style={{ fontSize: 28, color: "#a8aab2" }}>◎</div>
                 <div style={{ fontWeight: 600, color: "#45515e", fontSize: 16 }}>Ready for analysis</div>
                 <div style={{ fontSize: 14, color: "#8e8e93", maxWidth: 280, lineHeight: 1.6 }}>
-                  Ask a question to see a grounded answer, hallucination score, risk level, and sources.
+                  Ask a question to see a grounded answer, claim-level verification, risk level, and sources.
                 </div>
               </div>
             ) : (

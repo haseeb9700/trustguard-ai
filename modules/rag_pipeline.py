@@ -9,12 +9,24 @@ import numpy as np
 import psycopg2
 from dotenv import load_dotenv
 from openai import OpenAI
-from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-embedding_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+
+EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
+
+_embedding_model = None
+
+
+def _get_embedding_model():
+    """Lazy-load the embedding model on first use (keeps startup fast)."""
+    global _embedding_model
+    if _embedding_model is None:
+        from sentence_transformers import SentenceTransformer
+
+        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+    return _embedding_model
 
 
 def get_connection():
@@ -34,7 +46,7 @@ def cosine_similarity(a, b):
 
 
 def retrieve_context(query, top_k=10):
-    query_embedding = embedding_model.encode([query]).tolist()[0]
+    query_embedding = _get_embedding_model().encode([query]).tolist()[0]
 
     conn = get_connection()
     cur = conn.cursor()

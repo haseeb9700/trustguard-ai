@@ -1,8 +1,11 @@
 """Orchestrator for the TrustGuard multi-agent governance workflow.
 
 Pipeline: query rewrite → retrieval → answer generation →
-hallucination evaluation → risk scoring → audit logging.
+(hallucination evaluation ∥ claim verification, run concurrently) →
+risk scoring → audit logging.
 """
+
+from concurrent.futures import ThreadPoolExecutor
 
 from agents.answer_agent import run_answer_agent
 from agents.audit_agent import run_audit_agent
@@ -67,8 +70,15 @@ def run_agentic_workflow(query: str) -> dict:
         return result
 
     answer = run_answer_agent(query, contexts)
-    hallucination_analysis = run_evaluation_agent(query, answer, contexts)
-    claim_verification = verify_claims(answer, contexts)
+
+    # Holistic evaluation and claim verification are independent given the
+    # answer — run them concurrently to cut end-to-end latency.
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        eval_future = pool.submit(run_evaluation_agent, query, answer, contexts)
+        claims_future = pool.submit(verify_claims, answer, contexts)
+        hallucination_analysis = eval_future.result()
+        claim_verification = claims_future.result()
+
     risk_analysis = apply_claim_escalation(
         run_risk_agent(hallucination_analysis, answer),
         claim_verification,
