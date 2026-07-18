@@ -62,6 +62,32 @@ export default function Home() {
   const [frontIdx, setFrontIdx] = useState(0);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Admin mode gates knowledge-base edits (ingest/delete). The key comes from
+  // a ?admin=<key> URL param (persisted to localStorage) so ordinary visitors
+  // see a read-only, tamper-proof source list while the curator retains control.
+  const [adminKey, setAdminKey] = useState("");
+  const isAdmin = adminKey.length > 0;
+
+  useEffect(() => {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get("admin");
+      if (fromUrl) localStorage.setItem("tg_admin_key", fromUrl);
+      const key = fromUrl || localStorage.getItem("tg_admin_key") || "";
+      if (key) setAdminKey(key);
+    } catch {
+      /* localStorage unavailable — stay in read-only mode */
+    }
+  }, []);
+
+  const exitAdmin = () => {
+    try {
+      localStorage.removeItem("tg_admin_key");
+    } catch {
+      /* ignore */
+    }
+    setAdminKey("");
+  };
+
   // Elliptical orbit: all cards ride one ellipse and rotate counter-clockwise.
   // A card grows and rises to the top layer as it swings toward the viewer
   // (front of the ellipse), then shrinks and fades as it recedes to the back.
@@ -134,7 +160,10 @@ export default function Home() {
 
   const deleteKnowledgeSource = async (sourceUrl: string) => {
     try {
-      const res = await fetch(`${API_BASE}/sources?url=${encodeURIComponent(sourceUrl)}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/sources?url=${encodeURIComponent(sourceUrl)}`, {
+        method: "DELETE",
+        headers: adminKey ? { "X-API-Key": adminKey } : {},
+      });
       if (!res.ok) throw new Error();
       loadSources();
     } catch {
@@ -205,7 +234,10 @@ export default function Home() {
     try {
       const res = await fetch(`${API_BASE}/ingest-url`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(adminKey ? { "X-API-Key": adminKey } : {}),
+        },
         body: JSON.stringify({ url: target }),
       });
       if (!res.ok) throw new Error();
@@ -811,9 +843,20 @@ export default function Home() {
               )}
               {knowledgeSources.length > 0 && (
                 <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #eaecf0" }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".02em", color: "#8e8e93", marginBottom: 8 }}>
-                    In the knowledge base
-                  </p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".02em", color: "#8e8e93", margin: 0 }}>
+                      In the knowledge base
+                    </p>
+                    {isAdmin && (
+                      <button
+                        onClick={exitAdmin}
+                        title="You are curating the knowledge base. Click to exit admin mode."
+                        style={{ background: "#eef0f3", border: "none", borderRadius: 9999, color: "#45515e", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: "2px 8px", lineHeight: 1.4 }}
+                      >
+                        Admin ✕
+                      </button>
+                    )}
+                  </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {knowledgeSources.map((src) => (
                       <div key={src.source_url} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
@@ -821,13 +864,15 @@ export default function Home() {
                           {src.source_title || src.source_url}
                         </span>
                         <span style={{ color: "#a8aab2", fontSize: 12, flexShrink: 0 }}>{src.chunks} chunks</span>
-                        <button
-                          onClick={() => deleteKnowledgeSource(src.source_url)}
-                          title="Remove source"
-                          style={{ background: "none", border: "none", color: "#a8aab2", cursor: "pointer", fontSize: 14, padding: "0 2px", lineHeight: 1 }}
-                        >
-                          ✕
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => deleteKnowledgeSource(src.source_url)}
+                            title="Remove source"
+                            style={{ background: "none", border: "none", color: "#a8aab2", cursor: "pointer", fontSize: 14, padding: "0 2px", lineHeight: 1 }}
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

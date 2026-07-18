@@ -240,6 +240,7 @@ def ingest_source(
 
     # The knowledge base changed — cached answers may now be stale.
     invalidate_answers()
+    logger.info("Knowledge source ingested: %s", ingest.url)
 
     return clean_json(result)
 
