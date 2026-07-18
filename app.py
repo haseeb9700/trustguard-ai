@@ -30,6 +30,8 @@ if os.getenv("SENTRY_DSN"):
 from agents.orchestrator import run_agentic_workflow
 from modules.audit_reader import get_audit_logs, get_stats
 from modules.feedback_logger import save_feedback
+from modules.source_manager import delete_source, list_sources
+from modules.url_guard import validate_public_url
 from modules.url_ingestor import ingest_url
 
 logging.basicConfig(
@@ -60,10 +62,11 @@ ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+# Credentials must never be combined with a wildcard origin.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials="*" not in ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -72,22 +75,26 @@ app.add_middleware(
 class QueryRequest(BaseModel):
     """A user question to analyze against the knowledge base."""
 
-    question: str = Field(..., min_length=1, description="The user's question.")
+    question: str = Field(
+        ..., min_length=1, max_length=2000, description="The user's question."
+    )
 
 
 class UrlIngestRequest(BaseModel):
     """A URL to scrape, chunk, embed, and store as a knowledge source."""
 
-    url: str = Field(..., min_length=1, description="Publicly accessible URL.")
+    url: str = Field(
+        ..., min_length=1, max_length=2048, description="Publicly accessible URL."
+    )
 
 
 class FeedbackRequest(BaseModel):
     """Human feedback on a generated answer."""
 
-    question: str
-    answer: str
-    feedback: str
-    corrected_answer: Optional[str] = None
+    question: str = Field(..., max_length=2000)
+    answer: str = Field(..., max_length=10000)
+    feedback: str = Field(..., max_length=100)
+    corrected_answer: Optional[str] = Field(None, max_length=10000)
 
 
 def clean_json(value: Any) -> Any:
@@ -216,6 +223,11 @@ def ingest_source(
         raise HTTPException(status_code=401, detail="Invalid or missing API key.")
 
     try:
+        validate_public_url(ingest.url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    try:
         result = ingest_url(ingest.url)
     except Exception:
         logger.exception("URL ingestion failed for: %s", ingest.url)
@@ -254,3 +266,33 @@ def audit_logs() -> dict:
 def stats() -> dict:
     """Return aggregate accuracy statistics computed from the audit log."""
     return clean_json(get_stats())
+
+
+@app.get("/sources")
+def sources() -> dict:
+    """List all ingested knowledge sources with their chunk counts."""
+    try:
+        return clean_json({"status": "success", "sources": list_sources()})
+    except Exception:
+        logger.exception("Failed to list sources")
+        return {"status": "error", "sources": []}
+
+
+@app.delete("/sources")
+def remove_source(url: str, x_api_key: Optional[str] = Header(None)) -> dict:
+    """Delete an ingested source (all its chunks) by URL.
+
+    Requires a matching X-API-Key header when ADMIN_API_KEY is set —
+    deletion modifies the knowledge base.
+    """
+    admin_key = os.getenv("ADMIN_API_KEY")
+    if admin_key and x_api_key != admin_key:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key.")
+
+    try:
+        deleted = delete_source(url)
+    except Exception:
+        logger.exception("Failed to delete source: %s", url)
+        raise HTTPException(status_code=500, detail="Could not delete this source.")
+
+    return {"status": "success", "deleted_chunks": deleted}

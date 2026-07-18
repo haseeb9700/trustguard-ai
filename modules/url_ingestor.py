@@ -10,6 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
+from modules.source_manager import delete_source
 from modules.trick_questions import generate_trick_questions
 
 load_dotenv()
@@ -20,6 +21,7 @@ EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 REQUEST_TIMEOUT_SECONDS = 30
 MIN_BLOCK_LENGTH = 40
 MIN_CHUNK_LENGTH = 50
+MAX_CHUNKS_PER_SOURCE = 300
 
 REQUEST_HEADERS = {
     "User-Agent": (
@@ -224,7 +226,7 @@ def ingest_url(url: str) -> dict:
     """
     title, sections = scrape_url(url)
 
-    chunks = chunk_sections(sections)
+    chunks = chunk_sections(sections)[:MAX_CHUNKS_PER_SOURCE]
 
     if not chunks:
         return {
@@ -239,6 +241,10 @@ def ingest_url(url: str) -> dict:
         show_progress_bar=False,
     ).tolist()
 
+    # Refresh semantics: re-ingesting a URL replaces its old chunks
+    # instead of duplicating them.
+    refreshed = delete_source(url) > 0
+
     save_chunks_to_supabase(title=title, url=url, chunks=chunks, embeddings=embeddings)
 
     return {
@@ -246,6 +252,7 @@ def ingest_url(url: str) -> dict:
         "source_title": title,
         "source_url": url,
         "chunks_added": len(chunks),
+        "refreshed": refreshed,
         "storage": "supabase",
         "trick_questions": generate_trick_questions(chunks, title),
     }

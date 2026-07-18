@@ -9,7 +9,7 @@ const phrases = [
   "Build trust in enterprise LLM systems.",
 ];
 
-const API_BASE = "https://trustguard-ai-production.up.railway.app";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "https://trustguard-ai-production.up.railway.app";
 
 const PRODUCT_CARDS = [
   { title: "Detect", desc: "Identify hallucinations in LLM responses", bg: "linear-gradient(135deg, #ff5530 0%, #ff7a45 100%)", badge: "Core" },
@@ -58,6 +58,34 @@ export default function Home() {
   const [stats, setStats] = useState<any>(null);
   const [trickQuestions, setTrickQuestions] = useState<string[]>([]);
   const [pipelineStage, setPipelineStage] = useState(0);
+  const [knowledgeSources, setKnowledgeSources] = useState<any[]>([]);
+  const [activeCard, setActiveCard] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveCard((c) => (c + 1) % PRODUCT_CARDS.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const loadSources = () => {
+    fetch(`${API_BASE}/sources`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setKnowledgeSources(data?.sources ?? []))
+      .catch(() => {});
+  };
+
+  useEffect(() => { loadSources(); }, []);
+
+  const deleteKnowledgeSource = async (sourceUrl: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/sources?url=${encodeURIComponent(sourceUrl)}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      loadSources();
+    } catch {
+      setIngestError("Could not delete this source (admin key may be required).");
+    }
+  };
 
   useEffect(() => {
     if (!loading) { setPipelineStage(0); return; }
@@ -128,8 +156,9 @@ export default function Home() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setIngestResult(data);
-      if (data.status === "success" && Array.isArray(data.trick_questions)) {
-        setTrickQuestions(data.trick_questions);
+      if (data.status === "success") {
+        if (Array.isArray(data.trick_questions)) setTrickQuestions(data.trick_questions);
+        loadSources();
       }
     } catch {
       setIngestError("Could not ingest this URL. Verify it is publicly accessible and try again.");
@@ -342,35 +371,64 @@ export default function Home() {
         }
         .section-sub { font-size: 14px; color: #5f5f5f; margin: 0 0 28px; }
 
-        .product-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 64px; }
-        @media (max-width: 1023px) { .product-grid { grid-template-columns: repeat(2,1fr); } }
-        @media (max-width: 540px) { .product-grid { grid-template-columns: 1fr; } }
-
-        .product-card {
-          border-radius: 16px;
-          padding: 18px 20px;
-          min-height: 96px;
-          color: #ffffff;
+        .orbit-stage {
+          position: relative;
+          height: 150px;
+          margin-bottom: 64px;
           display: flex;
           flex-direction: column;
-          justify-content: flex-end;
-          position: relative;
+          align-items: center;
+          justify-content: center;
           overflow: hidden;
         }
-        .product-title { font-size: 17px; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 3px; }
-        .product-desc { font-size: 13px; opacity: .85; line-height: 1.45; }
-        .product-badge {
-          position: absolute;
-          top: 12px;
-          right: 14px;
-          background: rgba(255,255,255,.2);
-          backdrop-filter: blur(4px);
-          color: #ffffff;
-          font-size: 11px;
-          font-weight: 600;
-          padding: 2px 10px;
+
+        .orbit-card {
+          position: relative;
           border-radius: 9999px;
+          padding: 26px 56px;
+          color: #ffffff;
+          text-align: center;
+          min-width: 320px;
+          max-width: 90%;
+          overflow: hidden;
+          animation: orbitCycle 2.5s cubic-bezier(.22,.9,.3,1) both;
+          box-shadow: rgba(0,0,0,.12) 0 12px 32px -8px;
         }
+        @keyframes orbitCycle {
+          0%   { opacity: 0; transform: translateX(-140px) translateY(34px) rotate(-5deg) scale(.72); }
+          14%  { opacity: 1; transform: translateX(0) translateY(0) rotate(0deg) scale(1); }
+          84%  { opacity: 1; transform: translateX(0) translateY(0) rotate(0deg) scale(1); }
+          100% { opacity: 0; transform: translateX(140px) translateY(-34px) rotate(5deg) scale(.72); }
+        }
+
+        .orbit-glow {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.35), transparent 55%);
+          animation: glowSweep 2.5s ease-in-out both;
+          pointer-events: none;
+        }
+        @keyframes glowSweep {
+          0%   { transform: translateX(-60%); opacity: 0; }
+          30%  { opacity: 1; }
+          100% { transform: translateX(60%); opacity: 0; }
+        }
+
+        .orbit-title { font-size: 26px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 4px; position: relative; }
+        .orbit-desc { font-size: 14px; opacity: .88; line-height: 1.45; position: relative; }
+
+        .orbit-dots { display: flex; gap: 8px; margin-top: 16px; }
+        .orbit-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 9999px;
+          border: none;
+          background: #e5e7eb;
+          cursor: pointer;
+          padding: 0;
+          transition: background .2s, transform .2s;
+        }
+        .orbit-dot.active { background: #0a0a0a; transform: scale(1.3); }
 
         .main-grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; margin-bottom: 80px; align-items: start; }
         @media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
@@ -590,15 +648,27 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Product matrix */}
-        <div className="product-grid">
-          {PRODUCT_CARDS.map(({ title, desc, bg, badge }) => (
-            <div className="product-card" style={{ background: bg }} key={title}>
-              {badge && <span className="product-badge">{badge}</span>}
-              <div className="product-title">{title}</div>
-              <div className="product-desc">{desc}</div>
-            </div>
-          ))}
+        {/* Product carousel — one capability orbits in at a time */}
+        <div className="orbit-stage">
+          <div
+            className="orbit-card"
+            key={activeCard}
+            style={{ background: PRODUCT_CARDS[activeCard].bg }}
+          >
+            <span className="orbit-glow" />
+            <div className="orbit-title">{PRODUCT_CARDS[activeCard].title}</div>
+            <div className="orbit-desc">{PRODUCT_CARDS[activeCard].desc}</div>
+          </div>
+          <div className="orbit-dots">
+            {PRODUCT_CARDS.map((c, i) => (
+              <button
+                key={c.title}
+                className={`orbit-dot${i === activeCard ? " active" : ""}`}
+                onClick={() => setActiveCard(i)}
+                aria-label={c.title}
+              />
+            ))}
+          </div>
         </div>
 
         {/* How it works */}
@@ -647,6 +717,30 @@ export default function Home() {
               {ingestError && (
                 <div style={{ marginTop: 12, padding: "10px 16px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 13, color: "#dc2626", fontWeight: 500 }}>
                   {ingestError}
+                </div>
+              )}
+              {knowledgeSources.length > 0 && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #eaecf0" }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".02em", color: "#8e8e93", marginBottom: 8 }}>
+                    In the knowledge base
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {knowledgeSources.map((src) => (
+                      <div key={src.source_url} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                        <span style={{ flex: 1, color: "#45515e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={src.source_url}>
+                          {src.source_title || src.source_url}
+                        </span>
+                        <span style={{ color: "#a8aab2", fontSize: 12, flexShrink: 0 }}>{src.chunks} chunks</span>
+                        <button
+                          onClick={() => deleteKnowledgeSource(src.source_url)}
+                          title="Remove source"
+                          style={{ background: "none", border: "none", color: "#a8aab2", cursor: "pointer", fontSize: 14, padding: "0 2px", lineHeight: 1 }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
