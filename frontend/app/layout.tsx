@@ -13,6 +13,22 @@ export const metadata: Metadata = {
   title: "TrustGuard AI — Enterprise AI Governance Platform",
   description:
     "Detect hallucinations, verify trusted sources, score AI risk, and create audit-ready governance workflows for enterprise LLM systems.",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/favicon.ico" }],
+  },
+  openGraph: {
+    title: "TrustGuard AI — Enterprise AI Governance Platform",
+    description:
+      "Detect hallucinations, verify trusted sources, score AI risk, and create audit-ready governance workflows for enterprise LLM systems.",
+    siteName: "TrustGuard AI",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "TrustGuard AI — Enterprise AI Governance Platform",
+    description:
+      "Detect hallucinations, verify trusted sources, score AI risk, and create audit-ready governance workflows for enterprise LLM systems.",
+  },
 };
 
 export default function RootLayout({
