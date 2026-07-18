@@ -1,0 +1,265 @@
+{
+  "verifier": "lexical",
+  "dataset": "dataset.jsonl",
+  "elapsed_seconds": 0.0,
+  "metrics": {
+    "total": 30,
+    "accuracy": 0.7,
+    "macro_f1": 0.5494,
+    "weighted_f1": 0.5765,
+    "per_class": {
+      "entailed": {
+        "precision": 0.6875,
+        "recall": 1.0,
+        "f1": 0.8148,
+        "support": 11
+      },
+      "baseless": {
+        "precision": 0.7143,
+        "recall": 1.0,
+        "f1": 0.8333,
+        "support": 10
+      },
+      "contradicted": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 9
+      }
+    },
+    "confusion_matrix": {
+      "entailed": {
+        "entailed": 11,
+        "baseless": 0,
+        "contradicted": 0
+      },
+      "baseless": {
+        "entailed": 0,
+        "baseless": 10,
+        "contradicted": 0
+      },
+      "contradicted": {
+        "entailed": 5,
+        "baseless": 4,
+        "contradicted": 0
+      }
+    },
+    "labels": [
+      "entailed",
+      "baseless",
+      "contradicted"
+    ]
+  },
+  "cases": [
+    {
+      "id": "gov-01",
+      "domain": "ai_governance",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "gov-02",
+      "domain": "ai_governance",
+      "gold": "contradicted",
+      "pred": "entailed",
+      "correct": false
+    },
+    {
+      "id": "gov-03",
+      "domain": "ai_governance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "gov-04",
+      "domain": "ai_governance",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "gov-05",
+      "domain": "ai_governance",
+      "gold": "contradicted",
+      "pred": "baseless",
+      "correct": false
+    },
+    {
+      "id": "gov-06",
+      "domain": "ai_governance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "imm-01",
+      "domain": "immigration",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "imm-02",
+      "domain": "immigration",
+      "gold": "contradicted",
+      "pred": "entailed",
+      "correct": false
+    },
+    {
+      "id": "imm-03",
+      "domain": "immigration",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "imm-04",
+      "domain": "immigration",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "imm-05",
+      "domain": "immigration",
+      "gold": "contradicted",
+      "pred": "baseless",
+      "correct": false
+    },
+    {
+      "id": "imm-06",
+      "domain": "immigration",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "fin-01",
+      "domain": "finance",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "fin-02",
+      "domain": "finance",
+      "gold": "contradicted",
+      "pred": "entailed",
+      "correct": false
+    },
+    {
+      "id": "fin-03",
+      "domain": "finance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "fin-04",
+      "domain": "finance",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "fin-05",
+      "domain": "finance",
+      "gold": "contradicted",
+      "pred": "entailed",
+      "correct": false
+    },
+    {
+      "id": "hlth-01",
+      "domain": "healthcare",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "hlth-02",
+      "domain": "healthcare",
+      "gold": "contradicted",
+      "pred": "baseless",
+      "correct": false
+    },
+    {
+      "id": "hlth-03",
+      "domain": "healthcare",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "hlth-04",
+      "domain": "healthcare",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "hlth-05",
+      "domain": "healthcare",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "multi-01",
+      "domain": "ai_governance",
+      "gold": "contradicted",
+      "pred": "baseless",
+      "correct": false
+    },
+    {
+      "id": "multi-02",
+      "domain": "finance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "multi-03",
+      "domain": "immigration",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "edge-01",
+      "domain": "ai_governance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "edge-02",
+      "domain": "healthcare",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "edge-03",
+      "domain": "finance",
+      "gold": "contradicted",
+      "pred": "entailed",
+      "correct": false
+    },
+    {
+      "id": "edge-04",
+      "domain": "immigration",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "edge-05",
+      "domain": "ai_governance",
+      "gold": "entailed",
+      "pred": "entailed",
+      "correct": true
+    }
+  ]
+}

@@ -99,11 +99,29 @@ npm run dev
 
 The dashboard runs at `http://localhost:3000`.
 
+## Evaluation
+
+The claim-level hallucination detector is benchmarked against a labeled
+dataset so its accuracy is a measured number, not an assertion. The harness
+decomposes each answer, verifies it against its sources, and reports
+precision / recall / F1 per verdict class plus a confusion matrix.
+
+```bash
+python -m eval.run_eval                    # production verifier (needs OPENAI_API_KEY)
+python -m eval.run_eval --verifier lexical # offline word-overlap baseline (no key/cost)
+python -m eval.run_eval --verifier oracle  # sanity-check the scoring math
+```
+
+On the 30-case benchmark, the naive lexical baseline scores 0.55 macro-F1 and
+**0.00 F1 on contradictions** — the failure mode the hierarchical claim
+verifier is designed to fix. See [`eval/README.md`](eval/README.md) for details.
+
 ## Project Structure
 
 ```text
 trustguard-ai/
 ├── app.py                  # FastAPI application and endpoints
+├── eval/                   # Hallucination-detection benchmark (dataset + metrics + runner)
 ├── agents/                 # Multi-agent workflow
 │   ├── orchestrator.py     # Pipeline coordinator
 │   ├── query_rewrite_agent.py
