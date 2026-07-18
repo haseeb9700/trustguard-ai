@@ -28,6 +28,9 @@ export default function Home() {
   const [feedbackStatus, setFeedbackStatus] = useState("");
   const [result, setResult] = useState<any>(null);
   const [ingestResult, setIngestResult] = useState<any>(null);
+  const [analyzeError, setAnalyzeError] = useState("");
+  const [ingestError, setIngestError] = useState("");
+  const [auditError, setAuditError] = useState("");
   const [typedText, setTypedText] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
@@ -57,6 +60,7 @@ export default function Home() {
     setLoading(true);
     setResult(null);
     setFeedbackStatus("");
+    setAnalyzeError("");
     setActiveTab("sources");
     try {
       const res = await fetch(`${API_BASE}/analyze`, {
@@ -66,13 +70,16 @@ export default function Home() {
       });
       if (!res.ok) throw new Error();
       setResult(await res.json());
-    } catch { alert("Frontend could not connect to backend."); }
+    } catch {
+      setAnalyzeError("The analysis service is currently unreachable. Please try again in a moment.");
+    }
     setLoading(false);
   };
 
   const ingestUrl = async () => {
     setIngesting(true);
     setIngestResult(null);
+    setIngestError("");
     try {
       const res = await fetch(`${API_BASE}/ingest-url`, {
         method: "POST",
@@ -81,7 +88,9 @@ export default function Home() {
       });
       if (!res.ok) throw new Error();
       setIngestResult(await res.json());
-    } catch { alert("Could not ingest this URL."); }
+    } catch {
+      setIngestError("Could not ingest this URL. Verify it is publicly accessible and try again.");
+    }
     setIngesting(false);
   };
 
@@ -95,11 +104,14 @@ export default function Home() {
       });
       if (!res.ok) throw new Error();
       setFeedbackStatus(`Marked as: ${feedback}`);
-    } catch { alert("Could not save feedback."); }
+    } catch {
+      setFeedbackStatus("Could not save feedback. Please try again.");
+    }
   };
 
   const loadAuditLogs = async () => {
     setAuditLoading(true);
+    setAuditError("");
     try {
       const res = await fetch(`${API_BASE}/audit-logs`);
       if (!res.ok) throw new Error();
@@ -107,12 +119,14 @@ export default function Home() {
       setAuditLogs(data.logs || []);
       setTopQuestions(data.top_questions || []);
       setAuditPage(1);
-    } catch { alert("Could not load audit logs."); }
+    } catch {
+      setAuditError("Could not load audit logs. Please try again.");
+    }
     setAuditLoading(false);
   };
 
-  const resetQuery = () => { setQuestion(""); setResult(null); setFeedbackStatus(""); };
-  const resetUrl = () => { setUrl(""); setIngestResult(null); };
+  const resetQuery = () => { setQuestion(""); setResult(null); setFeedbackStatus(""); setAnalyzeError(""); };
+  const resetUrl = () => { setUrl(""); setIngestResult(null); setIngestError(""); };
   const closeAuditLogs = () => { setAuditLogs([]); setTopQuestions([]); setAuditPage(1); };
 
   const hallucination = result?.hallucination_analysis ?? null;
@@ -435,8 +449,19 @@ export default function Home() {
               </button>
               <button onClick={resetUrl} className="btn-ghost">Clear</button>
               {ingestResult && (
-                <div style={{ marginTop: 10, padding: "10px 13px", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 8, fontSize: 13, color: "#16a34a" }}>
-                  {ingestResult.status} — {ingestResult.chunks_added || 0} chunks added
+                ingestResult.status === "success" ? (
+                  <div style={{ marginTop: 10, padding: "10px 13px", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 8, fontSize: 13, color: "#16a34a" }}>
+                    Source ingested successfully — {ingestResult.chunks_added || 0} chunks added
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 10, padding: "10px 13px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, fontSize: 13, color: "#d97706" }}>
+                    {ingestResult.message || "Ingestion did not complete."}
+                  </div>
+                )
+              )}
+              {ingestError && (
+                <div style={{ marginTop: 10, padding: "10px 13px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 13, color: "#dc2626" }}>
+                  {ingestError}
                 </div>
               )}
             </div>
@@ -453,6 +478,11 @@ export default function Home() {
 
           {/* Right */}
           <div>
+            {analyzeError && (
+              <div style={{ marginBottom: 14, padding: "12px 16px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 10, fontSize: 13, color: "#dc2626" }}>
+                {analyzeError}
+              </div>
+            )}
             {!result ? (
               <div className="card empty-state">
                 <div style={{ fontSize: 30, color: "#c4b5fd" }}>◎</div>
@@ -559,6 +589,9 @@ export default function Home() {
             </div>
           </div>
 
+          {auditError && (
+            <p style={{ color: "#dc2626", fontSize: 13, marginTop: 0, marginBottom: 10 }}>{auditError}</p>
+          )}
           {auditLogs.length === 0 ? (
             <p style={{ color: "#9ca3af", fontSize: 13, margin: 0 }}>No audit logs loaded.</p>
           ) : (
@@ -600,6 +633,16 @@ export default function Home() {
             </>
           )}
         </div>
+
+        {/* Footer */}
+        <footer style={{ borderTop: "1px solid #e8e4f2", padding: "20px 0 28px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <span style={{ fontSize: 12, color: "#9ca3af" }}>
+            © {new Date().getFullYear()} TrustGuard AI — Enterprise AI Governance Platform
+          </span>
+          <span style={{ fontSize: 12, color: "#9ca3af" }}>
+            Built with Next.js, FastAPI &amp; OpenAI
+          </span>
+        </footer>
 
       </div>
     </main>

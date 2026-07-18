@@ -2,53 +2,129 @@
 
 **Enterprise AI Governance & Hallucination Detection Platform**
 
-TrustGuard AI is a full-stack AI governance platform that uses Retrieval-Augmented Generation (RAG), vector databases, hallucination detection, risk scoring, feedback learning, and audit logging to make LLM responses more trustworthy and explainable.
+TrustGuard AI is a full-stack AI governance platform that makes LLM responses trustworthy and explainable. It grounds answers in trusted documents using Retrieval-Augmented Generation (RAG), evaluates each response for hallucination risk, assigns a governance risk rating, and records every interaction in an audit log.
 
 ---
 
-## Features
+## Why It Exists
 
-- Dynamic URL ingestion for trusted policy documents
-- RAG-based question answering
-- Semantic search using vector embeddings
-- Reranking for improved retrieval accuracy
-- Hallucination detection
-- Risk scoring: Low / Medium / High
-- Audit logging for governance traceability
-- Human feedback collection
-- Full-stack dashboard using Next.js and FastAPI
+Large Language Models can generate confident but unsupported answers. In compliance-heavy domains — immigration, AI governance, finance, healthcare — hallucinated information creates real risk. TrustGuard AI addresses this by allowing answers only from ingested, trusted sources and by scoring, explaining, and logging every response.
 
----
+## Key Features
 
-## Problem Statement
-
-Large Language Models can generate confident but unsupported answers. In compliance-heavy domains like immigration, AI governance, finance, and healthcare, hallucinated information can create serious risk.
-
-TrustGuard AI solves this by grounding responses in trusted documents, evaluating hallucination risk, assigning governance scores, and logging every interaction.
-
----
+- **Dynamic knowledge ingestion** — scrape, chunk, and embed any trusted URL on demand
+- **Multi-agent RAG workflow** — query rewriting, retrieval, answering, evaluation, risk scoring, and audit logging as dedicated agents
+- **Semantic search** — BGE embeddings with cosine similarity over a PostgreSQL (Supabase) vector store
+- **Cross-encoder reranking** — improves retrieval precision before answer generation
+- **Hallucination detection** — every answer is scored 0–2 for grounding against retrieved context
+- **Risk scoring** — Low / Medium / High governance ratings with human-readable reasons
+- **Audit logging** — full traceability of every query, answer, and risk decision
+- **Human feedback loop** — correct / partially correct / incorrect ratings captured for future improvement
+- **Full-stack dashboard** — Next.js frontend with a FastAPI backend
 
 ## Architecture
 
 ```text
 User
- ↓
-Next.js Frontend
- ↓
-FastAPI Backend
- ↓
-URL Ingestion / Web Scraping
- ↓
-Chunking + Embeddings
- ↓
-ChromaDB Vector Store
- ↓
-RAG Retrieval + Reranking
- ↓
-OpenAI Response Generation
- ↓
-Hallucination Evaluation
- ↓
-Risk Scoring
- ↓
-Audit Logs + Feedback Dataset
+ └── Next.js Frontend
+      └── FastAPI Backend
+           ├── Query Rewrite Agent   (retrieval-friendly reformulation)
+           ├── Retrieval Agent       (BGE embeddings → cosine similarity)
+           ├── Reranker              (cross-encoder, ms-marco-MiniLM)
+           ├── Answer Agent          (GPT-4o-mini, context-grounded only)
+           ├── Evaluation Agent      (hallucination score 0–2)
+           ├── Risk Agent            (Low / Medium / High rating)
+           └── Audit Agent           (Supabase audit_logs table)
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js (React, TypeScript) |
+| Backend | FastAPI (Python) |
+| LLM | OpenAI GPT-4o-mini |
+| Embeddings | BAAI/bge-small-en-v1.5 (Sentence Transformers) |
+| Reranker | cross-encoder/ms-marco-MiniLM-L-6-v2 |
+| Vector store | Supabase (PostgreSQL) |
+| Scraping | Requests + BeautifulSoup |
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Health check |
+| `POST` | `/analyze` | Run the full governance workflow for a question |
+| `POST` | `/ingest-url` | Scrape, chunk, embed, and store a trusted URL |
+| `POST` | `/feedback` | Record human feedback on an answer |
+| `GET` | `/audit-logs` | Retrieve recent audit entries and top questions |
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- An OpenAI API key and a Supabase (PostgreSQL) database
+
+### Backend
+
+```bash
+cd trustguard-ai
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Create a `.env` file in the project root:
+
+```env
+OPENAI_API_KEY=sk-...
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+```
+
+Run the API:
+
+```bash
+uvicorn app:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The dashboard runs at `http://localhost:3000`.
+
+## Project Structure
+
+```text
+trustguard-ai/
+├── app.py                  # FastAPI application and endpoints
+├── agents/                 # Multi-agent workflow
+│   ├── orchestrator.py     # Pipeline coordinator
+│   ├── query_rewrite_agent.py
+│   ├── retrieval_agent.py
+│   ├── answer_agent.py
+│   ├── evaluation_agent.py
+│   ├── risk_agent.py
+│   └── audit_agent.py
+├── modules/                # Core services
+│   ├── rag_pipeline.py     # Embedding retrieval
+│   ├── reranker.py         # Cross-encoder reranking
+│   ├── hallucination_checker.py
+│   ├── risk_score.py
+│   ├── url_ingestor.py     # Scrape → chunk → embed → store
+│   ├── audit_logger.py / supabase_logger.py
+│   └── feedback_logger.py
+├── frontend/               # Next.js dashboard
+├── scripts/                # Data preparation utilities
+└── reports/                # Local audit and feedback logs
+```
+
+## Author
+
+**Mohammed Abdul Haseeb** — [m.haseeb311@gmail.com](mailto:m.haseeb311@gmail.com)

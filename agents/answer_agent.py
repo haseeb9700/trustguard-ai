@@ -1,4 +1,7 @@
+"""Answer agent — generates a source-grounded answer from retrieved context."""
+
 import os
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -6,12 +9,22 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+ANSWER_MODEL = "gpt-4o-mini"
 
-def run_answer_agent(query, contexts):
-    context_text = "\n\n".join([
-        f"Source: {c['source_title']}\nText: {c['text']}"
-        for c in contexts
-    ])
+
+def run_answer_agent(query: str, contexts: list) -> str:
+    """Generate an answer strictly grounded in the retrieved context.
+
+    Args:
+        query: The user's original question.
+        contexts: Retrieved chunks, each with "source_title" and "text".
+
+    Returns:
+        The generated answer text.
+    """
+    context_text = "\n\n".join(
+        f"Source: {c['source_title']}\nText: {c['text']}" for c in contexts
+    )
 
     prompt = f"""
 You are a careful policy-compliance AI assistant.
@@ -32,18 +45,18 @@ TRUSTED CONTEXT:
 """
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=ANSWER_MODEL,
         messages=[
             {
                 "role": "system",
-                "content": "You are a careful enterprise policy reasoning agent."
+                "content": "You are a careful enterprise policy reasoning agent.",
             },
             {
                 "role": "user",
-                "content": prompt
-            }
+                "content": prompt,
+            },
         ],
-        temperature=0
+        temperature=0,
     )
 
     return response.choices[0].message.content

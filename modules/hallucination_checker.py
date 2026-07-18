@@ -1,14 +1,49 @@
+"""LLM-based hallucination evaluation for generated answers."""
+
+import json
+import logging
 import os
+import re
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
 
+logger = logging.getLogger("trustguard.hallucination")
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+EVALUATION_MODEL = "gpt-4o-mini"
 
-def evaluate_hallucination(question, answer, contexts):
-    context_text = "\n\n".join([c["text"] for c in contexts])
+
+def _parse_evaluation(raw: str) -> dict:
+    """Parse the evaluator's response into a dict, tolerating code fences."""
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip())
+
+    try:
+        parsed = json.loads(cleaned)
+        if isinstance(parsed, dict):
+            return parsed
+    except (json.JSONDecodeError, ValueError):
+        logger.warning("Evaluator returned non-JSON output; passing through raw text.")
+
+    return {"hallucination_score": None, "reason": raw.strip()}
+
+
+def evaluate_hallucination(question: str, answer: str, contexts: list) -> dict:
+    """Score how well an answer is grounded in the retrieved context.
+
+    Args:
+        question: The original user question.
+        answer: The generated answer to evaluate.
+        contexts: Retrieved context chunks (each with a "text" key).
+
+    Returns:
+        A dict with "hallucination_score" (0 = fully grounded,
+        1 = partially unsupported, 2 = major hallucination) and "reason".
+    """
+    context_text = "\n\n".join(c["text"] for c in contexts)
 
     prompt = f"""
 You are an enterprise AI governance evaluator.
@@ -39,18 +74,18 @@ Return STRICT JSON only in this format:
 """
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=EVALUATION_MODEL,
         messages=[
             {
                 "role": "system",
-                "content": "You are a strict AI governance evaluator."
+                "content": "You are a strict AI governance evaluator.",
             },
             {
                 "role": "user",
-                "content": prompt
-            }
+                "content": prompt,
+            },
         ],
-        temperature=0
+        temperature=0,
     )
 
-    return response.choices[0].message.content
+    return _parse_evaluation(response.choices[0].message.content)
