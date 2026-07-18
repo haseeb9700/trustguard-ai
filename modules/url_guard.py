@@ -55,9 +55,14 @@ def _is_blocked(ip_str: str) -> bool:
 
 
 def _resolve_validated_ips(hostname: str) -> list:
-    """Resolve a hostname and return its IPs, raising if any is non-public."""
+    """Resolve a hostname and return its IPs, raising if any is non-public.
+
+    Uses ``socket.getaddrinfo`` (the live reference, which is normally our pin
+    wrapper) rather than the captured original, so tests that monkeypatch
+    ``socket.getaddrinfo`` still exercise this validation.
+    """
     try:
-        addr_infos = _real_getaddrinfo(hostname, None)
+        addr_infos = socket.getaddrinfo(hostname, None)
     except socket.gaierror:
         raise ValueError("Could not resolve the URL's host.")
 
