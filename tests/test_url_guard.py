@@ -57,3 +57,41 @@ class TestPrivateAddresses:
         monkeypatch.setattr(socket, "getaddrinfo", boom)
         with pytest.raises(ValueError, match="resolve"):
             validate_public_url("https://does-not-exist.invalid/")
+
+
+def _addrinfo(ip: str):
+    return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (ip, 0))]
+
+
+class TestDnsPinning:
+    def test_pin_holds_against_rebinding(self, monkeypatch):
+        # Resolver that can be flipped mid-context to simulate a rebind.
+        resolved = {"host": "93.184.216.34"}
+
+        def resolver(host, *args, **kwargs):
+            return _addrinfo(resolved.get(str(host), str(host)))
+
+        monkeypatch.setattr(url_guard, "_real_getaddrinfo", resolver)
+
+        with url_guard.pin_validated_host("http://host/x"):
+            resolved["host"] = "127.0.0.1"  # attacker rebinds to loopback
+            pinned_ip = socket.getaddrinfo("host", None)[0][4][0]
+            assert pinned_ip == "93.184.216.34"  # still the validated address
+
+        # Outside the context the pin is released.
+        assert "host" not in url_guard._pinned_hosts
+
+    def test_pin_rejects_private_host(self, monkeypatch):
+        monkeypatch.setattr(
+            url_guard, "_real_getaddrinfo", lambda *a, **k: _addrinfo("10.0.0.5")
+        )
+        with pytest.raises(ValueError, match="private or reserved"):
+            with url_guard.pin_validated_host("http://evil.internal/"):
+                pass
+
+    def test_unpinned_host_delegates_to_real_resolver(self, monkeypatch):
+        monkeypatch.setattr(
+            url_guard, "_real_getaddrinfo", lambda *a, **k: _addrinfo("203.0.113.9")
+        )
+        # No active pin → wrapper falls through to the real resolver.
+        assert socket.getaddrinfo("anything", None)[0][4][0] == "203.0.113.9"
