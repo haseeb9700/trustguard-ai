@@ -4,6 +4,7 @@ import io
 import json
 import logging
 import os
+from urllib.parse import urljoin
 
 import psycopg2
 import requests
@@ -12,6 +13,7 @@ from dotenv import load_dotenv
 
 from modules.source_manager import delete_source
 from modules.trick_questions import generate_trick_questions
+from modules.url_guard import validate_public_url
 
 load_dotenv()
 
@@ -22,6 +24,8 @@ REQUEST_TIMEOUT_SECONDS = 30
 MIN_BLOCK_LENGTH = 40
 MIN_CHUNK_LENGTH = 50
 MAX_CHUNKS_PER_SOURCE = 300
+MAX_REDIRECTS = 5
+_REDIRECT_STATUSES = {301, 302, 303, 307, 308}
 
 REQUEST_HEADERS = {
     "User-Agent": (
@@ -114,6 +118,36 @@ def _extract_html(html: str) -> tuple:
     return title, sections
 
 
+def _safe_get(url: str) -> requests.Response:
+    """GET a URL while re-validating every redirect hop against the SSRF guard.
+
+    ``requests`` follows redirects automatically, which would defeat the
+    pre-flight SSRF check: a public URL can respond with a 302 to an internal
+    address (localhost, 169.254.169.254, private hosts). We disable automatic
+    redirects and validate each hop's destination before following it.
+    """
+    current = url
+    for _ in range(MAX_REDIRECTS + 1):
+        validate_public_url(current)
+        response = requests.get(
+            current,
+            headers=REQUEST_HEADERS,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+            allow_redirects=False,
+        )
+
+        if response.status_code not in _REDIRECT_STATUSES:
+            return response
+
+        location = response.headers.get("Location")
+        if not location:
+            return response
+
+        current = urljoin(current, location)
+
+    raise ValueError("Too many redirects while fetching the URL.")
+
+
 def scrape_url(url: str) -> tuple:
     """Fetch a URL (HTML page or PDF) and extract its content by section.
 
@@ -124,7 +158,7 @@ def scrape_url(url: str) -> tuple:
         A (title, sections) tuple, where sections is a list of
         (section_heading, text) pairs.
     """
-    response = requests.get(url, headers=REQUEST_HEADERS, timeout=REQUEST_TIMEOUT_SECONDS)
+    response = _safe_get(url)
     response.raise_for_status()
 
     content_type = response.headers.get("Content-Type", "").lower()

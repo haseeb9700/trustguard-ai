@@ -1181,7 +1181,7 @@ export default function Home() {
             <span className="footer-micro">© {new Date().getFullYear()} TrustGuard AI — Enterprise AI Governance Platform</span>
             <div style={{ display: "flex", gap: 20 }}>
               <a className="footer-link" href="mailto:m.haseeb311@gmail.com">Contact</a>
-              <span className="footer-micro" style={{ alignSelf: "center" }}>Built with Next.js, FastAPI &amp; OpenAI</span>
+              <span className="footer-micro" style={{ alignSelf: "center" }}>© {new Date().getFullYear()} TrustGuard AI. All rights reserved.</span>
             </div>
           </div>
         </div>
