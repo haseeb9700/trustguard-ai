@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const phrases = [
   "Detect hallucinations.",
@@ -59,13 +59,68 @@ export default function Home() {
   const [trickQuestions, setTrickQuestions] = useState<string[]>([]);
   const [pipelineStage, setPipelineStage] = useState(0);
   const [knowledgeSources, setKnowledgeSources] = useState<any[]>([]);
-  const [activeCard, setActiveCard] = useState(0);
+  const [frontIdx, setFrontIdx] = useState(0);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Elliptical orbit: all cards ride one ellipse and rotate counter-clockwise.
+  // A card grows and rises to the top layer as it swings toward the viewer
+  // (front of the ellipse), then shrinks and fades as it recedes to the back.
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveCard((c) => (c + 1) % PRODUCT_CARDS.length);
-    }, 2500);
-    return () => clearInterval(timer);
+    const N = PRODUCT_CARDS.length;
+    const RX = 232;   // horizontal radius (px) — wider, more stretched ellipse
+    const RY = 60;    // vertical radius (px) — flatter than wide = ellipse
+    const SPEED = 0.00042; // radians per ms (counter-clockwise)
+
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    const place = (i: number, theta: number) => {
+      const el = cardRefs.current[i];
+      if (!el) return 0;
+      const x = RX * Math.cos(theta);
+      const y = RY * Math.sin(theta);          // front (toward viewer) when y > 0
+      const depth = (Math.sin(theta) + 1) / 2; // 0 = far back, 1 = closest
+      const scale = 0.58 + depth * 0.56;       // 0.58 (small/away) .. 1.14 (big/near)
+      el.style.transform =
+        `translate(-50%, -50%) translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+      el.style.opacity = (0.38 + depth * 0.62).toFixed(3);
+      el.style.zIndex = String(Math.round(depth * 100));
+      return y;
+    };
+
+    if (reduce) {
+      // Static, readable fan for users who prefer reduced motion.
+      PRODUCT_CARDS.forEach((_, i) => place(i, (i / N) * Math.PI * 2 - Math.PI / 2));
+      return;
+    }
+
+    let raf = 0;
+    const start = performance.now();
+    let lastFront = -1;
+
+    const frame = (now: number) => {
+      const t = (now - start) * SPEED;
+      let bestFront = 0;
+      let bestY = -Infinity;
+      for (let i = 0; i < N; i++) {
+        // Subtracting t sweeps counter-clockwise; offset each card evenly.
+        const theta = (i / N) * Math.PI * 2 - t;
+        const y = place(i, theta);
+        if (y > bestY) {
+          bestY = y;
+          bestFront = i;
+        }
+      }
+      if (bestFront !== lastFront) {
+        lastFront = bestFront;
+        setFrontIdx(bestFront);
+      }
+      raf = requestAnimationFrame(frame);
+    };
+
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const loadSources = () => {
@@ -373,51 +428,47 @@ export default function Home() {
 
         .orbit-stage {
           position: relative;
-          height: 150px;
-          margin-bottom: 64px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
+          height: 300px;
+          margin-bottom: 56px;
+        }
+
+        .orbit-rail {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 520px;
+          height: 164px;
+          max-width: 94%;
         }
 
         .orbit-card {
-          position: relative;
+          position: absolute;
+          left: 50%;
+          top: 50%;
           border-radius: 9999px;
-          padding: 26px 56px;
+          padding: 20px 40px;
           color: #ffffff;
           text-align: center;
-          min-width: 320px;
-          max-width: 90%;
+          width: 230px;
           overflow: hidden;
-          animation: orbitCycle 2.5s cubic-bezier(.22,.9,.3,1) both;
-          box-shadow: rgba(0,0,0,.12) 0 12px 32px -8px;
-        }
-        @keyframes orbitCycle {
-          0%   { opacity: 0; transform: translateX(-140px) translateY(34px) rotate(-5deg) scale(.72); }
-          14%  { opacity: 1; transform: translateX(0) translateY(0) rotate(0deg) scale(1); }
-          84%  { opacity: 1; transform: translateX(0) translateY(0) rotate(0deg) scale(1); }
-          100% { opacity: 0; transform: translateX(140px) translateY(-34px) rotate(5deg) scale(.72); }
+          box-shadow: rgba(0,0,0,.16) 0 16px 34px -10px;
+          will-change: transform, opacity;
+          /* transform / opacity / z-index are set every frame by the orbit loop */
+          transform: translate(-50%, -50%);
         }
 
         .orbit-glow {
           position: absolute;
           inset: 0;
-          background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.35), transparent 55%);
-          animation: glowSweep 2.5s ease-in-out both;
+          background: radial-gradient(ellipse at 30% 18%, rgba(255,255,255,.4), transparent 58%);
           pointer-events: none;
         }
-        @keyframes glowSweep {
-          0%   { transform: translateX(-60%); opacity: 0; }
-          30%  { opacity: 1; }
-          100% { transform: translateX(60%); opacity: 0; }
-        }
 
-        .orbit-title { font-size: 26px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 4px; position: relative; }
-        .orbit-desc { font-size: 14px; opacity: .88; line-height: 1.45; position: relative; }
+        .orbit-title { font-size: 24px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 3px; position: relative; }
+        .orbit-desc { font-size: 13px; opacity: .9; line-height: 1.4; position: relative; }
 
-        .orbit-dots { display: flex; gap: 8px; margin-top: 16px; }
+        .orbit-dots { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px; }
         .orbit-dot {
           width: 8px;
           height: 8px;
@@ -681,23 +732,29 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Product carousel — one capability orbits in at a time */}
+        {/* Product carousel — all capabilities orbit on a shared ellipse */}
         <div className="orbit-stage">
-          <div
-            className="orbit-card"
-            key={activeCard}
-            style={{ background: PRODUCT_CARDS[activeCard].bg }}
-          >
-            <span className="orbit-glow" />
-            <div className="orbit-title">{PRODUCT_CARDS[activeCard].title}</div>
-            <div className="orbit-desc">{PRODUCT_CARDS[activeCard].desc}</div>
+          <div className="orbit-rail">
+            {PRODUCT_CARDS.map((c, i) => (
+              <div
+                key={c.title}
+                ref={(el) => {
+                  cardRefs.current[i] = el;
+                }}
+                className="orbit-card"
+                style={{ background: c.bg }}
+              >
+                <span className="orbit-glow" />
+                <div className="orbit-title">{c.title}</div>
+                <div className="orbit-desc">{c.desc}</div>
+              </div>
+            ))}
           </div>
           <div className="orbit-dots">
             {PRODUCT_CARDS.map((c, i) => (
-              <button
+              <span
                 key={c.title}
-                className={`orbit-dot${i === activeCard ? " active" : ""}`}
-                onClick={() => setActiveCard(i)}
+                className={`orbit-dot${i === frontIdx ? " active" : ""}`}
                 aria-label={c.title}
               />
             ))}
