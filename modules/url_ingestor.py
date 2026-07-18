@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 
+from modules.trick_questions import generate_trick_questions
+
 load_dotenv()
 
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
@@ -152,4 +154,5 @@ def ingest_url(url: str) -> dict:
         "source_url": url,
         "chunks_added": len(chunks),
         "storage": "supabase",
+        "trick_questions": generate_trick_questions(chunks, title),
     }

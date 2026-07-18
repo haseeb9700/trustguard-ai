@@ -20,10 +20,11 @@ const PRODUCT_CARDS = [
 
 const LOGS_PER_PAGE = 5;
 
-const TRICK_QUESTIONS = [
-  "What was this policy's budget allocation for 2031?",
-  "Who personally signed off on this policy?",
-  "What is the penalty under section 99 of this document?",
+const HOW_IT_WORKS = [
+  { step: "01", title: "Ingest a trusted source", desc: "Paste a URL — the content is scraped, chunked, and embedded as the only allowed evidence." },
+  { step: "02", title: "Ask anything", desc: "Your question is rewritten, matched against the source, and answered strictly from it." },
+  { step: "03", title: "Every claim verified", desc: "The answer is split into claims; each is checked against the source and labeled." },
+  { step: "04", title: "Risk scored & logged", desc: "One contradicted claim flags the whole answer. Everything lands in the audit log." },
 ];
 
 export default function Home() {
@@ -45,6 +46,7 @@ export default function Home() {
   const [topQuestions, setTopQuestions] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"sources" | "feedback">("sources");
   const [stats, setStats] = useState<any>(null);
+  const [trickQuestions, setTrickQuestions] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`${API_BASE}/stats`)
@@ -103,7 +105,11 @@ export default function Home() {
         body: JSON.stringify({ url }),
       });
       if (!res.ok) throw new Error();
-      setIngestResult(await res.json());
+      const data = await res.json();
+      setIngestResult(data);
+      if (data.status === "success" && Array.isArray(data.trick_questions)) {
+        setTrickQuestions(data.trick_questions);
+      }
     } catch {
       setIngestError("Could not ingest this URL. Verify it is publicly accessible and try again.");
     }
@@ -142,7 +148,7 @@ export default function Home() {
   };
 
   const resetQuery = () => { setQuestion(""); setResult(null); setFeedbackStatus(""); setAnalyzeError(""); };
-  const resetUrl = () => { setUrl(""); setIngestResult(null); setIngestError(""); };
+  const resetUrl = () => { setUrl(""); setIngestResult(null); setIngestError(""); setTrickQuestions([]); };
   const closeAuditLogs = () => { setAuditLogs([]); setTopQuestions([]); setAuditPage(1); };
 
   const hallucination = result?.hallucination_analysis ?? null;
@@ -452,6 +458,14 @@ export default function Home() {
         .faq-count { color: #5f5f5f; font-size: 13px; font-weight: 600; }
         @keyframes scrollFaq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
+        .how-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 64px; }
+        @media (max-width: 1023px) { .how-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 540px) { .how-grid { grid-template-columns: 1fr; } }
+        .how-cell { border-top: 2px solid #0a0a0a; padding: 14px 4px 0; }
+        .how-step { font-size: 12px; font-weight: 600; color: #a8aab2; margin-bottom: 6px; }
+        .how-title { font-size: 15px; font-weight: 600; color: #0a0a0a; margin-bottom: 4px; letter-spacing: -.01em; }
+        .how-desc { font-size: 13px; color: #5f5f5f; line-height: 1.5; }
+
         .trick-pill {
           text-align: left;
           background: #f7f8fa;
@@ -566,6 +580,17 @@ export default function Home() {
           ))}
         </div>
 
+        {/* How it works */}
+        <div className="how-grid">
+          {HOW_IT_WORKS.map(({ step, title, desc }) => (
+            <div className="how-cell" key={step}>
+              <div className="how-step">{step}</div>
+              <div className="how-title">{title}</div>
+              <div className="how-desc">{desc}</div>
+            </div>
+          ))}
+        </div>
+
         {/* Main panel */}
         <h2 className="section-title">Ask. Verify. Trust.</h2>
         <p className="section-sub">Feed it a trusted source, ask anything — get a grounded answer with risk scored and receipts attached.</p>
@@ -605,18 +630,23 @@ export default function Home() {
                 {loading ? "Analyzing…" : "Analyze Query"}
               </button>
               <button onClick={resetQuery} className="btn-ghost">Clear</button>
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #eaecf0" }}>
-                <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".02em", color: "#8e8e93", marginBottom: 8 }}>
-                  Try to trick it
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {TRICK_QUESTIONS.map((tq) => (
-                    <button key={tq} className="trick-pill" disabled={loading} onClick={() => analyzeQuestion(tq)}>
-                      {tq}
-                    </button>
-                  ))}
+              {trickQuestions.length > 0 && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #eaecf0" }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".02em", color: "#8e8e93", marginBottom: 4 }}>
+                    Try to trick it
+                  </p>
+                  <p style={{ fontSize: 12, color: "#a8aab2", marginBottom: 8, lineHeight: 1.5 }}>
+                    Generated from your source — these sound answerable, but aren't. Watch the risk flag fire.
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {trickQuestions.map((tq) => (
+                      <button key={tq} className="trick-pill" disabled={loading} onClick={() => analyzeQuestion(tq)}>
+                        {tq}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
