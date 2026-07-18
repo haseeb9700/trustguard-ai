@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 from modules.source_manager import delete_source
 from modules.trick_questions import generate_trick_questions
-from modules.url_guard import validate_public_url
+from modules.url_guard import pin_validated_host, validate_public_url
 
 load_dotenv()
 
@@ -25,6 +25,7 @@ MIN_BLOCK_LENGTH = 40
 MIN_CHUNK_LENGTH = 50
 MAX_CHUNKS_PER_SOURCE = 300
 MAX_REDIRECTS = 5
+MAX_RESPONSE_BYTES = 15 * 1024 * 1024  # 15 MB cap on a fetched document
 _REDIRECT_STATUSES = {301, 302, 303, 307, 308}
 
 REQUEST_HEADERS = {
@@ -118,32 +119,60 @@ def _extract_html(html: str) -> tuple:
     return title, sections
 
 
+def _read_capped(response: requests.Response) -> requests.Response:
+    """Stream a response body, aborting if it exceeds MAX_RESPONSE_BYTES.
+
+    Guards against memory exhaustion from a very large (or unbounded) remote
+    document. A declared Content-Length is rejected up front; the streamed
+    body is also capped in case the header lies or is absent.
+    """
+    declared = response.headers.get("Content-Length")
+    if declared and declared.isdigit() and int(declared) > MAX_RESPONSE_BYTES:
+        response.close()
+        raise ValueError("Remote document exceeds the size limit.")
+
+    body = bytearray()
+    for chunk in response.iter_content(8192):
+        body.extend(chunk)
+        if len(body) > MAX_RESPONSE_BYTES:
+            response.close()
+            raise ValueError("Remote document exceeds the size limit.")
+
+    response._content = bytes(body)
+    response._content_consumed = True
+    return response
+
+
 def _safe_get(url: str) -> requests.Response:
-    """GET a URL while re-validating every redirect hop against the SSRF guard.
+    """GET a URL safely against SSRF, following redirects manually.
 
     ``requests`` follows redirects automatically, which would defeat the
     pre-flight SSRF check: a public URL can respond with a 302 to an internal
-    address (localhost, 169.254.169.254, private hosts). We disable automatic
-    redirects and validate each hop's destination before following it.
+    address (localhost, 169.254.169.254, private hosts). Each hop is therefore
+    validated AND its host is pinned to the validated IP (closing the DNS
+    rebinding window) before the request is made. The response body is size-capped.
     """
     current = url
     for _ in range(MAX_REDIRECTS + 1):
         validate_public_url(current)
-        response = requests.get(
-            current,
-            headers=REQUEST_HEADERS,
-            timeout=REQUEST_TIMEOUT_SECONDS,
-            allow_redirects=False,
-        )
+        with pin_validated_host(current):
+            response = requests.get(
+                current,
+                headers=REQUEST_HEADERS,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+                allow_redirects=False,
+                stream=True,
+            )
 
-        if response.status_code not in _REDIRECT_STATUSES:
-            return response
+            if response.status_code in _REDIRECT_STATUSES:
+                location = response.headers.get("Location")
+                response.close()
+                if not location:
+                    raise ValueError("Redirect response had no Location header.")
+                current = urljoin(current, location)
+                continue
 
-        location = response.headers.get("Location")
-        if not location:
-            return response
-
-        current = urljoin(current, location)
+            return _read_capped(response)
 
     raise ValueError("Too many redirects while fetching the URL.")
 
