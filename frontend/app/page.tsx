@@ -579,6 +579,39 @@ export default function Home() {
           border: 1px solid;
           white-space: nowrap;
         }
+        .claim-evidence {
+          font-size: 13px;
+          color: #8e8e93;
+          margin-top: 3px;
+          line-height: 1.5;
+        }
+        .claim-cite {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          margin-left: 4px;
+          color: #45515e;
+          text-decoration: none;
+          font-weight: 500;
+          white-space: nowrap;
+        }
+        .claim-cite:hover { color: #0a0a0a; }
+        .claim-cite:hover .cite-badge { background: #0a0a0a; color: #ffffff; }
+        .cite-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 16px;
+          height: 16px;
+          padding: 0 4px;
+          border-radius: 4px;
+          background: #eef0f3;
+          color: #45515e;
+          font-size: 11px;
+          font-weight: 700;
+          transition: background .15s, color .15s;
+        }
+        .claim-cite-plain { margin-left: 4px; }
 
         .stats-row {
           display: grid;
@@ -847,6 +880,15 @@ export default function Home() {
                             : (c.verdict === "baseless" || c.verdict === "partial")
                             ? { icon: "~", label: "Not in context", color: "#d97706", bg: "#fffbeb", border: "#fcd34d" }
                             : { icon: "✕", label: "Contradicted", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" };
+                          // Link each claim's evidence to the same numbered
+                          // source shown in the Sources panel below.
+                          const srcIdx = (result.sources ?? []).findIndex(
+                            (s: any) => s.title && s.title === c.source_title
+                          );
+                          const cite =
+                            srcIdx >= 0
+                              ? { num: srcIdx + 1, url: result.sources[srcIdx].url }
+                              : null;
                           return (
                             <div key={i} className="claim-row">
                               <span className="claim-chip" style={{ color: v.color, background: v.bg, borderColor: v.border }}>
@@ -855,8 +897,23 @@ export default function Home() {
                               <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: 14, color: "#222222", lineHeight: 1.5 }}>{c.claim}</div>
                                 {c.evidence && (
-                                  <div style={{ fontSize: 13, color: "#8e8e93", marginTop: 3, lineHeight: 1.5 }}>
-                                    “{c.evidence}”{c.source_title ? ` — ${c.source_title}` : ""}
+                                  <div className="claim-evidence">
+                                    “{c.evidence}”
+                                    {c.source_title &&
+                                      (cite ? (
+                                        <a
+                                          href={cite.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="claim-cite"
+                                          title={`Source ${cite.num}: ${c.source_title}`}
+                                        >
+                                          <span className="cite-badge">{cite.num}</span>
+                                          {c.source_title}
+                                        </a>
+                                      ) : (
+                                        <span className="claim-cite-plain">— {c.source_title}</span>
+                                      ))}
                                   </div>
                                 )}
                               </div>
