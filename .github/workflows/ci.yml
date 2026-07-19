@@ -18,7 +18,7 @@ jobs:
         run: |
           pip install pytest fastapi openai pandas python-dotenv \
             psycopg2-binary numpy requests beautifulsoup4 lxml \
-            slowapi pypdf pydantic
+            slowapi pypdf pydantic scikit-learn joblib
       - name: Run tests
         run: python -m pytest tests/ -q
 

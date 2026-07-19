@@ -311,3 +311,29 @@ def remove_source(url: str, x_api_key: Optional[str] = Header(None)) -> dict:
 def cache_statistics() -> dict:
     """Return cache hit/miss statistics for the answer and embedding caches."""
     return clean_json(cache_stats())
+
+
+@app.post("/predict-quality")
+def predict_quality_endpoint(request: Request, query: QueryRequest) -> dict:
+    """Analyze a question, then attach a learned answer-quality estimate.
+
+    The quality model predicts the probability a human would mark the answer
+    correct, based on the pipeline's own signals. Returns the analysis plus a
+    ``quality`` block, or ``quality: null`` if the model has not been trained.
+    """
+    from ml.predict import predict_quality
+
+    try:
+        result = run_agentic_workflow(query.question)
+    except Exception:
+        logger.exception("Quality prediction workflow failed.")
+        raise HTTPException(status_code=500, detail="Analysis failed. Please try again shortly.")
+
+    return clean_json(
+        {
+            "question": result["query"],
+            "answer": result["answer"],
+            "risk_analysis": result.get("risk_analysis", {}),
+            "quality": predict_quality(result),
+        }
+    )

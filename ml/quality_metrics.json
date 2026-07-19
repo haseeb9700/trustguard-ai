@@ -1,0 +1,38 @@
+{
+  "n_total": 150,
+  "n_train": 112,
+  "n_test": 38,
+  "positive_rate": 0.6267,
+  "model": "logreg",
+  "accuracy": 0.8947,
+  "baseline_accuracy": 0.6316,
+  "roc_auc": 0.8601,
+  "precision": 0.9167,
+  "recall": 0.9167,
+  "f1": 0.9167,
+  "cv_roc_auc_mean": 0.8592,
+  "cv_roc_auc_std": 0.0535,
+  "confusion_matrix": [
+    [
+      12,
+      2
+    ],
+    [
+      2,
+      22
+    ]
+  ],
+  "feature_weights": {
+    "hallucination_score": -0.1678,
+    "risk_score": 0.5363,
+    "retrieved_context_count": -0.2926,
+    "n_claims": -0.5087,
+    "n_entailed": 0.3001,
+    "n_baseless": -0.3855,
+    "n_contradicted": -1.103,
+    "frac_entailed": 1.1083,
+    "n_sources": 0.0906,
+    "answer_len_words": -0.3536,
+    "unverified_flag": -0.6704
+  }
+}
