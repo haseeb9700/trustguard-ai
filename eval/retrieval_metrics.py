@@ -1,0 +1,103 @@
+"""Information-retrieval metrics for the TrustGuard retrieval eval.
+
+Pure functions, no external dependencies, so they run in CI without a model
+or database. Given a ranked list of retrieved chunk ids and the set of
+relevant ids for a query, they compute the standard RAG-retrieval measures:
+hit-rate@k, recall@k, precision@k, MRR, and nDCG@k.
+"""
+
+from __future__ import annotations
+
+import math
+
+DEFAULT_KS = [1, 3, 5]
+
+
+def hit_at_k(ranked_ids: list, relevant: set, k: int) -> float:
+    """1.0 if any relevant id appears in the top k, else 0.0 (a.k.a. success@k)."""
+    return 1.0 if any(rid in relevant for rid in ranked_ids[:k]) else 0.0
+
+
+def recall_at_k(ranked_ids: list, relevant: set, k: int) -> float:
+    """Fraction of the relevant ids that appear in the top k."""
+    if not relevant:
+        return 0.0
+    found = sum(1 for rid in ranked_ids[:k] if rid in relevant)
+    return found / len(relevant)
+
+
+def precision_at_k(ranked_ids: list, relevant: set, k: int) -> float:
+    """Fraction of the top k that are relevant."""
+    if k <= 0:
+        return 0.0
+    found = sum(1 for rid in ranked_ids[:k] if rid in relevant)
+    return found / k
+
+
+def reciprocal_rank(ranked_ids: list, relevant: set) -> float:
+    """1 / rank of the first relevant id (0 if none retrieved)."""
+    for i, rid in enumerate(ranked_ids, start=1):
+        if rid in relevant:
+            return 1.0 / i
+    return 0.0
+
+
+def ndcg_at_k(ranked_ids: list, relevant: set, k: int) -> float:
+    """Binary-relevance normalized discounted cumulative gain at k."""
+    dcg = 0.0
+    for i, rid in enumerate(ranked_ids[:k], start=1):
+        if rid in relevant:
+            dcg += 1.0 / math.log2(i + 1)
+
+    ideal_hits = min(len(relevant), k)
+    idcg = sum(1.0 / math.log2(i + 1) for i in range(1, ideal_hits + 1))
+    return dcg / idcg if idcg else 0.0
+
+
+def compute_metrics(results: list, ks: list | None = None) -> dict:
+    """Aggregate per-query metrics into dataset-level averages.
+
+    Args:
+        results: list of (ranked_ids, relevant_set) per query.
+        ks: cutoff values for @k metrics (default [1, 3, 5]).
+
+    Returns:
+        A dict with mrr and, for each k, mean hit_rate / recall / precision / ndcg.
+    """
+    ks = ks or DEFAULT_KS
+    n = len(results)
+    if n == 0:
+        return {"queries": 0, "mrr": 0.0, "at_k": {}}
+
+    mrr = sum(reciprocal_rank(r, rel) for r, rel in results) / n
+
+    at_k = {}
+    for k in ks:
+        at_k[k] = {
+            "hit_rate": round(sum(hit_at_k(r, rel, k) for r, rel in results) / n, 4),
+            "recall": round(sum(recall_at_k(r, rel, k) for r, rel in results) / n, 4),
+            "precision": round(sum(precision_at_k(r, rel, k) for r, rel in results) / n, 4),
+            "ndcg": round(sum(ndcg_at_k(r, rel, k) for r, rel in results) / n, 4),
+        }
+
+    return {"queries": n, "mrr": round(mrr, 4), "at_k": at_k}
+
+
+def format_report(metrics: dict, ranker: str = "") -> str:
+    """Render retrieval metrics as a Markdown report."""
+    lines = []
+    lines.append("## TrustGuard Retrieval Eval\n")
+    header = f"**Queries:** {metrics['queries']}  |  **MRR:** {metrics['mrr']:.3f}"
+    if ranker:
+        header += f"  |  **Ranker:** {ranker}"
+    lines.append(header + "\n")
+
+    lines.append("| k | Hit-rate@k | Recall@k | Precision@k | nDCG@k |")
+    lines.append("|---|---|---|---|---|")
+    for k, m in metrics["at_k"].items():
+        lines.append(
+            f"| {k} | {m['hit_rate']:.3f} | {m['recall']:.3f} | "
+            f"{m['precision']:.3f} | {m['ndcg']:.3f} |"
+        )
+
+    return "\n".join(lines) + "\n"

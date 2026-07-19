@@ -60,6 +60,34 @@ in the production number and quote the lift over this baseline.
   matrix, Markdown report). Unit-tested in `tests/test_eval_metrics.py`.
 - `run_eval.py` — CLI runner with `llm` / `lexical` / `oracle` verifiers.
 
+## Retrieval eval
+
+RAG answers are only as good as what gets retrieved, so retrieval is
+benchmarked on its own against a labeled corpus and query-relevance set.
+
+```bash
+python -m eval.run_retrieval_eval                     # bge-small + cosine (real path)
+python -m eval.run_retrieval_eval --ranker lexical    # offline word-overlap baseline
+python -m eval.run_retrieval_eval --ranker oracle     # verify metric math (MRR/nDCG = 1.0)
+```
+
+Reports hit-rate@k, recall@k, precision@k, MRR, and nDCG@k over `k = 1,3,5`
+and writes `retrieval_results.json` + `retrieval_report.md`.
+
+Baseline (lexical word-overlap, 15 paraphrased queries):
+
+| k | Hit-rate@k | Recall@k | MRR |
+|---|---|---|---|
+| 1 | 0.60 | 0.57 | 0.74 |
+| 5 | 0.93 | 0.93 | — |
+
+Queries are paraphrased with synonyms so surface-term overlap alone can't solve
+them — the embedding retriever should beat this baseline, especially at k=1.
+
+Files: `retrieval_corpus.jsonl` (18 labeled chunks), `retrieval_queries.jsonl`
+(15 queries with relevant ids), `retrieval_metrics.py`, `run_retrieval_eval.py`.
+Metrics and rankers are unit-tested in `tests/test_retrieval_metrics.py`.
+
 ## Extending the dataset
 
 Append JSONL rows in the same shape:

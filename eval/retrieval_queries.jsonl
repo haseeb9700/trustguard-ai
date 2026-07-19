@@ -1,0 +1,15 @@
+{"id": "q1", "query": "Is face-scanning in open public venues treated as an elevated-risk category by Europe's AI legislation?", "relevant_ids": ["g1"]}
+{"id": "q2", "query": "Are governments forbidden from rating citizens under the European AI rules?", "relevant_ids": ["g2"]}
+{"id": "q3", "query": "Do firms headquartered abroad still fall within the reach of Europe's AI legislation?", "relevant_ids": ["g3"]}
+{"id": "q4", "query": "Which four pillars organize the American framework for managing artificial intelligence risk?", "relevant_ids": ["n1"]}
+{"id": "q5", "query": "Is following the NIST framework compulsory or optional for organizations?", "relevant_ids": ["n2"]}
+{"id": "q6", "query": "What academic qualification must a specialty-occupation work visa applicant hold?", "relevant_ids": ["i1"]}
+{"id": "q7", "query": "How many skilled-worker visas can be granted annually, including the advanced-degree allotment?", "relevant_ids": ["i2"]}
+{"id": "q8", "query": "When demand exceeds the quota, how does immigration pick which petitions advance?", "relevant_ids": ["i3"]}
+{"id": "q9", "query": "What is the formal immigration status of a person holding permanent residency?", "relevant_ids": ["i4"]}
+{"id": "q10", "query": "After how long can a permanent resident seek to become a citizen?", "relevant_ids": ["i5"]}
+{"id": "q11", "query": "What is the floor for a bank's core equity capital ratio under the latest accord?", "relevant_ids": ["f1"]}
+{"id": "q12", "query": "How much easily-sellable assets must lenders keep for a month-long funding squeeze?", "relevant_ids": ["f3"]}
+{"id": "q13", "query": "Whose confidential medical data is safeguarded by the federal patient-privacy regulation?", "relevant_ids": ["h1"]}
+{"id": "q14", "query": "May a person request a duplicate of their own health file under privacy law?", "relevant_ids": ["h2"]}
+{"id": "q15", "query": "What extra equity cushion beyond the minimum does the banking accord demand?", "relevant_ids": ["f2", "f1"]}

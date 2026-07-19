@@ -131,7 +131,21 @@ python -m eval.run_eval --verifier oracle  # sanity-check the scoring math
 
 On the 30-case benchmark, the naive lexical baseline scores 0.55 macro-F1 and
 **0.00 F1 on contradictions** — the failure mode the hierarchical claim
-verifier is designed to fix. See [`eval/README.md`](eval/README.md) for details.
+verifier is designed to fix.
+
+Retrieval quality is measured separately against a labeled corpus + query
+relevance set, reporting hit-rate@k, recall@k, precision@k, MRR, and nDCG@k —
+because a RAG system's answers are only as good as what it retrieves.
+
+```bash
+python -m eval.run_retrieval_eval                     # bge-small + cosine (real path)
+python -m eval.run_retrieval_eval --ranker lexical    # offline word-overlap baseline
+python -m eval.run_retrieval_eval --ranker oracle     # sanity-check the metric math
+```
+
+The lexical baseline scores 0.60 hit-rate@1 / 0.74 MRR on the paraphrased query
+set, leaving clear headroom the embedding retriever should recover. See
+[`eval/README.md`](eval/README.md) for both harnesses.
 
 ## Project Structure
 
