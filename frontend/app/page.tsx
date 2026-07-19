@@ -88,6 +88,75 @@ export default function Home() {
     setAdminKey("");
   };
 
+  // Follow-up chat — appears only after a question is analyzed. Every follow-up
+  // runs through /analyze, so answers stay grounded, verified, and risk-scored
+  // rather than becoming free-form (and potentially hallucinated) chat.
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const chatBodyRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (result) {
+      setChatMessages([
+        { role: "user", text: result.question },
+        {
+          role: "assistant",
+          text: result.answer,
+          risk: result.risk_analysis?.risk_level,
+          sources: result.sources ?? [],
+        },
+      ]);
+    } else {
+      setChatMessages([]);
+      setChatOpen(false);
+    }
+  }, [result]);
+
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [chatMessages, chatOpen, chatLoading]);
+
+  const sendFollowUp = async () => {
+    const q = chatInput.trim();
+    if (!q || chatLoading) return;
+    setChatMessages((m) => [...m, { role: "user", text: q }]);
+    setChatInput("");
+    setChatLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setChatMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          text: data.answer,
+          risk: data.risk_analysis?.risk_level,
+          sources: data.sources ?? [],
+        },
+      ]);
+    } catch {
+      setChatMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          text: "Sorry — I couldn't analyze that follow-up. Please try again.",
+          error: true,
+        },
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   // Elliptical orbit: all cards ride one ellipse and rotate counter-clockwise.
   // A card grows and rises to the top layer as it swings toward the viewer
   // (front of the ellipse), then shrinks and fades as it recedes to the back.
@@ -1186,6 +1255,114 @@ export default function Home() {
           </div>
         </div>
       </footer>
+        {result && (
+          <>
+            <style jsx>{`
+              .cbot-fab {
+                position: fixed; right: 24px; bottom: 24px; z-index: 60;
+                background: #0a0a0a; color: #fff; border: none; border-radius: 9999px;
+                padding: 14px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+                box-shadow: rgba(0,0,0,.22) 0 10px 30px -6px; font-family: inherit;
+                display: flex; align-items: center; gap: 8px; transition: transform .15s;
+                animation: cbotPop .35s cubic-bezier(.22,.9,.3,1) both;
+              }
+              .cbot-fab:hover { transform: translateY(-1px); }
+              @keyframes cbotPop {
+                0% { opacity: 0; transform: translateY(12px) scale(.92); }
+                100% { opacity: 1; transform: translateY(0) scale(1); }
+              }
+              .cbot-window {
+                position: fixed; right: 24px; bottom: 84px; z-index: 60;
+                width: 360px; max-width: calc(100vw - 32px);
+                height: 460px; max-height: calc(100vh - 140px);
+                background: #fff; border: 1px solid #eaecf0; border-radius: 16px;
+                box-shadow: rgba(0,0,0,.18) 0 20px 50px -12px;
+                display: flex; flex-direction: column; overflow: hidden;
+                animation: cbotPop .3s cubic-bezier(.22,.9,.3,1) both;
+              }
+              .cbot-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #eaecf0; }
+              .cbot-title { font-size: 14px; font-weight: 600; color: #0a0a0a; }
+              .cbot-sub { font-size: 11px; color: #8e8e93; margin-top: 1px; }
+              .cbot-x { background: none; border: none; color: #a8aab2; cursor: pointer; font-size: 15px; }
+              .cbot-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
+              .cbot-msg { display: flex; }
+              .cbot-msg.user { justify-content: flex-end; }
+              .cbot-msg.assistant { justify-content: flex-start; }
+              .cbot-bubble { max-width: 84%; padding: 9px 12px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+              .cbot-bubble.user { background: #0a0a0a; color: #fff; border-bottom-right-radius: 4px; }
+              .cbot-bubble.assistant { background: #fff; color: #222222; border: 1px solid #eaecf0; border-bottom-left-radius: 4px; }
+              .cbot-bubble.err { color: #dc2626; }
+              .cbot-risk { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 9999px; border: 1px solid; font-size: 11px; font-weight: 600; }
+              .cbot-src { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+              .cbot-src a { font-size: 12px; color: #45515e; text-decoration: none; }
+              .cbot-src a:hover { color: #0a0a0a; text-decoration: underline; }
+              .cbot-typing { color: #8e8e93; font-style: italic; }
+              .cbot-input { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #eaecf0; }
+              .cbot-input input { flex: 1; border: 1px solid #eaecf0; border-radius: 9999px; padding: 9px 14px; font-size: 13px; font-family: inherit; outline: none; }
+              .cbot-input input:focus { border-color: #0a0a0a; }
+              .cbot-send { background: #0a0a0a; color: #fff; border: none; border-radius: 9999px; width: 36px; height: 36px; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+              .cbot-send:disabled { opacity: .4; cursor: not-allowed; }
+              @media (max-width: 640px) { .cbot-window { right: 16px; left: 16px; width: auto; } }
+            `}</style>
+
+            {chatOpen && (
+              <div className="cbot-window">
+                <div className="cbot-head">
+                  <div>
+                    <div className="cbot-title">Follow-up questions</div>
+                    <div className="cbot-sub">Grounded &amp; risk-scored from your sources</div>
+                  </div>
+                  <button className="cbot-x" onClick={() => setChatOpen(false)} aria-label="Close follow-up chat">✕</button>
+                </div>
+                <div className="cbot-body" ref={chatBodyRef}>
+                  {chatMessages.map((m, i) => {
+                    const r = m.risk ? (riskStyles[m.risk] ?? riskStyles["Low"]) : null;
+                    return (
+                      <div key={i} className={`cbot-msg ${m.role}`}>
+                        <div className={`cbot-bubble ${m.role}${m.error ? " err" : ""}`}>
+                          {m.text}
+                          {m.role === "assistant" && r && (
+                            <span className="cbot-risk" style={{ color: r.color, background: r.bg, borderColor: r.border }}>
+                              {m.risk} risk
+                            </span>
+                          )}
+                          {m.role === "assistant" && m.sources?.length > 0 && (
+                            <div className="cbot-src">
+                              {m.sources.slice(0, 3).map((s: any, j: number) => (
+                                <a key={j} href={s.url} target="_blank" rel="noopener noreferrer">
+                                  [{j + 1}] {s.title || "Source"}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {chatLoading && (
+                    <div className="cbot-msg assistant">
+                      <div className="cbot-bubble assistant cbot-typing">Analyzing…</div>
+                    </div>
+                  )}
+                </div>
+                <div className="cbot-input">
+                  <input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") sendFollowUp(); }}
+                    placeholder="Ask a follow-up…"
+                    disabled={chatLoading}
+                  />
+                  <button className="cbot-send" onClick={sendFollowUp} disabled={chatLoading || !chatInput.trim()} aria-label="Send follow-up">→</button>
+                </div>
+              </div>
+            )}
+
+            <button className="cbot-fab" onClick={() => setChatOpen((o) => !o)} aria-label="Ask a follow-up question">
+              {chatOpen ? "✕ Close" : "💬 Ask a follow-up"}
+            </button>
+          </>
+        )}
     </main>
   );
 }
