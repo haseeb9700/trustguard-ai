@@ -28,6 +28,7 @@ const PIPELINE_STAGES = [
   "Generating answer",
   "Verifying claims",
   "Scoring risk",
+  "Getting Guardian ready for follow-ups",
 ];
 
 const HOW_IT_WORKS = [
@@ -1307,8 +1308,8 @@ export default function Home() {
               <div className="cbot-window">
                 <div className="cbot-head">
                   <div>
-                    <div className="cbot-title">Follow-up questions</div>
-                    <div className="cbot-sub">Grounded &amp; risk-scored from your sources</div>
+                    <div className="cbot-title">Guardian</div>
+                    <div className="cbot-sub">Grounded follow-up assistant · risk-scored from your sources</div>
                   </div>
                   <button className="cbot-x" onClick={() => setChatOpen(false)} aria-label="Close follow-up chat">✕</button>
                 </div>
@@ -1348,7 +1349,7 @@ export default function Home() {
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") sendFollowUp(); }}
-                    placeholder="Ask a follow-up…"
+                    placeholder="Ask Guardian a follow-up…"
                     disabled={chatLoading}
                   />
                   <button className="cbot-send" onClick={sendFollowUp} disabled={chatLoading || !chatInput.trim()} aria-label="Send follow-up">→</button>
@@ -1356,8 +1357,8 @@ export default function Home() {
               </div>
             )}
 
-            <button className="cbot-fab" onClick={() => setChatOpen((o) => !o)} aria-label="Ask a follow-up question">
-              {chatOpen ? "✕ Close" : "💬 Ask a follow-up"}
+            <button className="cbot-fab" onClick={() => setChatOpen((o) => !o)} aria-label="Ask Guardian a follow-up question">
+              {chatOpen ? "✕ Close" : "💬 Ask Guardian"}
             </button>
           </>
         )}
