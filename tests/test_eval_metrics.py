@@ -6,10 +6,10 @@ to smoke-test the runner end-to-end.
 """
 
 from eval.metrics import aggregate_verdict, compute_metrics, confusion_matrix
-from eval.run_eval import lexical_verifier, load_dataset, run, DATASET_PATH
-
+from eval.run_eval import DATASET_PATH, lexical_verifier, load_dataset, run
 
 # --- aggregate_verdict: AND-join precedence --------------------------------
+
 
 def test_aggregate_empty_is_baseless():
     assert aggregate_verdict([]) == "baseless"
@@ -26,7 +26,11 @@ def test_aggregate_one_baseless_floors_to_baseless():
 
 
 def test_aggregate_one_contradicted_dominates():
-    claims = [{"verdict": "entailed"}, {"verdict": "baseless"}, {"verdict": "contradicted"}]
+    claims = [
+        {"verdict": "entailed"},
+        {"verdict": "baseless"},
+        {"verdict": "contradicted"},
+    ]
     assert aggregate_verdict(claims) == "contradicted"
 
 
@@ -36,8 +40,13 @@ def test_aggregate_unknown_verdict_treated_as_baseless():
 
 # --- confusion matrix + metrics math ---------------------------------------
 
+
 def test_confusion_matrix_counts():
-    pairs = [("entailed", "entailed"), ("entailed", "baseless"), ("baseless", "baseless")]
+    pairs = [
+        ("entailed", "entailed"),
+        ("entailed", "baseless"),
+        ("baseless", "baseless"),
+    ]
     matrix = confusion_matrix(pairs)
     assert matrix["entailed"]["entailed"] == 1
     assert matrix["entailed"]["baseless"] == 1
@@ -83,6 +92,7 @@ def test_empty_pairs_do_not_crash():
 
 # --- runner smoke tests (offline verifiers) --------------------------------
 
+
 def test_oracle_verifier_scores_perfectly():
     result = run(DATASET_PATH, "oracle", limit=None)
     assert result["metrics"]["accuracy"] == 1.0
@@ -100,7 +110,12 @@ def test_lexical_baseline_runs_and_never_predicts_contradicted():
 
 def test_lexical_verifier_entails_high_overlap():
     answer = "Basel III sets a minimum CET1 ratio of 4.5 percent."
-    contexts = [{"source_title": "x", "text": "Basel III sets the minimum CET1 ratio at 4.5 percent of risk-weighted assets."}]
+    contexts = [
+        {
+            "source_title": "x",
+            "text": "Basel III sets the minimum CET1 ratio at 4.5 percent of risk-weighted assets.",
+        }
+    ]
     assert aggregate_verdict(lexical_verifier(answer, contexts)) == "entailed"
 
 

@@ -17,7 +17,9 @@ logger = logging.getLogger("trustguard.feedback")
 FEEDBACK_FILE = "reports/feedback_log.csv"
 
 
-def _save_to_db(question: str, answer: str, feedback: str, corrected_answer: str) -> None:
+def _save_to_db(
+    question: str, answer: str, feedback: str, corrected_answer: str
+) -> None:
     """Insert a feedback record into the feedback_log table."""
     conn = get_connection()
     try:
@@ -35,7 +37,9 @@ def _save_to_db(question: str, answer: str, feedback: str, corrected_answer: str
         conn.close()
 
 
-def _save_to_csv(question: str, answer: str, feedback: str, corrected_answer: str) -> None:
+def _save_to_csv(
+    question: str, answer: str, feedback: str, corrected_answer: str
+) -> None:
     """Append a feedback record to the local CSV fallback."""
     os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
 

@@ -1,15 +1,16 @@
-from modules.hallucination_checker import evaluate_hallucination
-from modules.risk_score import calculate_risk
-from modules.audit_logger import log_audit
-from modules.reranker import rerank_contexts
-from modules.cache import get_cached_embedding, set_cached_embedding
-
-import os
 import json
+import os
+
 import numpy as np
 import psycopg2
 from dotenv import load_dotenv
 from openai import OpenAI
+
+from modules.audit_logger import log_audit
+from modules.cache import get_cached_embedding, set_cached_embedding
+from modules.hallucination_checker import evaluate_hallucination
+from modules.reranker import rerank_contexts
+from modules.risk_score import calculate_risk
 
 load_dotenv()
 
@@ -83,17 +84,16 @@ def retrieve_context(query, top_k=10):
 
         score = cosine_similarity(query_embedding, embedding)
 
-        scored_contexts.append({
-            "text": chunk_text,
-            "source_title": source_title or "Unknown Source",
-            "source_url": source_url or "",
-            "similarity_score": score
-        })
+        scored_contexts.append(
+            {
+                "text": chunk_text,
+                "source_title": source_title or "Unknown Source",
+                "source_url": source_url or "",
+                "similarity_score": score,
+            }
+        )
 
-    scored_contexts.sort(
-        key=lambda item: item["similarity_score"],
-        reverse=True
-    )
+    scored_contexts.sort(key=lambda item: item["similarity_score"], reverse=True)
 
     return scored_contexts[:top_k]
 
@@ -111,28 +111,23 @@ def generate_answer(query):
             "sources": [],
             "hallucination_analysis": {
                 "hallucination_score": 0,
-                "reason": "No retrieved context was available."
+                "reason": "No retrieved context was available.",
             },
             "risk_analysis": {
                 "risk_level": "Low",
                 "risk_status": "No Context",
-                "risk_reason": "The knowledge base is empty."
-            }
+                "risk_reason": "The knowledge base is empty.",
+            },
         }
 
         log_audit(result)
         return result
 
-    contexts = rerank_contexts(
-        query,
-        contexts,
-        top_k=6
-    )
+    contexts = rerank_contexts(query, contexts, top_k=6)
 
-    context_text = "\n\n".join([
-        f"Source: {c['source_title']}\nText: {c['text']}"
-        for c in contexts
-    ])
+    context_text = "\n\n".join(
+        [f"Source: {c['source_title']}\nText: {c['text']}" for c in contexts]
+    )
 
     prompt = f"""
 You are an AI assistant answering only from the provided official source context.
@@ -159,35 +154,25 @@ OFFICIAL SOURCE CONTEXT:
                 "content": (
                     "You are a careful enterprise RAG assistant "
                     "for policy and compliance documents."
-                )
+                ),
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
+            {"role": "user", "content": prompt},
         ],
-        temperature=0
+        temperature=0,
     )
 
     answer = response.choices[0].message.content
 
-    hallucination_result = evaluate_hallucination(
-        query,
-        answer,
-        contexts
-    )
+    hallucination_result = evaluate_hallucination(query, answer, contexts)
 
-    risk_result = calculate_risk(
-        hallucination_result,
-        answer
-    )
+    risk_result = calculate_risk(hallucination_result, answer)
 
     result = {
         "query": query,
         "answer": answer,
         "sources": contexts,
         "hallucination_analysis": hallucination_result,
-        "risk_analysis": risk_result
+        "risk_analysis": risk_result,
     }
 
     log_audit(result)

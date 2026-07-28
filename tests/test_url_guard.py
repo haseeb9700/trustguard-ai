@@ -37,12 +37,12 @@ class TestPrivateAddresses:
     @pytest.mark.parametrize(
         "ip",
         [
-            "127.0.0.1",        # loopback
-            "10.0.0.5",         # private
-            "192.168.1.1",      # private
-            "172.16.0.1",       # private
+            "127.0.0.1",  # loopback
+            "10.0.0.5",  # private
+            "192.168.1.1",  # private
+            "172.16.0.1",  # private
             "169.254.169.254",  # link-local (cloud metadata)
-            "0.0.0.0",          # unspecified
+            "0.0.0.0",  # unspecified
         ],
     )
     def test_internal_ips_are_rejected(self, monkeypatch, ip):

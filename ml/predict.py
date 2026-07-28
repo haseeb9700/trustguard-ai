@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Optional
 
 from ml.features import feature_vector
 
@@ -28,7 +27,9 @@ def _load():
         return _bundle
     _load_attempted = True
     if not os.path.exists(MODEL_PATH):
-        logger.info("Quality model not found at %s — run ml.train_quality_model.", MODEL_PATH)
+        logger.info(
+            "Quality model not found at %s — run ml.train_quality_model.", MODEL_PATH
+        )
         return None
     try:
         import joblib
@@ -40,7 +41,7 @@ def _load():
     return _bundle
 
 
-def predict_quality(result: dict) -> Optional[dict]:
+def predict_quality(result: dict) -> dict | None:
     """Estimate answer quality for an analysis result.
 
     Returns:

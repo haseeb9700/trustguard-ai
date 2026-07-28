@@ -76,7 +76,9 @@ def compute_metrics(results: list, ks: list | None = None) -> dict:
         at_k[k] = {
             "hit_rate": round(sum(hit_at_k(r, rel, k) for r, rel in results) / n, 4),
             "recall": round(sum(recall_at_k(r, rel, k) for r, rel in results) / n, 4),
-            "precision": round(sum(precision_at_k(r, rel, k) for r, rel in results) / n, 4),
+            "precision": round(
+                sum(precision_at_k(r, rel, k) for r, rel in results) / n, 4
+            ),
             "ndcg": round(sum(ndcg_at_k(r, rel, k) for r, rel in results) / n, 4),
         }
 

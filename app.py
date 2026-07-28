@@ -9,7 +9,7 @@ import json
 import logging
 import math
 import os
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -95,7 +95,7 @@ class FeedbackRequest(BaseModel):
     question: str = Field(..., max_length=2000)
     answer: str = Field(..., max_length=10000)
     feedback: str = Field(..., max_length=100)
-    corrected_answer: Optional[str] = Field(None, max_length=10000)
+    corrected_answer: str | None = Field(None, max_length=10000)
 
 
 def clean_json(value: Any) -> Any:
@@ -187,7 +187,7 @@ def analyze_query(request: Request, query: QueryRequest) -> dict:
         raise HTTPException(
             status_code=500,
             detail="Analysis failed. Please try again shortly.",
-        )
+        ) from None
 
     response = {
         "question": result["query"],
@@ -212,7 +212,7 @@ def analyze_query(request: Request, query: QueryRequest) -> dict:
 def ingest_source(
     request: Request,
     ingest: UrlIngestRequest,
-    x_api_key: Optional[str] = Header(None),
+    x_api_key: str | None = Header(None),
 ) -> dict:
     """Scrape a URL (HTML or PDF), chunk and embed it as a trusted source.
 
@@ -227,7 +227,7 @@ def ingest_source(
     try:
         validate_public_url(ingest.url)
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     try:
         result = ingest_url(ingest.url)
@@ -236,7 +236,7 @@ def ingest_source(
         raise HTTPException(
             status_code=502,
             detail="Could not ingest this URL. Verify it is reachable and try again.",
-        )
+        ) from None
 
     # The knowledge base changed — cached answers may now be stale.
     invalidate_answers()
@@ -257,7 +257,9 @@ def submit_feedback(request: FeedbackRequest) -> dict:
         )
     except Exception:
         logger.exception("Failed to save feedback")
-        raise HTTPException(status_code=500, detail="Could not save feedback.")
+        raise HTTPException(
+            status_code=500, detail="Could not save feedback."
+        ) from None
 
     return clean_json(result)
 
@@ -285,7 +287,7 @@ def sources() -> dict:
 
 
 @app.delete("/sources")
-def remove_source(url: str, x_api_key: Optional[str] = Header(None)) -> dict:
+def remove_source(url: str, x_api_key: str | None = Header(None)) -> dict:
     """Delete an ingested source (all its chunks) by URL.
 
     Requires a matching X-API-Key header when ADMIN_API_KEY is set —
@@ -299,7 +301,9 @@ def remove_source(url: str, x_api_key: Optional[str] = Header(None)) -> dict:
         deleted = delete_source(url)
     except Exception:
         logger.exception("Failed to delete source: %s", url)
-        raise HTTPException(status_code=500, detail="Could not delete this source.")
+        raise HTTPException(
+            status_code=500, detail="Could not delete this source."
+        ) from None
 
     # The knowledge base changed — cached answers may now be stale.
     invalidate_answers()
@@ -327,7 +331,9 @@ def predict_quality_endpoint(request: Request, query: QueryRequest) -> dict:
         result = run_agentic_workflow(query.question)
     except Exception:
         logger.exception("Quality prediction workflow failed.")
-        raise HTTPException(status_code=500, detail="Analysis failed. Please try again shortly.")
+        raise HTTPException(
+            status_code=500, detail="Analysis failed. Please try again shortly."
+        ) from None
 
     return clean_json(
         {

@@ -1,0 +1,43 @@
+[tool.ruff]
+# Ruff bundles the roles of flake8 (PEP 8 lint), isort (import order) and
+# black (formatting) in one fast tool, so CI needs a single dependency.
+line-length = 88
+target-version = "py311"
+
+exclude = [
+    ".git",
+    ".next",
+    ".pytest_cache",
+    "__pycache__",
+    "frontend",
+    "node_modules",
+    "venv",
+    ".venv",
+]
+
+[tool.ruff.lint]
+# E/W  pycodestyle  — the PEP 8 rules themselves
+# F    pyflakes     — unused imports, undefined names, real bugs
+# I    isort        — import ordering
+# N    pep8-naming  — snake_case / PascalCase / UPPER_CASE conventions
+# UP   pyupgrade    — modernise syntax for the target Python version
+# B    bugbear      — likely-bug patterns (mutable defaults, etc.)
+select = ["E", "W", "F", "I", "N", "UP", "B"]
+
+# `ruff format` already wraps code to `line-length`; the only lines it leaves
+# long are string literals it cannot split — here, LLM prompt templates whose
+# wording must stay intact. Keeping E501 on would mean scattering `noqa`
+# comments through those prompts, so the formatter owns line length instead.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# `X` for a feature matrix is the universal convention in scikit-learn code;
+# renaming it to `x` would make the ML modules harder to read, not easier.
+"ml/*.py" = ["N806"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agents", "eval", "ml", "modules", "scripts"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

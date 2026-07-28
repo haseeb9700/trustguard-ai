@@ -38,10 +38,48 @@ RESULTS_JSON = os.path.join(os.path.dirname(__file__), "results.json")
 REPORT_MD = os.path.join(os.path.dirname(__file__), "report.md")
 
 _STOPWORDS = {
-    "the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are",
-    "was", "were", "be", "been", "by", "as", "at", "it", "its", "that", "this",
-    "with", "from", "than", "into", "under", "over", "their", "they", "them",
-    "which", "who", "whom", "whose", "not", "no", "any", "all", "each", "per",
+    "the",
+    "a",
+    "an",
+    "of",
+    "to",
+    "in",
+    "on",
+    "for",
+    "and",
+    "or",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "by",
+    "as",
+    "at",
+    "it",
+    "its",
+    "that",
+    "this",
+    "with",
+    "from",
+    "than",
+    "into",
+    "under",
+    "over",
+    "their",
+    "they",
+    "them",
+    "which",
+    "who",
+    "whom",
+    "whose",
+    "not",
+    "no",
+    "any",
+    "all",
+    "each",
+    "per",
 }
 
 
@@ -71,7 +109,7 @@ def lexical_verifier(answer: str, contexts: list) -> list:
 
 def load_dataset(path: str, limit: int | None = None) -> list:
     cases = []
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if line:
@@ -145,7 +183,9 @@ def main() -> int:
         help="Which verifier to score (default: llm).",
     )
     parser.add_argument("--dataset", default=DATASET_PATH, help="Path to dataset.jsonl")
-    parser.add_argument("--limit", type=int, default=None, help="Only run first N cases")
+    parser.add_argument(
+        "--limit", type=int, default=None, help="Only run first N cases"
+    )
     parser.add_argument(
         "--no-write", action="store_true", help="Do not write results.json / report.md"
     )

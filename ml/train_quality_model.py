@@ -21,6 +21,7 @@ import argparse
 import json
 import os
 
+import joblib
 import numpy as np
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import GradientBoostingClassifier
@@ -37,8 +38,6 @@ from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-import joblib
-
 from ml.features import FEATURE_NAMES, feature_vector, label_from_feedback
 
 HERE = os.path.dirname(__file__)
@@ -50,7 +49,7 @@ REPORT_PATH = os.path.join(HERE, "quality_report.md")
 
 def load_xy(path: str):
     X, y = [], []
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:
@@ -78,9 +77,15 @@ def _coefficients(model) -> dict:
     """Return per-feature weights if the model exposes them (logreg)."""
     clf = model.named_steps["clf"] if isinstance(model, Pipeline) else model
     if hasattr(clf, "coef_"):
-        return {name: round(float(w), 4) for name, w in zip(FEATURE_NAMES, clf.coef_[0])}
+        return {
+            name: round(float(w), 4)
+            for name, w in zip(FEATURE_NAMES, clf.coef_[0], strict=True)
+        }
     if hasattr(clf, "feature_importances_"):
-        return {name: round(float(w), 4) for name, w in zip(FEATURE_NAMES, clf.feature_importances_)}
+        return {
+            name: round(float(w), 4)
+            for name, w in zip(FEATURE_NAMES, clf.feature_importances_, strict=True)
+        }
     return {}
 
 
@@ -146,7 +151,9 @@ def format_report(m: dict) -> str:
     lines.append(f"| Precision | {m['precision']:.3f} |")
     lines.append(f"| Recall | {m['recall']:.3f} |")
     lines.append(f"| F1 | {m['f1']:.3f} |")
-    lines.append(f"| 5-fold CV ROC-AUC | {m['cv_roc_auc_mean']:.3f} ± {m['cv_roc_auc_std']:.3f} |")
+    lines.append(
+        f"| 5-fold CV ROC-AUC | {m['cv_roc_auc_mean']:.3f} ± {m['cv_roc_auc_std']:.3f} |"
+    )
 
     if m["feature_weights"]:
         lines.append("\n### Feature influence\n")

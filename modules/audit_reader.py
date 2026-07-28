@@ -43,6 +43,7 @@ def _load_audit_df() -> pd.DataFrame:
 
     return pd.DataFrame()
 
+
 EMPTY_RESPONSE = {
     "status": "empty",
     "count": 0,
@@ -97,9 +98,7 @@ def get_stats() -> dict:
             "High": int(counts.get("High", 0)),
         }
 
-        grounded_pct = (
-            round(100 * risk_counts["Low"] / total, 1) if total else None
-        )
+        grounded_pct = round(100 * risk_counts["Low"] / total, 1) if total else None
 
         return {
             "total_queries": total,

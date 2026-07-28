@@ -56,11 +56,7 @@ def confusion_matrix(pairs: list, labels: list | None = None) -> dict:
 def _prf(tp: int, fp: int, fn: int) -> tuple:
     precision = tp / (tp + fp) if (tp + fp) else 0.0
     recall = tp / (tp + fn) if (tp + fn) else 0.0
-    f1 = (
-        2 * precision * recall / (precision + recall)
-        if (precision + recall)
-        else 0.0
-    )
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
     return precision, recall, f1
 
 
@@ -96,10 +92,10 @@ def compute_metrics(pairs: list, labels: list | None = None) -> dict:
         correct += tp
 
     macro_f1 = (
-        sum(per_class[l]["f1"] for l in labels) / len(labels) if labels else 0.0
+        sum(per_class[lab]["f1"] for lab in labels) / len(labels) if labels else 0.0
     )
     weighted_f1 = (
-        sum(per_class[l]["f1"] * per_class[l]["support"] for l in labels) / total
+        sum(per_class[lab]["f1"] * per_class[lab]["support"] for lab in labels) / total
         if total
         else 0.0
     )

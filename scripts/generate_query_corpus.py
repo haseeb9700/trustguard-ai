@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -49,14 +50,11 @@ TEXT:
         messages=[
             {
                 "role": "system",
-                "content": "You generate high-quality query rewriting training data."
+                "content": "You generate high-quality query rewriting training data.",
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
+            {"role": "user", "content": prompt},
         ],
-        temperature=0.7
+        temperature=0.7,
     )
 
     content = response.choices[0].message.content
@@ -84,17 +82,19 @@ def main():
         examples = generate_examples(
             row["chunk_text"],
             row.get("source_title", "No Title"),
-            row.get("source_url", "")
+            row.get("source_url", ""),
         )
 
         for ex in examples:
-            rows.append({
-                "raw_user_query": ex.get("raw_user_query", ""),
-                "rewritten_query": ex.get("rewritten_query", ""),
-                "domain": "policy_compliance",
-                "source_title": row.get("source_title", "No Title"),
-                "source_url": row.get("source_url", "")
-            })
+            rows.append(
+                {
+                    "raw_user_query": ex.get("raw_user_query", ""),
+                    "rewritten_query": ex.get("rewritten_query", ""),
+                    "domain": "policy_compliance",
+                    "source_title": row.get("source_title", "No Title"),
+                    "source_url": row.get("source_url", ""),
+                }
+            )
 
     output_df = pd.DataFrame(rows)
     output_df.to_csv(OUTPUT_FILE, index=False)

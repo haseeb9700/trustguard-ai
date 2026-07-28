@@ -32,7 +32,7 @@ def rerank_contexts(query: str, contexts: list, top_k: int = 10) -> list:
 
     scored_contexts = [
         {**context, "rerank_score": float(score)}
-        for context, score in zip(contexts, scores)
+        for context, score in zip(contexts, scores, strict=True)
     ]
 
     scored_contexts.sort(key=lambda item: item["rerank_score"], reverse=True)

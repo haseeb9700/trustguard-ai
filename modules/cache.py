@@ -22,7 +22,7 @@ import os
 import threading
 import time
 from collections import OrderedDict
-from typing import Any, Optional
+from typing import Any
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -45,15 +45,15 @@ ANSWER_CACHE_TTL = _env_int("ANSWER_CACHE_TTL", 3600)
 class LRUCache:
     """A thread-safe LRU cache with optional per-entry TTL."""
 
-    def __init__(self, maxsize: int = 256, ttl: Optional[int] = None):
+    def __init__(self, maxsize: int = 256, ttl: int | None = None):
         self.maxsize = max(1, maxsize)
         self.ttl = ttl
-        self._data: "OrderedDict[str, tuple]" = OrderedDict()
+        self._data: OrderedDict[str, tuple] = OrderedDict()
         self._lock = threading.Lock()
         self.hits = 0
         self.misses = 0
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         with self._lock:
             item = self._data.get(key)
             if item is None:
@@ -104,7 +104,7 @@ def _norm(text: str) -> str:
     return " ".join(str(text).strip().lower().split())
 
 
-def get_cached_embedding(text: str) -> Optional[list]:
+def get_cached_embedding(text: str) -> list | None:
     if not CACHE_ENABLED:
         return None
     return embedding_cache.get(_norm(text))
@@ -116,7 +116,7 @@ def set_cached_embedding(text: str, vector: list) -> None:
     embedding_cache.set(_norm(text), vector)
 
 
-def get_cached_answer(query: str) -> Optional[dict]:
+def get_cached_answer(query: str) -> dict | None:
     if not CACHE_ENABLED:
         return None
     return answer_cache.get(_norm(query))

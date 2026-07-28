@@ -83,7 +83,9 @@ ANSWER:
 Return STRICT JSON only — a list of claim strings:
 ["claim 1", "claim 2"]
 """
-    parsed = _parse_json(_chat("You decompose text into atomic factual claims.", prompt))
+    parsed = _parse_json(
+        _chat("You decompose text into atomic factual claims.", prompt)
+    )
 
     if not isinstance(parsed, list):
         return []
@@ -146,8 +148,7 @@ Return STRICT JSON only — one entry per claim, in claim order:
     )
 
     results = [
-        {"verdicts": ["baseless"], "evidence": "", "source_title": ""}
-        for _ in claims
+        {"verdicts": ["baseless"], "evidence": "", "source_title": ""} for _ in claims
     ]
 
     if not isinstance(parsed, list):
@@ -173,7 +174,9 @@ Return STRICT JSON only — one entry per claim, in claim order:
     return results
 
 
-def _global_verify(claims: list, indices: list, local_labels: dict, contexts: list) -> dict:
+def _global_verify(
+    claims: list, indices: list, local_labels: dict, contexts: list
+) -> dict:
     """Re-verify unresolved claims against the FULL context.
 
     Local screening can miss evidence distributed across chunk boundaries
@@ -186,8 +189,7 @@ def _global_verify(claims: list, indices: list, local_labels: dict, contexts: li
         f"(Source: {c['source_title']})\n{c['text']}" for c in contexts
     )
     claims_text = "\n".join(
-        f"{i}: {claims[i]}  [local screening said: {local_labels[i]}]"
-        for i in indices
+        f"{i}: {claims[i]}  [local screening said: {local_labels[i]}]" for i in indices
     )
 
     prompt = f"""

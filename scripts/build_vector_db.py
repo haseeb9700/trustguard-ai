@@ -1,5 +1,5 @@
-import pandas as pd
 import chromadb
+import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 CHUNKS_FILE = "data/rag_chunks.csv"
@@ -20,9 +20,7 @@ def main():
 
     client = chromadb.PersistentClient(path=DB_PATH)
 
-    collection = client.get_or_create_collection(
-        name=COLLECTION_NAME
-    )
+    collection = client.get_or_create_collection(name=COLLECTION_NAME)
 
     documents = df["chunk_text"].tolist()
     ids = df["chunk_id"].astype(str).tolist()
@@ -30,23 +28,18 @@ def main():
     metadatas = []
 
     for _, row in df.iterrows():
-        metadatas.append({
-            "source_title": str(row["source_title"]),
-            "source_url": str(row["source_url"]),
-            "chunk_index": int(row["chunk_index"])
-        })
+        metadatas.append(
+            {
+                "source_title": str(row["source_title"]),
+                "source_url": str(row["source_url"]),
+                "chunk_index": int(row["chunk_index"]),
+            }
+        )
 
-    embeddings = model.encode(
-        documents,
-        batch_size=32,
-        show_progress_bar=True
-    ).tolist()
+    embeddings = model.encode(documents, batch_size=32, show_progress_bar=True).tolist()
 
     collection.add(
-        ids=ids,
-        documents=documents,
-        embeddings=embeddings,
-        metadatas=metadatas
+        ids=ids, documents=documents, embeddings=embeddings, metadatas=metadatas
     )
 
     print(f"Added {len(documents)} chunks to ChromaDB")

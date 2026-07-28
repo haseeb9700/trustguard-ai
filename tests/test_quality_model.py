@@ -34,6 +34,7 @@ SAMPLE_BAD = {
 
 # --- feature extraction ----------------------------------------------------
 
+
 def test_feature_vector_length_matches_names():
     assert len(feature_vector(SAMPLE_GOOD)) == len(FEATURE_NAMES)
 
@@ -79,6 +80,7 @@ def test_label_from_feedback():
 
 
 # --- training + prediction (need scikit-learn) -----------------------------
+
 
 def test_training_beats_baseline_and_predicts():
     pytest.importorskip("sklearn")

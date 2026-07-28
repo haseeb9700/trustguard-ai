@@ -24,7 +24,9 @@ class TestCleanJson:
 
 class TestParseJsonIfString:
     def test_dict_passes_through(self):
-        assert parse_json_if_string({"hallucination_score": 0}) == {"hallucination_score": 0}
+        assert parse_json_if_string({"hallucination_score": 0}) == {
+            "hallucination_score": 0
+        }
 
     def test_json_string_is_parsed(self):
         result = parse_json_if_string('{"hallucination_score": 1, "reason": "x"}')
@@ -52,7 +54,8 @@ class TestGetUniqueSources:
 
     def test_respects_max_sources(self):
         sources = [
-            {"source_title": f"T{i}", "source_url": f"http://s{i}.com"} for i in range(10)
+            {"source_title": f"T{i}", "source_url": f"http://s{i}.com"}
+            for i in range(10)
         ]
         assert len(get_unique_sources(sources, max_sources=3)) == 3
 

@@ -63,8 +63,8 @@ def _resolve_validated_ips(hostname: str) -> list:
     """
     try:
         addr_infos = socket.getaddrinfo(hostname, None)
-    except socket.gaierror:
-        raise ValueError("Could not resolve the URL's host.")
+    except socket.gaierror as exc:
+        raise ValueError("Could not resolve the URL's host.") from exc
 
     ips = []
     for info in addr_infos:

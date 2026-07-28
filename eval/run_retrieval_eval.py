@@ -41,10 +41,48 @@ RESULTS_JSON = os.path.join(HERE, "retrieval_results.json")
 REPORT_MD = os.path.join(HERE, "retrieval_report.md")
 
 _STOPWORDS = {
-    "the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are",
-    "was", "were", "be", "by", "as", "at", "it", "its", "that", "this", "with",
-    "from", "than", "into", "under", "over", "their", "they", "them", "which",
-    "who", "does", "do", "what", "when", "how", "many", "own", "not", "any",
+    "the",
+    "a",
+    "an",
+    "of",
+    "to",
+    "in",
+    "on",
+    "for",
+    "and",
+    "or",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "by",
+    "as",
+    "at",
+    "it",
+    "its",
+    "that",
+    "this",
+    "with",
+    "from",
+    "than",
+    "into",
+    "under",
+    "over",
+    "their",
+    "they",
+    "them",
+    "which",
+    "who",
+    "does",
+    "do",
+    "what",
+    "when",
+    "how",
+    "many",
+    "own",
+    "not",
+    "any",
 }
 
 
@@ -54,7 +92,7 @@ def _tokens(text: str) -> set:
 
 def _load_jsonl(path: str) -> list:
     rows = []
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if line:
@@ -89,7 +127,8 @@ def embedding_ranker(corpus: list):
     def rank(query: str) -> list:
         q_emb = model.encode([query]).tolist()[0]
         scored = [
-            (cid, cosine_similarity(q_emb, emb)) for cid, emb in zip(ids, embeddings)
+            (cid, cosine_similarity(q_emb, emb))
+            for cid, emb in zip(ids, embeddings, strict=True)
         ]
         scored.sort(key=lambda x: x[1], reverse=True)
         return [cid for cid, _ in scored]
@@ -146,7 +185,9 @@ def run(ranker_name: str, ks: list, limit: int | None = None) -> dict:
             }
         )
         flag = "ok " if per_query[-1]["hit"] else "MISS"
-        print(f"  [{flag}] {q.get('id'):<5} top{top_k}={ranked[:top_k]}  rel={sorted(relevant)}")
+        print(
+            f"  [{flag}] {q.get('id'):<5} top{top_k}={ranked[:top_k]}  rel={sorted(relevant)}"
+        )
 
     metrics = compute_metrics(results, ks)
     return {
@@ -165,9 +206,15 @@ def main() -> int:
         default="embedding",
         help="Which retriever to score (default: embedding).",
     )
-    parser.add_argument("--k", default="1,3,5", help="Comma-separated cutoffs, e.g. 1,3,5")
-    parser.add_argument("--limit", type=int, default=None, help="Only run first N queries")
-    parser.add_argument("--no-write", action="store_true", help="Skip writing result files")
+    parser.add_argument(
+        "--k", default="1,3,5", help="Comma-separated cutoffs, e.g. 1,3,5"
+    )
+    parser.add_argument(
+        "--limit", type=int, default=None, help="Only run first N queries"
+    )
+    parser.add_argument(
+        "--no-write", action="store_true", help="Skip writing result files"
+    )
     args = parser.parse_args()
 
     ks = [int(x) for x in args.k.split(",") if x.strip()]

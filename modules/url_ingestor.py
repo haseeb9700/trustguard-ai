@@ -249,14 +249,16 @@ def chunk_sections(sections: list, chunk_size: int = 400, overlap: int = 80) -> 
     return chunks
 
 
-def save_chunks_to_supabase(title: str, url: str, chunks: list, embeddings: list) -> None:
+def save_chunks_to_supabase(
+    title: str, url: str, chunks: list, embeddings: list
+) -> None:
     """Insert chunk/embedding pairs into the knowledge_sources table."""
     conn = get_connection()
 
     try:
         with conn:
             with conn.cursor() as cur:
-                for chunk, embedding in zip(chunks, embeddings):
+                for chunk, embedding in zip(chunks, embeddings, strict=True):
                     cur.execute(
                         """
                         INSERT INTO knowledge_sources
@@ -298,11 +300,15 @@ def ingest_url(url: str) -> dict:
             "url": url,
         }
 
-    embeddings = _get_embedding_model().encode(
-        chunks,
-        batch_size=32,
-        show_progress_bar=False,
-    ).tolist()
+    embeddings = (
+        _get_embedding_model()
+        .encode(
+            chunks,
+            batch_size=32,
+            show_progress_bar=False,
+        )
+        .tolist()
+    )
 
     # Refresh semantics: re-ingesting a URL replaces its old chunks
     # instead of duplicating them.

@@ -39,8 +39,18 @@ class TestCalculateRisk:
 
 
 class TestClaimEscalation:
-    LOW = {"risk_score": 0, "risk_level": "Low", "risk_status": "Grounded", "risk_reason": "ok"}
-    HIGH = {"risk_score": 2, "risk_level": "High", "risk_status": "Unsupported", "risk_reason": "bad"}
+    LOW = {
+        "risk_score": 0,
+        "risk_level": "Low",
+        "risk_status": "Grounded",
+        "risk_reason": "ok",
+    }
+    HIGH = {
+        "risk_score": 2,
+        "risk_level": "High",
+        "risk_status": "Unsupported",
+        "risk_reason": "bad",
+    }
 
     def test_contradicted_claim_forces_high_risk(self):
         claims = [{"verdict": "entailed"}, {"verdict": "contradicted"}]

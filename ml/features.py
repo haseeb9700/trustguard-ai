@@ -11,17 +11,17 @@ from __future__ import annotations
 # Stable feature order. NEVER reorder or insert in the middle — append only,
 # and retrain, otherwise saved models read the wrong columns.
 FEATURE_NAMES = [
-    "hallucination_score",   # 0 grounded .. 2 unsupported
-    "risk_score",            # 0 Low .. 2 High
+    "hallucination_score",  # 0 grounded .. 2 unsupported
+    "risk_score",  # 0 Low .. 2 High
     "retrieved_context_count",
     "n_claims",
     "n_entailed",
     "n_baseless",
     "n_contradicted",
-    "frac_entailed",         # entailed / claims
+    "frac_entailed",  # entailed / claims
     "n_sources",
     "answer_len_words",
-    "unverified_flag",       # answer says it could not verify
+    "unverified_flag",  # answer says it could not verify
 ]
 
 _RISK_LEVEL_TO_SCORE = {"low": 0, "medium": 1, "high": 2}
@@ -58,7 +58,9 @@ def extract_features(result: dict) -> dict:
         A dict mapping every name in FEATURE_NAMES to a numeric value.
     """
     claims = result.get("claim_verification") or []
-    verdicts = [str(c.get("verdict", "")).lower() for c in claims if isinstance(c, dict)]
+    verdicts = [
+        str(c.get("verdict", "")).lower() for c in claims if isinstance(c, dict)
+    ]
     n_claims = len(verdicts)
     n_entailed = verdicts.count("entailed")
     n_baseless = verdicts.count("baseless")
@@ -70,7 +72,9 @@ def extract_features(result: dict) -> dict:
     return {
         "hallucination_score": _hallucination_score(result),
         "risk_score": _risk_score(result),
-        "retrieved_context_count": int(result.get("retrieved_context_count", len(sources)) or 0),
+        "retrieved_context_count": int(
+            result.get("retrieved_context_count", len(sources)) or 0
+        ),
         "n_claims": n_claims,
         "n_entailed": n_entailed,
         "n_baseless": n_baseless,

@@ -14,10 +14,10 @@ from eval.retrieval_metrics import (
     recall_at_k,
     reciprocal_rank,
 )
-from eval.run_retrieval_eval import run, _load_jsonl, CORPUS_PATH, QUERIES_PATH
-
+from eval.run_retrieval_eval import CORPUS_PATH, QUERIES_PATH, _load_jsonl, run
 
 # --- per-metric math -------------------------------------------------------
+
 
 def test_hit_at_k():
     assert hit_at_k(["a", "b", "c"], {"c"}, 3) == 1.0
@@ -65,6 +65,7 @@ def test_compute_metrics_empty():
 
 
 # --- dataset + runner ------------------------------------------------------
+
 
 def test_dataset_is_well_formed():
     corpus = _load_jsonl(CORPUS_PATH)

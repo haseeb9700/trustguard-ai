@@ -11,8 +11,8 @@ import pytest
 from modules import cache
 from modules.cache import LRUCache
 
-
 # --- LRUCache core ---------------------------------------------------------
+
 
 def test_get_miss_returns_none_and_counts():
     c = LRUCache(maxsize=2)
@@ -32,8 +32,8 @@ def test_lru_evicts_least_recently_used():
     c = LRUCache(maxsize=2)
     c.set("a", 1)
     c.set("b", 2)
-    c.get("a")           # touch "a" so "b" becomes LRU
-    c.set("c", 3)        # evicts "b"
+    c.get("a")  # touch "a" so "b" becomes LRU
+    c.set("c", 3)  # evicts "b"
     assert c.get("a") == 1
     assert c.get("c") == 3
     assert c.get("b") is None
@@ -59,8 +59,8 @@ def test_clear_empties_cache():
 def test_stats_hit_rate():
     c = LRUCache(maxsize=2)
     c.set("a", 1)
-    c.get("a")           # hit
-    c.get("b")           # miss
+    c.get("a")  # hit
+    c.get("b")  # miss
     stats = c.stats()
     assert stats["hits"] == 1
     assert stats["misses"] == 1
@@ -68,6 +68,7 @@ def test_stats_hit_rate():
 
 
 # --- module helpers --------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def _reset_caches():

@@ -4,6 +4,7 @@ from sentence_transformers import SentenceTransformer
 DB_PATH = "data/chroma_db"
 COLLECTION_NAME = "uscis_policy_docs"
 
+
 def retrieve(query, top_k=3):
     model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
@@ -12,12 +13,10 @@ def retrieve(query, top_k=3):
 
     query_embedding = model.encode([query]).tolist()[0]
 
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k
-    )
+    results = collection.query(query_embeddings=[query_embedding], n_results=top_k)
 
     return results
+
 
 if __name__ == "__main__":
     query = "How many unemployment days are allowed during post-completion OPT?"

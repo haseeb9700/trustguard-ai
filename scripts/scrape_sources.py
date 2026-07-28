@@ -1,10 +1,11 @@
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
 from datetime import datetime
 
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
 URLS = [
-        # Immigration / F-1 / OPT official sources
+    # Immigration / F-1 / OPT official sources
     "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-opt-for-f-1-students",
     "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-extension-for-stem-students-stem-opt",
     "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/students-and-employment",
@@ -12,20 +13,17 @@ URLS = [
     "https://www.ice.gov/sevis/practical-training",
     "https://studyinthestates.dhs.gov/sevis-help-hub/student-records/fm-student-employment/f-1-optional-practical-training-opt",
     "https://travel.state.gov/content/travel/en/us-visas/study/student-visa.html",
-
     # AI governance official sources
     "https://www.nist.gov/itl/ai-risk-management-framework",
     "https://airc.nist.gov/airmf-resources/playbook/",
     "https://www.govinfo.gov/app/details/GOVPUB-PREX23-PURL-gpo193638",
-
     # Model risk / financial governance sources
     "https://www.occ.gov/news-issuances/bulletins/2026/bulletin-2026-13.html",
-    "https://www.federalreserve.gov/supervisionreg/srletters/SR2602.pdf"
+    "https://www.federalreserve.gov/supervisionreg/srletters/SR2602.pdf",
 ]
 
-HEADERS = {
-    "User-Agent": "TrustGuardAI Research Project - Educational Use"
-}
+HEADERS = {"User-Agent": "TrustGuardAI Research Project - Educational Use"}
+
 
 def scrape_page(url):
     response = requests.get(url, headers=HEADERS, timeout=20)
@@ -53,8 +51,9 @@ def scrape_page(url):
         "source_url": url,
         "source_title": title,
         "scraped_at": datetime.now().isoformat(),
-        "raw_text": raw_text
+        "raw_text": raw_text,
     }
+
 
 def main():
     rows = []
@@ -68,6 +67,7 @@ def main():
     df.to_csv("data/raw_sources.csv", index=False)
 
     print("Done. Saved file: data/raw_sources.csv")
+
 
 if __name__ == "__main__":
     main()

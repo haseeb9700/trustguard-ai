@@ -24,8 +24,7 @@ class FakeResponse:
         self.closed = False
 
     def iter_content(self, size):
-        for chunk in self._chunks:
-            yield chunk
+        yield from self._chunks
 
     @property
     def content(self):
@@ -100,7 +99,9 @@ class TestSafeGetRedirects:
 
 class TestResponseSizeCap:
     def test_declared_content_length_rejected(self):
-        resp = FakeResponse(200, headers={"Content-Length": str(ui.MAX_RESPONSE_BYTES + 1)})
+        resp = FakeResponse(
+            200, headers={"Content-Length": str(ui.MAX_RESPONSE_BYTES + 1)}
+        )
         with pytest.raises(ValueError, match="size limit"):
             ui._read_capped(resp)
         assert resp.closed
