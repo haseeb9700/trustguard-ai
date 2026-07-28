@@ -86,23 +86,43 @@ and writes `retrieval_results.json` + `retrieval_report.md`.
 | `oracle` | Perfect ranking; asserts the metric math is right. |
 
 The gap between `embedding` and `reranked` *is* the reranker's contribution.
-Measuring only the embedding stage scores a pipeline no user ever hits, and
-`--compare` puts all three in one table with per-stage MRR deltas so it is
-obvious whether the reranker earns its latency.
+Measuring only the embedding stage scores a pipeline no user ever hits.
 
-### Does the BGE instruction help?
+### Results (54 queries, 93 chunks)
+
+| Ranker | MRR | Δ MRR | Hit-rate@1 | nDCG@5 |
+|---|---|---|---|---|
+| lexical | 0.348 | — | 0.204 | 0.386 |
+| embedding | 0.665 | +0.318 | 0.537 | 0.682 |
+| reranked | **0.739** | **+0.073** | **0.648** | 0.757 |
+
+**The cross-encoder earns its latency.** +0.073 MRR and +0.111 hit-rate@1 over
+embedding alone — six more queries out of 54 where the right chunk lands first.
+
+That conclusion is the opposite of what an earlier version of this benchmark
+reported. At 15 queries over 18 chunks the reranker appeared to *hurt*
+(MRR 0.967 → 0.947), but the entire difference was two queries changing rank,
+where one query is worth ~0.067 MRR. The effect was never resolvable at that
+size. Worth remembering before acting on a small eval: the honest reading of an
+underpowered result is "unresolved", not "no effect".
+
+### Does the BGE instruction help? No.
 
 `bge-small-en-v1.5` is trained asymmetrically — short queries take an
-instruction prefix, long passages do not. BAAI note the gain is smaller for
-v1.5 than v1, so it is opt-in and worth measuring rather than assuming:
+instruction prefix, long passages do not:
 
 ```bash
-python -m eval.run_retrieval_eval --ranker embedding                      # off
-python -m eval.run_retrieval_eval --ranker embedding --query-instruction  # on
+python -m eval.run_retrieval_eval --compare --query-instruction
 ```
 
-If the delta is positive and holds up, apply the same prefix in
-`modules/rag_pipeline.retrieve_context` so production matches the benchmark.
+Measured effect at 54 queries: MRR 0.665 → 0.668 (embedding), 0.739 → 0.740
+(reranked), hit-rate@1 unchanged to three decimals. It is not applied in
+production.
+
+On the earlier saturated 15-query set it looked like a clear win
+(MRR 0.967 → 1.000) — but that was one query moving on a benchmark with no
+headroom left. BAAI themselves note the gain is smaller for v1.5 than v1, since
+v1.5 was trained to work without it.
 
 ### Corpus difficulty
 
@@ -158,6 +178,30 @@ That is precisely the condition for displacing a gold chunk, so survivors
 cannot manufacture a false negative at any k, and no arbitrary threshold is
 involved. The script is idempotent: it rebuilds the distractor set from the
 gold chunks each run rather than stacking copies.
+
+### What the failures pointed at
+
+Reviewing the 22 genuine retrieval failures surfaced three ingestion defects,
+each since fixed:
+
+- **Boilerplate outranked answers.** Two pure footnote-index chunks beat the
+  chunk quoting the statute a query asked about. Across the benchmark, 8% of
+  top-3 slots and 13/54 queries had site chrome or citation dumps in them.
+  Fixed by `modules/content_filter.py`, applied at ingest.
+- **Chunks began mid-sentence.** Fixed-width 400-word slicing left **59.5%** of
+  chunks opening with a dangling clause whose subject was in the *previous*
+  chunk. One such chunk contained a query's answer verbatim and was retrieved
+  at rank 28 of 93. Sentence-aligned chunking brings that to **4.7%**.
+- **Near-duplicate chunks split each other's signal**, from 80-word overlap
+  plus overlapping source documents. Not yet addressed — MMR at the rerank
+  step is the candidate fix.
+
+**The benchmark corpus is frozen.** Ingestion changes are deliberately *not*
+folded back into `retrieval_corpus.jsonl`: rebuilding it would renumber every
+`d*` id and invalidate all 39 distractor-based labels, and a corpus that
+shrinks whenever the filter improves would show rising scores purely from a
+smaller haystack. Ingestion changes are measured on their own terms (fragment
+rate, boilerplate share) rather than by moving the benchmark under itself.
 
 Files: `retrieval_corpus.jsonl` (18 gold chunks + 75 `d*` distractors),
 `retrieval_queries.jsonl` (54 queries with relevant ids),

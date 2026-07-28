@@ -1,258 +1,2563 @@
 {
-  "ranker": "embedding",
+  "mode": "compare",
   "query_instruction": true,
   "corpus_size": 93,
-  "elapsed_seconds": 0.85,
-  "metrics": {
-    "queries": 15,
-    "mrr": 1.0,
-    "at_k": {
-      "1": {
-        "hit_rate": 1.0,
-        "recall": 0.9667,
-        "precision": 1.0,
-        "ndcg": 1.0
+  "runs": [
+    {
+      "ranker": "lexical",
+      "query_instruction": true,
+      "corpus_size": 93,
+      "elapsed_seconds": 0.03,
+      "metrics": {
+        "queries": 54,
+        "mrr": 0.3478,
+        "at_k": {
+          "1": {
+            "hit_rate": 0.2037,
+            "recall": 0.1852,
+            "precision": 0.2037,
+            "ndcg": 0.2037
+          },
+          "3": {
+            "hit_rate": 0.4074,
+            "recall": 0.3889,
+            "precision": 0.1481,
+            "ndcg": 0.3072
+          },
+          "5": {
+            "hit_rate": 0.6111,
+            "recall": 0.5787,
+            "precision": 0.1333,
+            "ndcg": 0.386
+          }
+        }
       },
-      "3": {
-        "hit_rate": 1.0,
-        "recall": 1.0,
-        "precision": 0.3556,
-        "ndcg": 0.9946
+      "queries": [
+        {
+          "id": "q1",
+          "query": "Is face-scanning in open public venues treated as an elevated-risk category by Europe's AI legislation?",
+          "relevant": [
+            "g1"
+          ],
+          "top": [
+            "g2",
+            "n3",
+            "g1",
+            "n1",
+            "n2"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q2",
+          "query": "Are governments forbidden from rating citizens under the European AI rules?",
+          "relevant": [
+            "g2"
+          ],
+          "top": [
+            "g3",
+            "n2",
+            "g2",
+            "n3",
+            "g1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q3",
+          "query": "Do firms headquartered abroad still fall within the reach of Europe's AI legislation?",
+          "relevant": [
+            "g3"
+          ],
+          "top": [
+            "g3",
+            "n2",
+            "g2",
+            "n3",
+            "i1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q4",
+          "query": "Which four pillars organize the American framework for managing artificial intelligence risk?",
+          "relevant": [
+            "n1"
+          ],
+          "top": [
+            "n1",
+            "d70",
+            "n3",
+            "f1",
+            "g1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q5",
+          "query": "Is following the NIST framework compulsory or optional for organizations?",
+          "relevant": [
+            "n2"
+          ],
+          "top": [
+            "n1",
+            "n2",
+            "d70",
+            "d71",
+            "d69"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q6",
+          "query": "What academic qualification must a specialty-occupation work visa applicant hold?",
+          "relevant": [
+            "i1"
+          ],
+          "top": [
+            "i1",
+            "i4",
+            "f3",
+            "d61",
+            "d64"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q7",
+          "query": "How many skilled-worker visas can be granted annually, including the advanced-degree allotment?",
+          "relevant": [
+            "i2"
+          ],
+          "top": [
+            "i2",
+            "i1",
+            "g3",
+            "d54",
+            "d17"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q8",
+          "query": "When demand exceeds the quota, how does immigration pick which petitions advance?",
+          "relevant": [
+            "i3"
+          ],
+          "top": [
+            "d64",
+            "d11",
+            "d4",
+            "d57",
+            "d63"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q9",
+          "query": "What is the formal immigration status of a person holding permanent residency?",
+          "relevant": [
+            "i4"
+          ],
+          "top": [
+            "i4",
+            "i5",
+            "d36",
+            "d11",
+            "d35"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q10",
+          "query": "After how long can a permanent resident seek to become a citizen?",
+          "relevant": [
+            "i5"
+          ],
+          "top": [
+            "i5",
+            "i4",
+            "d22",
+            "d58",
+            "d54"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q11",
+          "query": "What is the floor for a bank's core equity capital ratio under the latest accord?",
+          "relevant": [
+            "f1"
+          ],
+          "top": [
+            "f1",
+            "f2",
+            "i1",
+            "i5",
+            "n1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q12",
+          "query": "How much easily-sellable assets must lenders keep for a month-long funding squeeze?",
+          "relevant": [
+            "f3"
+          ],
+          "top": [
+            "i1",
+            "f1",
+            "f2",
+            "d5",
+            "f3"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q13",
+          "query": "Whose confidential medical data is safeguarded by the federal patient-privacy regulation?",
+          "relevant": [
+            "h1"
+          ],
+          "top": [
+            "h1",
+            "h2",
+            "h4",
+            "d75",
+            "d40"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q14",
+          "query": "May a person request a duplicate of their own health file under privacy law?",
+          "relevant": [
+            "h2"
+          ],
+          "top": [
+            "h4",
+            "h2",
+            "h1",
+            "h3",
+            "i5"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q15",
+          "query": "What extra equity cushion beyond the minimum does the banking accord demand?",
+          "relevant": [
+            "f1",
+            "f2"
+          ],
+          "top": [
+            "f1",
+            "f2",
+            "d75",
+            "d60",
+            "d59"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q16",
+          "query": "Will the agency accept a portrait that has been touched up or mounted in a frame?",
+          "relevant": [
+            "d1"
+          ],
+          "top": [
+            "g3",
+            "d1",
+            "i2",
+            "d4",
+            "d45"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q17",
+          "query": "Someone worked twenty hours weekly for a year before finishing their degree. By how much does that shrink the full-time allowance left to them?",
+          "relevant": [
+            "d2"
+          ],
+          "top": [
+            "i2",
+            "d13",
+            "d30",
+            "d3",
+            "d2"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q18",
+          "query": "Within what window must a trainee tell their campus adviser that they have moved house or switched employers?",
+          "relevant": [
+            "d7"
+          ],
+          "top": [
+            "i1",
+            "d10",
+            "d11",
+            "d26",
+            "d47"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q19",
+          "query": "May someone begin course-linked work experience before the date printed on their paperwork?",
+          "relevant": [
+            "d13"
+          ],
+          "top": [
+            "h4",
+            "d58",
+            "i4",
+            "d12",
+            "i5"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q20",
+          "query": "How does moving up to a higher degree level affect the amount of work-experience time available?",
+          "relevant": [
+            "d16",
+            "d19",
+            "d5",
+            "d6"
+          ],
+          "top": [
+            "i1",
+            "i2",
+            "d15",
+            "d16",
+            "d13"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q21",
+          "query": "Can the two-year science extension be claimed twice on the same credential, and is unused time recoverable later?",
+          "relevant": [
+            "d17"
+          ],
+          "top": [
+            "d2",
+            "d12",
+            "d44",
+            "d3",
+            "d1"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q22",
+          "query": "Is a sponsoring company allowed to hand its mentoring duties to a different firm?",
+          "relevant": [
+            "d21"
+          ],
+          "top": [
+            "i4",
+            "d19",
+            "d7",
+            "d58",
+            "d39"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q23",
+          "query": "Do stretches without work push back the finish date of the science extension?",
+          "relevant": [
+            "d23"
+          ],
+          "top": [
+            "i4",
+            "d4",
+            "d11",
+            "d12",
+            "d38"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q24",
+          "query": "Who has to put their signature on the periodic progress assessments during a science placement?",
+          "relevant": [
+            "d25"
+          ],
+          "top": [
+            "g3",
+            "i2",
+            "d25",
+            "d27",
+            "d28"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q25",
+          "query": "How far ahead of time may someone file a request to work before graduating?",
+          "relevant": [
+            "d26"
+          ],
+          "top": [
+            "h4",
+            "i4",
+            "d15",
+            "d29",
+            "i5"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q26",
+          "query": "If a renewal request is refused after the previous work card already lapsed, how long may the person stay?",
+          "relevant": [
+            "d27"
+          ],
+          "top": [
+            "i5",
+            "i4",
+            "d5",
+            "d11",
+            "d2"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q27",
+          "query": "How is the interval bridged between a graduate losing student standing and their sponsored work classification beginning?",
+          "relevant": [
+            "d28"
+          ],
+          "top": [
+            "i4",
+            "d21",
+            "d20",
+            "d27",
+            "d28"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q28",
+          "query": "After a refusal or withdrawal, how much time is allowed to wind up affairs and leave the country?",
+          "relevant": [
+            "d29"
+          ],
+          "top": [
+            "d58",
+            "i4",
+            "i5",
+            "d29",
+            "d39"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q29",
+          "query": "Which filing lets someone lengthen their stay so a training placement can be finished?",
+          "relevant": [
+            "d30"
+          ],
+          "top": [
+            "d22",
+            "d58",
+            "d54",
+            "d42",
+            "d39"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q30",
+          "query": "Which document has to arrive before a graduate may start a job, and how is it requested?",
+          "relevant": [
+            "d38"
+          ],
+          "top": [
+            "h4",
+            "i5",
+            "g3",
+            "d27",
+            "d3"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q31",
+          "query": "What paperwork does the campus adviser hand back once they endorse a science training placement?",
+          "relevant": [
+            "d39"
+          ],
+          "top": [
+            "d11",
+            "d38",
+            "d3",
+            "d47",
+            "d50"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q32",
+          "query": "Must the job a student takes be connected to what they studied?",
+          "relevant": [
+            "d12",
+            "d41"
+          ],
+          "top": [
+            "i1",
+            "d39",
+            "d52",
+            "d53",
+            "d5"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q33",
+          "query": "What happens to a submission lodged more than a month after the adviser entered the recommendation?",
+          "relevant": [
+            "d43"
+          ],
+          "top": [
+            "d39",
+            "i3",
+            "i5",
+            "d15",
+            "d46"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q34",
+          "query": "How many days of joblessness can accumulate before officials may end someone's record?",
+          "relevant": [
+            "d48"
+          ],
+          "top": [
+            "h4",
+            "i5",
+            "d58",
+            "d3",
+            "d47"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q35",
+          "query": "What becomes of existing work permission when a graduate enrols in a fresh degree programme?",
+          "relevant": [
+            "d4"
+          ],
+          "top": [
+            "i1",
+            "i4",
+            "i2",
+            "d20",
+            "d39"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q36",
+          "query": "Do staffing-agency placements or one-person businesses satisfy the required working relationship?",
+          "relevant": [
+            "d10",
+            "d22"
+          ],
+          "top": [
+            "d65",
+            "d40",
+            "d10",
+            "d21",
+            "d22"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q37",
+          "query": "Is a sponsor permitted to put a trainee in the seat of an existing domestic employee?",
+          "relevant": [
+            "d20",
+            "d8"
+          ],
+          "top": [
+            "d20",
+            "d8",
+            "d10",
+            "d65",
+            "d66"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q38",
+          "query": "How many varieties of off-campus work may an academic visa holder undertake?",
+          "relevant": [
+            "d11",
+            "d12"
+          ],
+          "top": [
+            "i4",
+            "d11",
+            "i5",
+            "h4",
+            "d55"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q39",
+          "query": "Which form spells out the skills and objectives a placement is meant to impart?",
+          "relevant": [
+            "d18"
+          ],
+          "top": [
+            "d10",
+            "d64",
+            "d63",
+            "d51",
+            "d18"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q40",
+          "query": "When school is out of session, is pre-graduation work counted as reduced hours or a full load?",
+          "relevant": [
+            "d44"
+          ],
+          "top": [
+            "d1",
+            "d13",
+            "d46",
+            "i4",
+            "d45"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q41",
+          "query": "Is there a character ceiling on the free-text notes printed on the eligibility certificate?",
+          "relevant": [
+            "d45"
+          ],
+          "top": [
+            "d60",
+            "d59",
+            "d37",
+            "d46",
+            "d45"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q42",
+          "query": "Which statute defines somebody who is neither a citizen nor a national of the country?",
+          "relevant": [
+            "d35"
+          ],
+          "top": [
+            "i5",
+            "h1",
+            "d36",
+            "d71",
+            "d35"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q43",
+          "query": "Can the no-visa travel scheme be used to pursue coursework that earns credit?",
+          "relevant": [
+            "d55"
+          ],
+          "top": [
+            "g1",
+            "d36",
+            "d54",
+            "d55",
+            "d56"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q44",
+          "query": "Do a scholar's spouse and children need their own eligibility certificates, and must they pay the tracking-system charge?",
+          "relevant": [
+            "d57"
+          ],
+          "top": [
+            "i1",
+            "d60",
+            "d59",
+            "d61",
+            "d55"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q45",
+          "query": "In which country does someone arrange their face-to-face screening appointment?",
+          "relevant": [
+            "d58"
+          ],
+          "top": [
+            "d58",
+            "d57",
+            "d4",
+            "d54",
+            "d60"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q46",
+          "query": "Is there a timing restriction on renewing travel documents for someone already partway through their programme?",
+          "relevant": [
+            "d59"
+          ],
+          "top": [
+            "d36",
+            "d64",
+            "d54",
+            "d61",
+            "d68"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q47",
+          "query": "What evidence of prior schooling and of plans to go home should be brought to the appointment?",
+          "relevant": [
+            "d61"
+          ],
+          "top": [
+            "d43",
+            "d58",
+            "d65",
+            "d57",
+            "d42"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q48",
+          "query": "Are biometric prints collected using ink during the application?",
+          "relevant": [
+            "d62"
+          ],
+          "top": [
+            "g1",
+            "d61",
+            "d62",
+            "d47",
+            "d25"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q49",
+          "query": "Who decides whether a traveller may actually enter once they arrive at the frontier?",
+          "relevant": [
+            "d63"
+          ],
+          "top": [
+            "i5",
+            "h4",
+            "d58",
+            "d54",
+            "d59"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q50",
+          "query": "How early before a programme opens may an academic traveller arrive in the country?",
+          "relevant": [
+            "d59",
+            "d67"
+          ],
+          "top": [
+            "h4",
+            "d58",
+            "i5",
+            "d60",
+            "d59"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q51",
+          "query": "Are people from Canada or Bermuda required to obtain travel authorisation before studying?",
+          "relevant": [
+            "d68"
+          ],
+          "top": [
+            "h2",
+            "h4",
+            "d68",
+            "d29",
+            "d67"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q52",
+          "query": "Does the supervisory publication on quantitative-model oversight create binding obligations?",
+          "relevant": [
+            "d75"
+          ],
+          "top": [
+            "n2",
+            "g1",
+            "d74",
+            "d75",
+            "d20"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q53",
+          "query": "Should every lender apply identical controls, or should rigour scale with the institution?",
+          "relevant": [
+            "d73",
+            "d74"
+          ],
+          "top": [
+            "i5",
+            "d58",
+            "d5",
+            "d65",
+            "d75"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q54",
+          "query": "Is there a companion document addressing risks specific to content-producing machine learning?",
+          "relevant": [
+            "d70"
+          ],
+          "top": [
+            "i1",
+            "n1",
+            "d70",
+            "d67",
+            "d37"
+          ],
+          "hit": true
+        }
+      ]
+    },
+    {
+      "ranker": "embedding",
+      "query_instruction": true,
+      "corpus_size": 93,
+      "elapsed_seconds": 1.32,
+      "metrics": {
+        "queries": 54,
+        "mrr": 0.6678,
+        "at_k": {
+          "1": {
+            "hit_rate": 0.537,
+            "recall": 0.5185,
+            "precision": 0.537,
+            "ndcg": 0.537
+          },
+          "3": {
+            "hit_rate": 0.7593,
+            "recall": 0.7407,
+            "precision": 0.2778,
+            "ndcg": 0.6521
+          },
+          "5": {
+            "hit_rate": 0.8889,
+            "recall": 0.8426,
+            "precision": 0.1926,
+            "ndcg": 0.6965
+          }
+        }
       },
-      "5": {
-        "hit_rate": 1.0,
-        "recall": 1.0,
-        "precision": 0.2133,
-        "ndcg": 0.9946
-      }
-    }
-  },
-  "queries": [
-    {
-      "id": "q1",
-      "query": "Is face-scanning in open public venues treated as an elevated-risk category by Europe's AI legislation?",
-      "relevant": [
-        "g1"
-      ],
-      "top": [
-        "g1",
-        "g2",
-        "g3",
-        "d73",
-        "n1"
-      ],
-      "hit": true
+      "queries": [
+        {
+          "id": "q1",
+          "query": "Is face-scanning in open public venues treated as an elevated-risk category by Europe's AI legislation?",
+          "relevant": [
+            "g1"
+          ],
+          "top": [
+            "g1",
+            "g2",
+            "g3",
+            "d73",
+            "n1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q2",
+          "query": "Are governments forbidden from rating citizens under the European AI rules?",
+          "relevant": [
+            "g2"
+          ],
+          "top": [
+            "g2",
+            "g3",
+            "d75",
+            "d73",
+            "g1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q3",
+          "query": "Do firms headquartered abroad still fall within the reach of Europe's AI legislation?",
+          "relevant": [
+            "g3"
+          ],
+          "top": [
+            "g3",
+            "g2",
+            "d75",
+            "d73",
+            "d69"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q4",
+          "query": "Which four pillars organize the American framework for managing artificial intelligence risk?",
+          "relevant": [
+            "n1"
+          ],
+          "top": [
+            "n1",
+            "d69",
+            "d70",
+            "d73",
+            "n3"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q5",
+          "query": "Is following the NIST framework compulsory or optional for organizations?",
+          "relevant": [
+            "n2"
+          ],
+          "top": [
+            "n2",
+            "d69",
+            "d70",
+            "n1",
+            "d40"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q6",
+          "query": "What academic qualification must a specialty-occupation work visa applicant hold?",
+          "relevant": [
+            "i1"
+          ],
+          "top": [
+            "i1",
+            "d61",
+            "d66",
+            "d60",
+            "d65"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q7",
+          "query": "How many skilled-worker visas can be granted annually, including the advanced-degree allotment?",
+          "relevant": [
+            "i2"
+          ],
+          "top": [
+            "i2",
+            "d31",
+            "d54",
+            "d1",
+            "d65"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q8",
+          "query": "When demand exceeds the quota, how does immigration pick which petitions advance?",
+          "relevant": [
+            "i3"
+          ],
+          "top": [
+            "i3",
+            "d28",
+            "d29",
+            "d58",
+            "d62"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q9",
+          "query": "What is the formal immigration status of a person holding permanent residency?",
+          "relevant": [
+            "i4"
+          ],
+          "top": [
+            "i4",
+            "i5",
+            "d64",
+            "d63",
+            "d60"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q10",
+          "query": "After how long can a permanent resident seek to become a citizen?",
+          "relevant": [
+            "i5"
+          ],
+          "top": [
+            "i5",
+            "i4",
+            "d1",
+            "d30",
+            "d41"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q11",
+          "query": "What is the floor for a bank's core equity capital ratio under the latest accord?",
+          "relevant": [
+            "f1"
+          ],
+          "top": [
+            "f1",
+            "d72",
+            "f2",
+            "d74",
+            "d73"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q12",
+          "query": "How much easily-sellable assets must lenders keep for a month-long funding squeeze?",
+          "relevant": [
+            "f3"
+          ],
+          "top": [
+            "f3",
+            "d72",
+            "d75",
+            "d74",
+            "d27"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q13",
+          "query": "Whose confidential medical data is safeguarded by the federal patient-privacy regulation?",
+          "relevant": [
+            "h1"
+          ],
+          "top": [
+            "h1",
+            "h2",
+            "h4",
+            "h3",
+            "d35"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q14",
+          "query": "May a person request a duplicate of their own health file under privacy law?",
+          "relevant": [
+            "h2"
+          ],
+          "top": [
+            "h2",
+            "h4",
+            "h1",
+            "d48",
+            "d35"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q15",
+          "query": "What extra equity cushion beyond the minimum does the banking accord demand?",
+          "relevant": [
+            "f1",
+            "f2"
+          ],
+          "top": [
+            "f1",
+            "d72",
+            "f2",
+            "d75",
+            "d73"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q16",
+          "query": "Will the agency accept a portrait that has been touched up or mounted in a frame?",
+          "relevant": [
+            "d1"
+          ],
+          "top": [
+            "g3",
+            "d75",
+            "n2",
+            "d1",
+            "d21"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q17",
+          "query": "Someone worked twenty hours weekly for a year before finishing their degree. By how much does that shrink the full-time allowance left to them?",
+          "relevant": [
+            "d2"
+          ],
+          "top": [
+            "d48",
+            "d16",
+            "d2",
+            "d44",
+            "d14"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q18",
+          "query": "Within what window must a trainee tell their campus adviser that they have moved house or switched employers?",
+          "relevant": [
+            "d7"
+          ],
+          "top": [
+            "d7",
+            "d47",
+            "d46",
+            "d50",
+            "d9"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q19",
+          "query": "May someone begin course-linked work experience before the date printed on their paperwork?",
+          "relevant": [
+            "d13"
+          ],
+          "top": [
+            "d15",
+            "d37",
+            "d1",
+            "d13",
+            "d40"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q20",
+          "query": "How does moving up to a higher degree level affect the amount of work-experience time available?",
+          "relevant": [
+            "d16",
+            "d19",
+            "d5",
+            "d6"
+          ],
+          "top": [
+            "d44",
+            "d6",
+            "d16",
+            "d2",
+            "d1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q21",
+          "query": "Can the two-year science extension be claimed twice on the same credential, and is unused time recoverable later?",
+          "relevant": [
+            "d17"
+          ],
+          "top": [
+            "d2",
+            "d17",
+            "d5",
+            "d16",
+            "d23"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q22",
+          "query": "Is a sponsoring company allowed to hand its mentoring duties to a different firm?",
+          "relevant": [
+            "d21"
+          ],
+          "top": [
+            "d21",
+            "d9",
+            "d10",
+            "d22",
+            "d8"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q23",
+          "query": "Do stretches without work push back the finish date of the science extension?",
+          "relevant": [
+            "d23"
+          ],
+          "top": [
+            "d23",
+            "d43",
+            "d26",
+            "d17",
+            "d14"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q24",
+          "query": "Who has to put their signature on the periodic progress assessments during a science placement?",
+          "relevant": [
+            "d25"
+          ],
+          "top": [
+            "d32",
+            "d24",
+            "d7",
+            "d25",
+            "d43"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q25",
+          "query": "How far ahead of time may someone file a request to work before graduating?",
+          "relevant": [
+            "d26"
+          ],
+          "top": [
+            "d44",
+            "d1",
+            "d15",
+            "d26",
+            "d27"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q26",
+          "query": "If a renewal request is refused after the previous work card already lapsed, how long may the person stay?",
+          "relevant": [
+            "d27"
+          ],
+          "top": [
+            "d39",
+            "d27",
+            "d47",
+            "d26",
+            "d48"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q27",
+          "query": "How is the interval bridged between a graduate losing student standing and their sponsored work classification beginning?",
+          "relevant": [
+            "d28"
+          ],
+          "top": [
+            "d27",
+            "d29",
+            "d28",
+            "d48",
+            "d16"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q28",
+          "query": "After a refusal or withdrawal, how much time is allowed to wind up affairs and leave the country?",
+          "relevant": [
+            "d29"
+          ],
+          "top": [
+            "d63",
+            "d39",
+            "d29",
+            "d27",
+            "d64"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q29",
+          "query": "Which filing lets someone lengthen their stay so a training placement can be finished?",
+          "relevant": [
+            "d30"
+          ],
+          "top": [
+            "d39",
+            "d49",
+            "d30",
+            "d40",
+            "d1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q30",
+          "query": "Which document has to arrive before a graduate may start a job, and how is it requested?",
+          "relevant": [
+            "d38"
+          ],
+          "top": [
+            "d40",
+            "d45",
+            "d15",
+            "d1",
+            "d61"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q31",
+          "query": "What paperwork does the campus adviser hand back once they endorse a science training placement?",
+          "relevant": [
+            "d39"
+          ],
+          "top": [
+            "d24",
+            "d9",
+            "d8",
+            "d45",
+            "d21"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q32",
+          "query": "Must the job a student takes be connected to what they studied?",
+          "relevant": [
+            "d12",
+            "d41"
+          ],
+          "top": [
+            "d21",
+            "d9",
+            "d11",
+            "d61",
+            "d12"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q33",
+          "query": "What happens to a submission lodged more than a month after the adviser entered the recommendation?",
+          "relevant": [
+            "d43"
+          ],
+          "top": [
+            "d26",
+            "d41",
+            "d43",
+            "d3",
+            "d39"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q34",
+          "query": "How many days of joblessness can accumulate before officials may end someone's record?",
+          "relevant": [
+            "d48"
+          ],
+          "top": [
+            "d48",
+            "d27",
+            "d26",
+            "d30",
+            "d1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q35",
+          "query": "What becomes of existing work permission when a graduate enrols in a fresh degree programme?",
+          "relevant": [
+            "d4"
+          ],
+          "top": [
+            "d40",
+            "d1",
+            "d9",
+            "d44",
+            "d11"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q36",
+          "query": "Do staffing-agency placements or one-person businesses satisfy the required working relationship?",
+          "relevant": [
+            "d10",
+            "d22"
+          ],
+          "top": [
+            "d21",
+            "d20",
+            "d9",
+            "d10",
+            "i1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q37",
+          "query": "Is a sponsor permitted to put a trainee in the seat of an existing domestic employee?",
+          "relevant": [
+            "d20",
+            "d8"
+          ],
+          "top": [
+            "d10",
+            "d9",
+            "d21",
+            "d8",
+            "d22"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q38",
+          "query": "How many varieties of off-campus work may an academic visa holder undertake?",
+          "relevant": [
+            "d11",
+            "d12"
+          ],
+          "top": [
+            "d11",
+            "d65",
+            "d66",
+            "d55",
+            "d58"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q39",
+          "query": "Which form spells out the skills and objectives a placement is meant to impart?",
+          "relevant": [
+            "d18"
+          ],
+          "top": [
+            "d9",
+            "d40",
+            "d20",
+            "d21",
+            "d8"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q40",
+          "query": "When school is out of session, is pre-graduation work counted as reduced hours or a full load?",
+          "relevant": [
+            "d44"
+          ],
+          "top": [
+            "d44",
+            "d43",
+            "d48",
+            "d13",
+            "d14"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q41",
+          "query": "Is there a character ceiling on the free-text notes printed on the eligibility certificate?",
+          "relevant": [
+            "d45"
+          ],
+          "top": [
+            "d45",
+            "d34",
+            "d49",
+            "d60",
+            "d32"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q42",
+          "query": "Which statute defines somebody who is neither a citizen nor a national of the country?",
+          "relevant": [
+            "d35"
+          ],
+          "top": [
+            "d36",
+            "d33",
+            "d35",
+            "g2",
+            "i4"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q43",
+          "query": "Can the no-visa travel scheme be used to pursue coursework that earns credit?",
+          "relevant": [
+            "d55"
+          ],
+          "top": [
+            "d55",
+            "d56",
+            "d54",
+            "d59",
+            "d65"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q44",
+          "query": "Do a scholar's spouse and children need their own eligibility certificates, and must they pay the tracking-system charge?",
+          "relevant": [
+            "d57"
+          ],
+          "top": [
+            "d66",
+            "d65",
+            "d59",
+            "d60",
+            "d61"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q45",
+          "query": "In which country does someone arrange their face-to-face screening appointment?",
+          "relevant": [
+            "d58"
+          ],
+          "top": [
+            "d58",
+            "d57",
+            "d62",
+            "d60",
+            "d48"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q46",
+          "query": "Is there a timing restriction on renewing travel documents for someone already partway through their programme?",
+          "relevant": [
+            "d59"
+          ],
+          "top": [
+            "d30",
+            "d58",
+            "d66",
+            "d65",
+            "d39"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q47",
+          "query": "What evidence of prior schooling and of plans to go home should be brought to the appointment?",
+          "relevant": [
+            "d61"
+          ],
+          "top": [
+            "d61",
+            "d65",
+            "d52",
+            "d58",
+            "d66"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q48",
+          "query": "Are biometric prints collected using ink during the application?",
+          "relevant": [
+            "d62"
+          ],
+          "top": [
+            "d62",
+            "d61",
+            "d45",
+            "d60",
+            "d1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q49",
+          "query": "Who decides whether a traveller may actually enter once they arrive at the frontier?",
+          "relevant": [
+            "d63"
+          ],
+          "top": [
+            "d62",
+            "d58",
+            "d63",
+            "d59",
+            "g3"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q50",
+          "query": "How early before a programme opens may an academic traveller arrive in the country?",
+          "relevant": [
+            "d59",
+            "d67"
+          ],
+          "top": [
+            "d58",
+            "d67",
+            "d59",
+            "d60",
+            "d55"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q51",
+          "query": "Are people from Canada or Bermuda required to obtain travel authorisation before studying?",
+          "relevant": [
+            "d68"
+          ],
+          "top": [
+            "d68",
+            "d67",
+            "d54",
+            "d31",
+            "d55"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q52",
+          "query": "Does the supervisory publication on quantitative-model oversight create binding obligations?",
+          "relevant": [
+            "d75"
+          ],
+          "top": [
+            "d75",
+            "d73",
+            "d74",
+            "d72",
+            "d9"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q53",
+          "query": "Should every lender apply identical controls, or should rigour scale with the institution?",
+          "relevant": [
+            "d73",
+            "d74"
+          ],
+          "top": [
+            "d72",
+            "d73",
+            "d74",
+            "d75",
+            "d71"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q54",
+          "query": "Is there a companion document addressing risks specific to content-producing machine learning?",
+          "relevant": [
+            "d70"
+          ],
+          "top": [
+            "d70",
+            "d69",
+            "d73",
+            "d74",
+            "d71"
+          ],
+          "hit": true
+        }
+      ]
     },
     {
-      "id": "q2",
-      "query": "Are governments forbidden from rating citizens under the European AI rules?",
-      "relevant": [
-        "g2"
-      ],
-      "top": [
-        "g2",
-        "g3",
-        "d75",
-        "d73",
-        "g1"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q3",
-      "query": "Do firms headquartered abroad still fall within the reach of Europe's AI legislation?",
-      "relevant": [
-        "g3"
-      ],
-      "top": [
-        "g3",
-        "g2",
-        "d75",
-        "d73",
-        "d69"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q4",
-      "query": "Which four pillars organize the American framework for managing artificial intelligence risk?",
-      "relevant": [
-        "n1"
-      ],
-      "top": [
-        "n1",
-        "d69",
-        "d70",
-        "d73",
-        "n3"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q5",
-      "query": "Is following the NIST framework compulsory or optional for organizations?",
-      "relevant": [
-        "n2"
-      ],
-      "top": [
-        "n2",
-        "d69",
-        "d70",
-        "n1",
-        "d40"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q6",
-      "query": "What academic qualification must a specialty-occupation work visa applicant hold?",
-      "relevant": [
-        "i1"
-      ],
-      "top": [
-        "i1",
-        "d61",
-        "d66",
-        "d60",
-        "d65"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q7",
-      "query": "How many skilled-worker visas can be granted annually, including the advanced-degree allotment?",
-      "relevant": [
-        "i2"
-      ],
-      "top": [
-        "i2",
-        "d31",
-        "d54",
-        "d1",
-        "d65"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q8",
-      "query": "When demand exceeds the quota, how does immigration pick which petitions advance?",
-      "relevant": [
-        "i3"
-      ],
-      "top": [
-        "i3",
-        "d28",
-        "d29",
-        "d58",
-        "d62"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q9",
-      "query": "What is the formal immigration status of a person holding permanent residency?",
-      "relevant": [
-        "i4"
-      ],
-      "top": [
-        "i4",
-        "i5",
-        "d64",
-        "d63",
-        "d60"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q10",
-      "query": "After how long can a permanent resident seek to become a citizen?",
-      "relevant": [
-        "i5"
-      ],
-      "top": [
-        "i5",
-        "i4",
-        "d1",
-        "d30",
-        "d41"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q11",
-      "query": "What is the floor for a bank's core equity capital ratio under the latest accord?",
-      "relevant": [
-        "f1"
-      ],
-      "top": [
-        "f1",
-        "d72",
-        "f2",
-        "d74",
-        "d73"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q12",
-      "query": "How much easily-sellable assets must lenders keep for a month-long funding squeeze?",
-      "relevant": [
-        "f3"
-      ],
-      "top": [
-        "f3",
-        "d72",
-        "d75",
-        "d74",
-        "d27"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q13",
-      "query": "Whose confidential medical data is safeguarded by the federal patient-privacy regulation?",
-      "relevant": [
-        "h1"
-      ],
-      "top": [
-        "h1",
-        "h2",
-        "h4",
-        "h3",
-        "d35"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q14",
-      "query": "May a person request a duplicate of their own health file under privacy law?",
-      "relevant": [
-        "h2"
-      ],
-      "top": [
-        "h2",
-        "h4",
-        "h1",
-        "d48",
-        "d35"
-      ],
-      "hit": true
-    },
-    {
-      "id": "q15",
-      "query": "What extra equity cushion beyond the minimum does the banking accord demand?",
-      "relevant": [
-        "f1",
-        "f2"
-      ],
-      "top": [
-        "f1",
-        "d72",
-        "f2",
-        "d75",
-        "d73"
-      ],
-      "hit": true
+      "ranker": "reranked",
+      "query_instruction": true,
+      "corpus_size": 93,
+      "elapsed_seconds": 30.56,
+      "metrics": {
+        "queries": 54,
+        "mrr": 0.7396,
+        "at_k": {
+          "1": {
+            "hit_rate": 0.6481,
+            "recall": 0.5972,
+            "precision": 0.6481,
+            "ndcg": 0.6481
+          },
+          "3": {
+            "hit_rate": 0.8333,
+            "recall": 0.7917,
+            "precision": 0.3025,
+            "ndcg": 0.7235
+          },
+          "5": {
+            "hit_rate": 0.8889,
+            "recall": 0.8704,
+            "precision": 0.2037,
+            "ndcg": 0.7556
+          }
+        }
+      },
+      "queries": [
+        {
+          "id": "q1",
+          "query": "Is face-scanning in open public venues treated as an elevated-risk category by Europe's AI legislation?",
+          "relevant": [
+            "g1"
+          ],
+          "top": [
+            "g1",
+            "g3",
+            "g2",
+            "d69",
+            "n1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q2",
+          "query": "Are governments forbidden from rating citizens under the European AI rules?",
+          "relevant": [
+            "g2"
+          ],
+          "top": [
+            "g2",
+            "g3",
+            "g1",
+            "n2",
+            "d69"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q3",
+          "query": "Do firms headquartered abroad still fall within the reach of Europe's AI legislation?",
+          "relevant": [
+            "g3"
+          ],
+          "top": [
+            "g3",
+            "g2",
+            "g1",
+            "d75",
+            "n2"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q4",
+          "query": "Which four pillars organize the American framework for managing artificial intelligence risk?",
+          "relevant": [
+            "n1"
+          ],
+          "top": [
+            "n1",
+            "d70",
+            "d69",
+            "n3",
+            "d74"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q5",
+          "query": "Is following the NIST framework compulsory or optional for organizations?",
+          "relevant": [
+            "n2"
+          ],
+          "top": [
+            "n2",
+            "n1",
+            "d69",
+            "d70",
+            "d40"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q6",
+          "query": "What academic qualification must a specialty-occupation work visa applicant hold?",
+          "relevant": [
+            "i1"
+          ],
+          "top": [
+            "i1",
+            "d61",
+            "d60",
+            "d54",
+            "d12"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q7",
+          "query": "How many skilled-worker visas can be granted annually, including the advanced-degree allotment?",
+          "relevant": [
+            "i2"
+          ],
+          "top": [
+            "i2",
+            "d15",
+            "d19",
+            "d54",
+            "d1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q8",
+          "query": "When demand exceeds the quota, how does immigration pick which petitions advance?",
+          "relevant": [
+            "i3"
+          ],
+          "top": [
+            "d27",
+            "d28",
+            "d38",
+            "d29",
+            "i3"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q9",
+          "query": "What is the formal immigration status of a person holding permanent residency?",
+          "relevant": [
+            "i4"
+          ],
+          "top": [
+            "i4",
+            "i5",
+            "d64",
+            "d35",
+            "d63"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q10",
+          "query": "After how long can a permanent resident seek to become a citizen?",
+          "relevant": [
+            "i5"
+          ],
+          "top": [
+            "i5",
+            "d67",
+            "i4",
+            "d26",
+            "d63"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q11",
+          "query": "What is the floor for a bank's core equity capital ratio under the latest accord?",
+          "relevant": [
+            "f1"
+          ],
+          "top": [
+            "f1",
+            "f2",
+            "f3",
+            "d73",
+            "d74"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q12",
+          "query": "How much easily-sellable assets must lenders keep for a month-long funding squeeze?",
+          "relevant": [
+            "f3"
+          ],
+          "top": [
+            "f3",
+            "d17",
+            "d22",
+            "d73",
+            "d27"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q13",
+          "query": "Whose confidential medical data is safeguarded by the federal patient-privacy regulation?",
+          "relevant": [
+            "h1"
+          ],
+          "top": [
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "g1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q14",
+          "query": "May a person request a duplicate of their own health file under privacy law?",
+          "relevant": [
+            "h2"
+          ],
+          "top": [
+            "h2",
+            "h1",
+            "h4",
+            "d35",
+            "d1"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q15",
+          "query": "What extra equity cushion beyond the minimum does the banking accord demand?",
+          "relevant": [
+            "f1",
+            "f2"
+          ],
+          "top": [
+            "f1",
+            "f2",
+            "f3",
+            "d73",
+            "g3"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q16",
+          "query": "Will the agency accept a portrait that has been touched up or mounted in a frame?",
+          "relevant": [
+            "d1"
+          ],
+          "top": [
+            "d1",
+            "d21",
+            "d74",
+            "d8",
+            "d9"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q17",
+          "query": "Someone worked twenty hours weekly for a year before finishing their degree. By how much does that shrink the full-time allowance left to them?",
+          "relevant": [
+            "d2"
+          ],
+          "top": [
+            "d2",
+            "d14",
+            "d15",
+            "d1",
+            "d13"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q18",
+          "query": "Within what window must a trainee tell their campus adviser that they have moved house or switched employers?",
+          "relevant": [
+            "d7"
+          ],
+          "top": [
+            "d7",
+            "d9",
+            "d20",
+            "d24",
+            "d21"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q19",
+          "query": "May someone begin course-linked work experience before the date printed on their paperwork?",
+          "relevant": [
+            "d13"
+          ],
+          "top": [
+            "d40",
+            "d37",
+            "d13",
+            "d15",
+            "d25"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q20",
+          "query": "How does moving up to a higher degree level affect the amount of work-experience time available?",
+          "relevant": [
+            "d16",
+            "d19",
+            "d5",
+            "d6"
+          ],
+          "top": [
+            "d16",
+            "d2",
+            "d14",
+            "d40",
+            "d19"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q21",
+          "query": "Can the two-year science extension be claimed twice on the same credential, and is unused time recoverable later?",
+          "relevant": [
+            "d17"
+          ],
+          "top": [
+            "d2",
+            "d17",
+            "d16",
+            "d19",
+            "d5"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q22",
+          "query": "Is a sponsoring company allowed to hand its mentoring duties to a different firm?",
+          "relevant": [
+            "d21"
+          ],
+          "top": [
+            "d21",
+            "d9",
+            "d8",
+            "d20",
+            "d7"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q23",
+          "query": "Do stretches without work push back the finish date of the science extension?",
+          "relevant": [
+            "d23"
+          ],
+          "top": [
+            "d23",
+            "d26",
+            "d17",
+            "d27",
+            "d22"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q24",
+          "query": "Who has to put their signature on the periodic progress assessments during a science placement?",
+          "relevant": [
+            "d25"
+          ],
+          "top": [
+            "d25",
+            "d24",
+            "d21",
+            "d18",
+            "d43"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q25",
+          "query": "How far ahead of time may someone file a request to work before graduating?",
+          "relevant": [
+            "d26"
+          ],
+          "top": [
+            "d26",
+            "d15",
+            "d43",
+            "d17",
+            "d27"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q26",
+          "query": "If a renewal request is refused after the previous work card already lapsed, how long may the person stay?",
+          "relevant": [
+            "d27"
+          ],
+          "top": [
+            "d27",
+            "d26",
+            "d29",
+            "d14",
+            "d23"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q27",
+          "query": "How is the interval bridged between a graduate losing student standing and their sponsored work classification beginning?",
+          "relevant": [
+            "d28"
+          ],
+          "top": [
+            "d27",
+            "d26",
+            "d28",
+            "d22",
+            "d29"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q28",
+          "query": "After a refusal or withdrawal, how much time is allowed to wind up affairs and leave the country?",
+          "relevant": [
+            "d29"
+          ],
+          "top": [
+            "d29",
+            "d28",
+            "d30",
+            "d63",
+            "d27"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q29",
+          "query": "Which filing lets someone lengthen their stay so a training placement can be finished?",
+          "relevant": [
+            "d30"
+          ],
+          "top": [
+            "d27",
+            "d39",
+            "d17",
+            "d15",
+            "d30"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q30",
+          "query": "Which document has to arrive before a graduate may start a job, and how is it requested?",
+          "relevant": [
+            "d38"
+          ],
+          "top": [
+            "d26",
+            "d40",
+            "d25",
+            "d43",
+            "d15"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q31",
+          "query": "What paperwork does the campus adviser hand back once they endorse a science training placement?",
+          "relevant": [
+            "d39"
+          ],
+          "top": [
+            "d34",
+            "d25",
+            "d21",
+            "d8",
+            "d9"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q32",
+          "query": "Must the job a student takes be connected to what they studied?",
+          "relevant": [
+            "d12",
+            "d41"
+          ],
+          "top": [
+            "d11",
+            "d9",
+            "d12",
+            "d20",
+            "d40"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q33",
+          "query": "What happens to a submission lodged more than a month after the adviser entered the recommendation?",
+          "relevant": [
+            "d43"
+          ],
+          "top": [
+            "d17",
+            "d26",
+            "d3",
+            "d44",
+            "d1"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q34",
+          "query": "How many days of joblessness can accumulate before officials may end someone's record?",
+          "relevant": [
+            "d48"
+          ],
+          "top": [
+            "d48",
+            "d26",
+            "d3",
+            "d27",
+            "d15"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q35",
+          "query": "What becomes of existing work permission when a graduate enrols in a fresh degree programme?",
+          "relevant": [
+            "d4"
+          ],
+          "top": [
+            "d40",
+            "d26",
+            "d19",
+            "d44",
+            "d15"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q36",
+          "query": "Do staffing-agency placements or one-person businesses satisfy the required working relationship?",
+          "relevant": [
+            "d10",
+            "d22"
+          ],
+          "top": [
+            "d9",
+            "d21",
+            "d10",
+            "d20",
+            "d22"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q37",
+          "query": "Is a sponsor permitted to put a trainee in the seat of an existing domestic employee?",
+          "relevant": [
+            "d20",
+            "d8"
+          ],
+          "top": [
+            "d20",
+            "d8",
+            "d22",
+            "d21",
+            "d9"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q38",
+          "query": "How many varieties of off-campus work may an academic visa holder undertake?",
+          "relevant": [
+            "d11",
+            "d12"
+          ],
+          "top": [
+            "d11",
+            "d55",
+            "d1",
+            "d12",
+            "d61"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q39",
+          "query": "Which form spells out the skills and objectives a placement is meant to impart?",
+          "relevant": [
+            "d18"
+          ],
+          "top": [
+            "d18",
+            "d8",
+            "d20",
+            "d21",
+            "d9"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q40",
+          "query": "When school is out of session, is pre-graduation work counted as reduced hours or a full load?",
+          "relevant": [
+            "d44"
+          ],
+          "top": [
+            "d44",
+            "d1",
+            "d46",
+            "d14",
+            "d13"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q41",
+          "query": "Is there a character ceiling on the free-text notes printed on the eligibility certificate?",
+          "relevant": [
+            "d45"
+          ],
+          "top": [
+            "d45",
+            "d49",
+            "d60",
+            "d50",
+            "d46"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q42",
+          "query": "Which statute defines somebody who is neither a citizen nor a national of the country?",
+          "relevant": [
+            "d35"
+          ],
+          "top": [
+            "d36",
+            "d35",
+            "d54",
+            "d64",
+            "i5"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q43",
+          "query": "Can the no-visa travel scheme be used to pursue coursework that earns credit?",
+          "relevant": [
+            "d55"
+          ],
+          "top": [
+            "d55",
+            "d54",
+            "d56",
+            "d65",
+            "d60"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q44",
+          "query": "Do a scholar's spouse and children need their own eligibility certificates, and must they pay the tracking-system charge?",
+          "relevant": [
+            "d57"
+          ],
+          "top": [
+            "d60",
+            "d59",
+            "d66",
+            "d65",
+            "d56"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q45",
+          "query": "In which country does someone arrange their face-to-face screening appointment?",
+          "relevant": [
+            "d58"
+          ],
+          "top": [
+            "d58",
+            "d57",
+            "d62",
+            "d61",
+            "d59"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q46",
+          "query": "Is there a timing restriction on renewing travel documents for someone already partway through their programme?",
+          "relevant": [
+            "d59"
+          ],
+          "top": [
+            "d67",
+            "d29",
+            "d63",
+            "d65",
+            "d66"
+          ],
+          "hit": false
+        },
+        {
+          "id": "q47",
+          "query": "What evidence of prior schooling and of plans to go home should be brought to the appointment?",
+          "relevant": [
+            "d61"
+          ],
+          "top": [
+            "d43",
+            "d58",
+            "d61",
+            "d67",
+            "d65"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q48",
+          "query": "Are biometric prints collected using ink during the application?",
+          "relevant": [
+            "d62"
+          ],
+          "top": [
+            "d62",
+            "d61",
+            "g1",
+            "d1",
+            "d45"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q49",
+          "query": "Who decides whether a traveller may actually enter once they arrive at the frontier?",
+          "relevant": [
+            "d63"
+          ],
+          "top": [
+            "d67",
+            "d62",
+            "d63",
+            "d54",
+            "d55"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q50",
+          "query": "How early before a programme opens may an academic traveller arrive in the country?",
+          "relevant": [
+            "d59",
+            "d67"
+          ],
+          "top": [
+            "d67",
+            "d58",
+            "d59",
+            "d15",
+            "d55"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q51",
+          "query": "Are people from Canada or Bermuda required to obtain travel authorisation before studying?",
+          "relevant": [
+            "d68"
+          ],
+          "top": [
+            "d68",
+            "d67",
+            "d54",
+            "d56",
+            "d55"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q52",
+          "query": "Does the supervisory publication on quantitative-model oversight create binding obligations?",
+          "relevant": [
+            "d75"
+          ],
+          "top": [
+            "d74",
+            "d9",
+            "d75",
+            "d73",
+            "d21"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q53",
+          "query": "Should every lender apply identical controls, or should rigour scale with the institution?",
+          "relevant": [
+            "d73",
+            "d74"
+          ],
+          "top": [
+            "d72",
+            "d74",
+            "d73",
+            "d9",
+            "d21"
+          ],
+          "hit": true
+        },
+        {
+          "id": "q54",
+          "query": "Is there a companion document addressing risks specific to content-producing machine learning?",
+          "relevant": [
+            "d70"
+          ],
+          "top": [
+            "d69",
+            "d74",
+            "n1",
+            "d73",
+            "d70"
+          ],
+          "hit": true
+        }
+      ]
     }
   ]
 }

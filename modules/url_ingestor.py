@@ -4,6 +4,7 @@ import io
 import json
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 import psycopg2
@@ -11,6 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
+from modules.content_filter import filter_chunks, is_boilerplate
 from modules.source_manager import delete_source
 from modules.trick_questions import generate_trick_questions
 from modules.url_guard import pin_validated_host, validate_public_url
@@ -24,6 +26,15 @@ REQUEST_TIMEOUT_SECONDS = 30
 MIN_BLOCK_LENGTH = 40
 MIN_CHUNK_LENGTH = 50
 MAX_CHUNKS_PER_SOURCE = 300
+
+# Dotted forms that must not be mistaken for the end of a sentence: titles,
+# regulation cites (8 CFR 214.2), month abbreviations, and single initials.
+_ABBREV_RE = re.compile(
+    r"\b(?:[A-Z]|No|Nos|Mr|Mrs|Ms|Dr|Sr|Jr|St|vs|etc|e\.g|i\.e|approx|Fig"
+    r"|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept?|Oct|Nov|Dec|U\.S|Sec|Pub|Reg)\."
+    r"|\b\d+\.\d+(?:\.\d+)*"
+)
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
 MAX_REDIRECTS = 5
 MAX_RESPONSE_BYTES = 15 * 1024 * 1024  # 15 MB cap on a fetched document
 _REDIRECT_STATUSES = {301, 302, 303, 307, 308}
@@ -110,7 +121,9 @@ def _extract_html(html: str) -> tuple:
                 sections.append((current_heading, "\n".join(current_blocks)))
                 current_blocks = []
             current_heading = text
-        elif len(text) > MIN_BLOCK_LENGTH:
+        elif len(text) > MIN_BLOCK_LENGTH and not is_boilerplate(text):
+            # Drop banners and cookie notices here, before they are merged into
+            # a section and become indistinguishable from the prose around them.
             current_blocks.append(text)
 
     if current_blocks:
@@ -198,28 +211,84 @@ def scrape_url(url: str) -> tuple:
     return _extract_html(response.text)
 
 
+def split_sentences(text: str) -> list:
+    """Split text into sentences, keeping their terminating punctuation.
+
+    Not a general-purpose sentence tokenizer — it only needs to avoid the
+    abbreviations that actually occur in this corpus, where a naive split on
+    "." would cut "8 CFR 214.2(f)" or "Mar. 11, 2016" into pieces.
+    """
+    protected = _ABBREV_RE.sub(lambda m: m.group(0).replace(".", "\x00"), text)
+    parts = _SENTENCE_SPLIT_RE.split(protected)
+    return [p.replace("\x00", ".").strip() for p in parts if p.strip()]
+
+
 def chunk_text(text: str, chunk_size: int = 400, overlap: int = 80) -> list:
-    """Split text into overlapping word-based chunks.
+    """Split text into overlapping chunks that begin at sentence boundaries.
+
+    An earlier version sliced on a fixed word count. That routinely cut through
+    the middle of a sentence, so a chunk could open with a dangling clause and
+    no subject — one such chunk, whose text plainly contained the answer to a
+    benchmark query, was retrieved at rank 28 of 93 because its opening words
+    referred to something named in the *previous* chunk. Packing whole
+    sentences instead keeps every chunk independently readable, which is what
+    the embedding model is being asked to represent.
+
+    A "sentence" longer than ``chunk_size`` is split on words as a fallback.
+    That is not hypothetical: badly-extracted PDFs and flattened link menus can
+    run for hundreds of words without a full stop, and emitting them whole
+    would hand the embedding model a chunk past its 512-token limit, which it
+    truncates silently — losing content with nothing to show for it.
 
     Args:
         text: The full text to chunk.
-        chunk_size: Number of words per chunk.
-        overlap: Number of words shared between consecutive chunks.
+        chunk_size: Target words per chunk; a chunk may overshoot to finish
+            the sentence it is in.
+        overlap: Approximate words of trailing context repeated at the start of
+            the next chunk, rounded to whole sentences.
 
     Returns:
         A list of chunk strings.
     """
-    words = str(text).split()
+    sentences = []
+    for sentence in split_sentences(str(text)):
+        words = sentence.split()
+        if len(words) <= chunk_size:
+            sentences.append(sentence)
+            continue
+        # Oversized run with no sentence break — fall back to word slices.
+        for i in range(0, len(words), chunk_size):
+            sentences.append(" ".join(words[i : i + chunk_size]))
+
+    if not sentences:
+        return []
+
+    lengths = [len(s.split()) for s in sentences]
     chunks = []
     start = 0
 
-    while start < len(words):
-        chunk = " ".join(words[start : start + chunk_size])
+    while start < len(sentences):
+        end, total = start, 0
+        while end < len(sentences) and (
+            total == 0 or total + lengths[end] <= chunk_size
+        ):
+            total += lengths[end]
+            end += 1
 
+        chunk = " ".join(sentences[start:end])
         if len(chunk.strip()) > MIN_CHUNK_LENGTH:
             chunks.append(chunk)
 
-        start += chunk_size - overlap
+        if end >= len(sentences):
+            break
+
+        # Step back over whole sentences until roughly `overlap` words of
+        # context are repeated, so consecutive chunks still share ground.
+        back, carried = end, 0
+        while back > start + 1 and carried + lengths[back - 1] <= overlap:
+            back -= 1
+            carried += lengths[back]
+        start = back
 
     return chunks
 
@@ -291,7 +360,19 @@ def ingest_url(url: str) -> dict:
     """
     title, sections = scrape_url(url)
 
-    chunks = chunk_sections(sections)[:MAX_CHUNKS_PER_SOURCE]
+    # Second pass, now at chunk level. Block filtering cannot catch link menus:
+    # each <li> is a few words, too short for the statistical signals to be
+    # meaningful, and only becomes recognisable as a list once assembled.
+    chunks, dropped = filter_chunks(chunk_sections(sections))
+    chunks = chunks[:MAX_CHUNKS_PER_SOURCE]
+
+    if dropped:
+        logger.info(
+            "Filtered %d non-prose chunk(s) from %s: %s",
+            len(dropped),
+            url,
+            ", ".join(sorted({r for d in dropped for r in d["reasons"]}))[:200],
+        )
 
     if not chunks:
         return {
