@@ -193,8 +193,40 @@ each since fixed:
   chunk. One such chunk contained a query's answer verbatim and was retrieved
   at rank 28 of 93. Sentence-aligned chunking brings that to **4.7%**.
 - **Near-duplicate chunks split each other's signal**, from 80-word overlap
-  plus overlapping source documents. Not yet addressed — MMR at the rerank
-  step is the candidate fix.
+  plus overlapping source documents. Fixed with MMR — see below.
+
+### Diversity (MMR) — how lambda was chosen
+
+```bash
+python -m eval.run_retrieval_eval --mmr-sweep 1.0,0.9,0.8,0.7,0.5
+```
+
+`lambda=1.0` is pure relevance and reproduces the plain reranked numbers
+exactly, which is what makes it a usable control row.
+
+| λ | MRR | hit@3 | queries with a near-duplicate in top-5 | non-repeated content |
+|---|---|---|---|---|
+| 1.0 (off) | 0.739 | 0.815 | 15/54 | 62.5% |
+| 0.9 | 0.743 | 0.852 | 11/54 | 63.2% |
+| **0.8 (shipped)** | **0.743** | **0.852** | **10/54** | **64.6%** |
+| 0.7 | 0.742 | 0.833 | 7/54 | 66.8% |
+| 0.5 | 0.737 | 0.778 | 4/54 | 68.4% |
+
+Judging MMR by MRR alone would have been a mistake: the spread across every
+λ is 0.006, small enough to dismiss as noise at 54 queries. But ranking
+metrics do not score what MMR is for. With diversity off, **28% of queries
+return a top-5 containing two chunks sharing over half their vocabulary**, and
+roughly 37% of the words in the retrieved context are repeats — prompt budget
+spent restating a passage instead of covering more ground.
+
+λ=0.8 was picked because it is dominant rather than merely balanced: every
+ranking metric is at least as good as pure relevance while near-duplicate pairs
+drop by a third. Below 0.7 the trade turns real — λ=0.5 nearly eliminates
+duplication but costs 3 points of hit-rate@3.
+
+The redundancy figures are approximate: "near-duplicate" means pairwise token
+Jaccard above 0.5, and the content measure uses whitespace tokens. Both are
+judgement calls, so treat them as directional.
 
 **The benchmark corpus is frozen.** Ingestion changes are deliberately *not*
 folded back into `retrieval_corpus.jsonl`: rebuilding it would renumber every

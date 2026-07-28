@@ -168,7 +168,10 @@ def embedding_ranker(corpus: list, instruction: str = ""):
 
 
 def reranked_ranker(
-    corpus: list, instruction: str = "", pool_size: int = CANDIDATE_POOL_SIZE
+    corpus: list,
+    instruction: str = "",
+    pool_size: int = CANDIDATE_POOL_SIZE,
+    mmr_lambda: float | None = None,
 ):
     """Rank as production does: embedding recall, then cross-encoder rerank.
 
@@ -190,7 +193,9 @@ def reranked_ranker(
         ranked = embed_rank(query)
         pool, tail = ranked[:pool_size], ranked[pool_size:]
         contexts = [{"id": cid, "text": by_id[cid]["text"]} for cid in pool]
-        reranked = rerank_contexts(query, contexts, top_k=len(contexts))
+        reranked = rerank_contexts(
+            query, contexts, top_k=len(contexts), mmr_lambda=mmr_lambda
+        )
         return [c["id"] for c in reranked] + tail
 
     return rank
@@ -208,13 +213,17 @@ def oracle_ranker(corpus: list):
     return rank_for
 
 
-def build_ranker(name: str, corpus: list, instruction: str = ""):
+def build_ranker(
+    name: str, corpus: list, instruction: str = "", mmr_lambda: float | None = None
+):
     if name == "lexical":
         return lexical_ranker(corpus), False
     if name == "embedding":
         return embedding_ranker(corpus, instruction=instruction), False
     if name == "reranked":
-        return reranked_ranker(corpus, instruction=instruction), False
+        return reranked_ranker(
+            corpus, instruction=instruction, mmr_lambda=mmr_lambda
+        ), False
     if name == "oracle":
         return oracle_ranker(corpus), True  # needs the relevant set, not the query
     raise ValueError(f"Unknown ranker: {name!r}")
@@ -226,13 +235,16 @@ def run(
     limit: int | None = None,
     instruction: str = "",
     verbose: bool = True,
+    mmr_lambda: float | None = None,
 ) -> dict:
     corpus = _load_jsonl(CORPUS_PATH)
     queries = _load_jsonl(QUERIES_PATH)
     if limit:
         queries = queries[:limit]
 
-    ranker, is_oracle = build_ranker(ranker_name, corpus, instruction=instruction)
+    ranker, is_oracle = build_ranker(
+        ranker_name, corpus, instruction=instruction, mmr_lambda=mmr_lambda
+    )
 
     results = []
     per_query = []
@@ -263,6 +275,7 @@ def run(
     return {
         "ranker": ranker_name,
         "query_instruction": bool(instruction),
+        "mmr_lambda": mmr_lambda,
         "corpus_size": len(corpus),
         "elapsed_seconds": round(time.time() - started, 2),
         "metrics": metrics,
@@ -289,6 +302,19 @@ def main() -> int:
         help="Prefix queries with BGE's retrieval instruction (queries only).",
     )
     parser.add_argument(
+        "--mmr",
+        type=float,
+        default=None,
+        metavar="LAMBDA",
+        help="Apply MMR after reranking. 1.0 = pure relevance, 0.0 = pure diversity.",
+    )
+    parser.add_argument(
+        "--mmr-sweep",
+        default=None,
+        metavar="LAMBDAS",
+        help="Comma-separated lambdas to compare, e.g. 1.0,0.9,0.7,0.5",
+    )
+    parser.add_argument(
         "--k", default="1,3,5", help="Comma-separated cutoffs, e.g. 1,3,5"
     )
     parser.add_argument(
@@ -302,11 +328,55 @@ def main() -> int:
     ks = [int(x) for x in args.k.split(",") if x.strip()]
     instruction = BGE_QUERY_INSTRUCTION if args.query_instruction else ""
 
+    if args.mmr_sweep:
+        lambdas = [float(x) for x in args.mmr_sweep.split(",") if x.strip()]
+        runs = []
+        for lam in lambdas:
+            print(f"\n--- reranked, mmr lambda={lam} ---")
+            runs.append(
+                run(
+                    "reranked",
+                    ks,
+                    args.limit,
+                    instruction,
+                    verbose=False,
+                    mmr_lambda=lam,
+                )
+            )
+            m = runs[-1]["metrics"]
+            print(f"  MRR {m['mrr']:.3f}  |  {runs[-1]['elapsed_seconds']}s")
+        report = format_comparison_report(
+            [
+                (f"mmr λ={lam}", r["metrics"])
+                for lam, r in zip(lambdas, runs, strict=True)
+            ],
+            ks,
+            corpus_size=runs[0]["corpus_size"],
+            instruction=bool(instruction),
+        )
+        result = {"mode": "mmr_sweep", "lambdas": lambdas, "runs": runs}
+        print("\n" + report)
+        if not args.no_write:
+            with open(RESULTS_JSON, "w", encoding="utf-8") as fh:
+                json.dump(result, fh, indent=2)
+            with open(REPORT_MD, "w", encoding="utf-8") as fh:
+                fh.write(report)
+        return 0
+
     if args.compare:
         runs = []
         for name in COMPARE_ORDER:
             print(f"\n--- {name} ---")
-            runs.append(run(name, ks, args.limit, instruction, verbose=False))
+            runs.append(
+                run(
+                    name,
+                    ks,
+                    args.limit,
+                    instruction,
+                    verbose=False,
+                    mmr_lambda=args.mmr,
+                )
+            )
             m = runs[-1]["metrics"]
             print(f"  MRR {m['mrr']:.3f}  |  {runs[-1]['elapsed_seconds']}s")
         report = format_comparison_report(
@@ -323,7 +393,7 @@ def main() -> int:
         }
     else:
         print(f"Running retrieval eval — ranker={args.ranker}, k={ks}\n")
-        result = run(args.ranker, ks, args.limit, instruction)
+        result = run(args.ranker, ks, args.limit, instruction, mmr_lambda=args.mmr)
         report = format_report(result["metrics"], ranker=args.ranker)
 
     print("\n" + report)

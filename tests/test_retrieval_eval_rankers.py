@@ -102,7 +102,7 @@ def test_no_instruction_by_default(monkeypatch):
 def test_reranked_ranker_applies_reranker_over_pool(monkeypatch):
     _patch_model(monkeypatch, _StubModel())
 
-    def fake_rerank(query, contexts, top_k):
+    def fake_rerank(query, contexts, top_k, mmr_lambda=None):
         # Reverse the pool, so a passive pass-through cannot fake success.
         return list(reversed(contexts))[:top_k]
 
@@ -115,6 +115,22 @@ def test_reranked_ranker_applies_reranker_over_pool(monkeypatch):
     # Everything below the pool keeps its embedding order and is preserved.
     assert ranked[2:] == ["c2", "c3"]
     assert sorted(ranked) == ["c0", "c1", "c2", "c3"]
+
+
+def test_reranked_ranker_passes_mmr_lambda_through(monkeypatch):
+    # The eval must be able to score the MMR variant; if the flag silently
+    # stopped reaching the reranker, a sweep would report identical numbers
+    # for every lambda and look like "MMR does nothing".
+    _patch_model(monkeypatch, _StubModel())
+    seen = {}
+
+    def fake_rerank(query, contexts, top_k, mmr_lambda=None):
+        seen["lambda"] = mmr_lambda
+        return contexts[:top_k]
+
+    monkeypatch.setattr("modules.reranker.rerank_contexts", fake_rerank)
+    rre.reranked_ranker(_corpus(), pool_size=2, mmr_lambda=0.6)("query text")
+    assert seen["lambda"] == 0.6
 
 
 def test_reranked_ranker_pool_matches_production_default():
