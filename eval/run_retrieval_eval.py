@@ -6,8 +6,12 @@ corpus for each query and reports hit-rate@k, recall@k, precision@k, MRR, and
 nDCG@k — the standard measures of retrieval quality.
 
 Rankers (``--ranker``):
-    embedding  production embedding model (BAAI/bge-small) + cosine similarity,
-               the real retrieval path. Downloads the model on first run.
+    reranked   the full production path: embedding recall to a candidate pool,
+               then cross-encoder reranking. This is what actually serves users,
+               so it is the number that matters.
+    embedding  embedding model (BAAI/bge-small) + cosine similarity only. The
+               first stage in isolation; the gap to ``reranked`` is the
+               reranker's measured contribution.
     lexical    offline word-overlap baseline. No model, no network — the floor
                the embedding retriever should beat, and a CI smoke test.
     oracle     perfect ranking; verifies the scoring math (MRR / nDCG = 1.0).
@@ -16,9 +20,13 @@ The corpus is self-contained (eval/retrieval_corpus.jsonl), so the benchmark
 is reproducible and independent of the live vector store.
 
 Examples:
-    python -m eval.run_retrieval_eval                     # real embedding model
-    python -m eval.run_retrieval_eval --ranker lexical    # offline baseline
-    python -m eval.run_retrieval_eval --ranker oracle
+    python -m eval.run_retrieval_eval                       # production path
+    python -m eval.run_retrieval_eval --compare             # all rankers, one table
+    python -m eval.run_retrieval_eval --ranker embedding    # first stage only
+    python -m eval.run_retrieval_eval --ranker lexical      # offline baseline
+
+    # Does BGE's retrieval instruction actually help? Measure, don't assume:
+    python -m eval.run_retrieval_eval --ranker embedding --query-instruction
 """
 
 from __future__ import annotations
@@ -32,13 +40,30 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from eval.retrieval_metrics import compute_metrics, format_report
+from eval.retrieval_metrics import (
+    compute_metrics,
+    format_comparison_report,
+    format_report,
+)
 
 HERE = os.path.dirname(__file__)
 CORPUS_PATH = os.path.join(HERE, "retrieval_corpus.jsonl")
 QUERIES_PATH = os.path.join(HERE, "retrieval_queries.jsonl")
 RESULTS_JSON = os.path.join(HERE, "retrieval_results.json")
 REPORT_MD = os.path.join(HERE, "retrieval_report.md")
+
+# Must match agents/retrieval_agent.CANDIDATE_POOL_SIZE, or the eval measures a
+# pipeline that differs from the one in production.
+CANDIDATE_POOL_SIZE = 15
+
+# BGE is trained asymmetrically: short queries get an instruction prefix, long
+# passages do not. BAAI report the gain is smaller for v1.5 than v1 (v1.5 was
+# trained to work without it), so this is opt-in and worth measuring rather
+# than assuming — which is the whole point of having this harness.
+BGE_QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
+
+# Cheapest first, so a --compare run fails fast before loading any model.
+COMPARE_ORDER = ["lexical", "embedding", "reranked"]
 
 _STOPWORDS = {
     "the",
@@ -116,8 +141,14 @@ def lexical_ranker(corpus: list):
     return rank
 
 
-def embedding_ranker(corpus: list):
-    """Rank corpus ids by cosine similarity of bge-small embeddings."""
+def embedding_ranker(corpus: list, instruction: str = ""):
+    """Rank corpus ids by cosine similarity of bge-small embeddings.
+
+    Args:
+        corpus: chunks to rank.
+        instruction: optional prefix applied to the *query only*. BGE is
+            trained asymmetrically, so passages stay bare.
+    """
     from modules.rag_pipeline import _get_embedding_model, cosine_similarity
 
     model = _get_embedding_model()
@@ -125,13 +156,42 @@ def embedding_ranker(corpus: list):
     embeddings = model.encode([c["text"] for c in corpus]).tolist()
 
     def rank(query: str) -> list:
-        q_emb = model.encode([query]).tolist()[0]
+        q_emb = model.encode([instruction + query]).tolist()[0]
         scored = [
             (cid, cosine_similarity(q_emb, emb))
             for cid, emb in zip(ids, embeddings, strict=True)
         ]
         scored.sort(key=lambda x: x[1], reverse=True)
         return [cid for cid, _ in scored]
+
+    return rank
+
+
+def reranked_ranker(
+    corpus: list, instruction: str = "", pool_size: int = CANDIDATE_POOL_SIZE
+):
+    """Rank as production does: embedding recall, then cross-encoder rerank.
+
+    ``run_retrieval_agent`` pulls a wide candidate pool by embedding similarity
+    and hands it to the cross-encoder, which reads each query/chunk pair
+    properly instead of comparing two independently-computed vectors. Scoring
+    only the embedding stage therefore measures something the user never sees.
+
+    The reranker is applied to the pool; everything below the pool keeps its
+    embedding order and is appended. So for k <= pool_size this is exactly the
+    production ordering, and the metrics stay well-defined for larger k.
+    """
+    from modules.reranker import rerank_contexts
+
+    embed_rank = embedding_ranker(corpus, instruction=instruction)
+    by_id = {c["id"]: c for c in corpus}
+
+    def rank(query: str) -> list:
+        ranked = embed_rank(query)
+        pool, tail = ranked[:pool_size], ranked[pool_size:]
+        contexts = [{"id": cid, "text": by_id[cid]["text"]} for cid in pool]
+        reranked = rerank_contexts(query, contexts, top_k=len(contexts))
+        return [c["id"] for c in reranked] + tail
 
     return rank
 
@@ -148,23 +208,31 @@ def oracle_ranker(corpus: list):
     return rank_for
 
 
-def build_ranker(name: str, corpus: list):
+def build_ranker(name: str, corpus: list, instruction: str = ""):
     if name == "lexical":
         return lexical_ranker(corpus), False
     if name == "embedding":
-        return embedding_ranker(corpus), False
+        return embedding_ranker(corpus, instruction=instruction), False
+    if name == "reranked":
+        return reranked_ranker(corpus, instruction=instruction), False
     if name == "oracle":
         return oracle_ranker(corpus), True  # needs the relevant set, not the query
     raise ValueError(f"Unknown ranker: {name!r}")
 
 
-def run(ranker_name: str, ks: list, limit: int | None = None) -> dict:
+def run(
+    ranker_name: str,
+    ks: list,
+    limit: int | None = None,
+    instruction: str = "",
+    verbose: bool = True,
+) -> dict:
     corpus = _load_jsonl(CORPUS_PATH)
     queries = _load_jsonl(QUERIES_PATH)
     if limit:
         queries = queries[:limit]
 
-    ranker, is_oracle = build_ranker(ranker_name, corpus)
+    ranker, is_oracle = build_ranker(ranker_name, corpus, instruction=instruction)
 
     results = []
     per_query = []
@@ -184,14 +252,18 @@ def run(ranker_name: str, ks: list, limit: int | None = None) -> dict:
                 "hit": any(r in relevant for r in ranked[:top_k]),
             }
         )
-        flag = "ok " if per_query[-1]["hit"] else "MISS"
-        print(
-            f"  [{flag}] {q.get('id'):<5} top{top_k}={ranked[:top_k]}  rel={sorted(relevant)}"
-        )
+        if verbose:
+            flag = "ok " if per_query[-1]["hit"] else "MISS"
+            print(
+                f"  [{flag}] {q.get('id'):<5} top{top_k}={ranked[:top_k]}  "
+                f"rel={sorted(relevant)}"
+            )
 
     metrics = compute_metrics(results, ks)
     return {
         "ranker": ranker_name,
+        "query_instruction": bool(instruction),
+        "corpus_size": len(corpus),
         "elapsed_seconds": round(time.time() - started, 2),
         "metrics": metrics,
         "queries": per_query,
@@ -202,9 +274,19 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="TrustGuard retrieval eval")
     parser.add_argument(
         "--ranker",
-        choices=["embedding", "lexical", "oracle"],
-        default="embedding",
-        help="Which retriever to score (default: embedding).",
+        choices=["reranked", "embedding", "lexical", "oracle"],
+        default="reranked",
+        help="Which retriever to score (default: reranked, the production path).",
+    )
+    parser.add_argument(
+        "--compare",
+        action="store_true",
+        help="Score every ranker and write one side-by-side table.",
+    )
+    parser.add_argument(
+        "--query-instruction",
+        action="store_true",
+        help="Prefix queries with BGE's retrieval instruction (queries only).",
     )
     parser.add_argument(
         "--k", default="1,3,5", help="Comma-separated cutoffs, e.g. 1,3,5"
@@ -218,10 +300,32 @@ def main() -> int:
     args = parser.parse_args()
 
     ks = [int(x) for x in args.k.split(",") if x.strip()]
-    print(f"Running retrieval eval — ranker={args.ranker}, k={ks}\n")
-    result = run(args.ranker, ks, args.limit)
+    instruction = BGE_QUERY_INSTRUCTION if args.query_instruction else ""
 
-    report = format_report(result["metrics"], ranker=args.ranker)
+    if args.compare:
+        runs = []
+        for name in COMPARE_ORDER:
+            print(f"\n--- {name} ---")
+            runs.append(run(name, ks, args.limit, instruction, verbose=False))
+            m = runs[-1]["metrics"]
+            print(f"  MRR {m['mrr']:.3f}  |  {runs[-1]['elapsed_seconds']}s")
+        report = format_comparison_report(
+            [(r["ranker"], r["metrics"]) for r in runs],
+            ks,
+            corpus_size=runs[0]["corpus_size"],
+            instruction=bool(instruction),
+        )
+        result = {
+            "mode": "compare",
+            "query_instruction": bool(instruction),
+            "corpus_size": runs[0]["corpus_size"],
+            "runs": runs,
+        }
+    else:
+        print(f"Running retrieval eval — ranker={args.ranker}, k={ks}\n")
+        result = run(args.ranker, ks, args.limit, instruction)
+        report = format_report(result["metrics"], ranker=args.ranker)
+
     print("\n" + report)
 
     if not args.no_write:

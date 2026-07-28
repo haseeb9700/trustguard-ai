@@ -13,3 +13,42 @@
 {"id": "q13", "query": "Whose confidential medical data is safeguarded by the federal patient-privacy regulation?", "relevant_ids": ["h1"]}
 {"id": "q14", "query": "May a person request a duplicate of their own health file under privacy law?", "relevant_ids": ["h2"]}
 {"id": "q15", "query": "What extra equity cushion beyond the minimum does the banking accord demand?", "relevant_ids": ["f2", "f1"]}
+{"id": "q16", "query": "Will the agency accept a portrait that has been touched up or mounted in a frame?", "relevant_ids": ["d1"]}
+{"id": "q17", "query": "Someone worked twenty hours weekly for a year before finishing their degree. By how much does that shrink the full-time allowance left to them?", "relevant_ids": ["d2"]}
+{"id": "q18", "query": "Within what window must a trainee tell their campus adviser that they have moved house or switched employers?", "relevant_ids": ["d7"]}
+{"id": "q19", "query": "May someone begin course-linked work experience before the date printed on their paperwork?", "relevant_ids": ["d13"]}
+{"id": "q20", "query": "How does moving up to a higher degree level affect the amount of work-experience time available?", "relevant_ids": ["d16", "d5", "d6", "d19"]}
+{"id": "q21", "query": "Can the two-year science extension be claimed twice on the same credential, and is unused time recoverable later?", "relevant_ids": ["d17"]}
+{"id": "q22", "query": "Is a sponsoring company allowed to hand its mentoring duties to a different firm?", "relevant_ids": ["d21"]}
+{"id": "q23", "query": "Do stretches without work push back the finish date of the science extension?", "relevant_ids": ["d23"]}
+{"id": "q24", "query": "Who has to put their signature on the periodic progress assessments during a science placement?", "relevant_ids": ["d25"]}
+{"id": "q25", "query": "How far ahead of time may someone file a request to work before graduating?", "relevant_ids": ["d26"]}
+{"id": "q26", "query": "If a renewal request is refused after the previous work card already lapsed, how long may the person stay?", "relevant_ids": ["d27"]}
+{"id": "q27", "query": "How is the interval bridged between a graduate losing student standing and their sponsored work classification beginning?", "relevant_ids": ["d28"]}
+{"id": "q28", "query": "After a refusal or withdrawal, how much time is allowed to wind up affairs and leave the country?", "relevant_ids": ["d29"]}
+{"id": "q29", "query": "Which filing lets someone lengthen their stay so a training placement can be finished?", "relevant_ids": ["d30"]}
+{"id": "q30", "query": "Which document has to arrive before a graduate may start a job, and how is it requested?", "relevant_ids": ["d38"]}
+{"id": "q31", "query": "What paperwork does the campus adviser hand back once they endorse a science training placement?", "relevant_ids": ["d39"]}
+{"id": "q32", "query": "Must the job a student takes be connected to what they studied?", "relevant_ids": ["d41", "d12"]}
+{"id": "q33", "query": "What happens to a submission lodged more than a month after the adviser entered the recommendation?", "relevant_ids": ["d43"]}
+{"id": "q34", "query": "How many days of joblessness can accumulate before officials may end someone's record?", "relevant_ids": ["d48"]}
+{"id": "q35", "query": "What becomes of existing work permission when a graduate enrols in a fresh degree programme?", "relevant_ids": ["d4"]}
+{"id": "q36", "query": "Do staffing-agency placements or one-person businesses satisfy the required working relationship?", "relevant_ids": ["d10", "d22"]}
+{"id": "q37", "query": "Is a sponsor permitted to put a trainee in the seat of an existing domestic employee?", "relevant_ids": ["d8", "d20"]}
+{"id": "q38", "query": "How many varieties of off-campus work may an academic visa holder undertake?", "relevant_ids": ["d11", "d12"]}
+{"id": "q39", "query": "Which form spells out the skills and objectives a placement is meant to impart?", "relevant_ids": ["d18"]}
+{"id": "q40", "query": "When school is out of session, is pre-graduation work counted as reduced hours or a full load?", "relevant_ids": ["d44"]}
+{"id": "q41", "query": "Is there a character ceiling on the free-text notes printed on the eligibility certificate?", "relevant_ids": ["d45"]}
+{"id": "q42", "query": "Which statute defines somebody who is neither a citizen nor a national of the country?", "relevant_ids": ["d35"]}
+{"id": "q43", "query": "Can the no-visa travel scheme be used to pursue coursework that earns credit?", "relevant_ids": ["d55"]}
+{"id": "q44", "query": "Do a scholar's spouse and children need their own eligibility certificates, and must they pay the tracking-system charge?", "relevant_ids": ["d57"]}
+{"id": "q45", "query": "In which country does someone arrange their face-to-face screening appointment?", "relevant_ids": ["d58"]}
+{"id": "q46", "query": "Is there a timing restriction on renewing travel documents for someone already partway through their programme?", "relevant_ids": ["d59"]}
+{"id": "q47", "query": "What evidence of prior schooling and of plans to go home should be brought to the appointment?", "relevant_ids": ["d61"]}
+{"id": "q48", "query": "Are biometric prints collected using ink during the application?", "relevant_ids": ["d62"]}
+{"id": "q49", "query": "Who decides whether a traveller may actually enter once they arrive at the frontier?", "relevant_ids": ["d63"]}
+{"id": "q50", "query": "How early before a programme opens may an academic traveller arrive in the country?", "relevant_ids": ["d67", "d59"]}
+{"id": "q51", "query": "Are people from Canada or Bermuda required to obtain travel authorisation before studying?", "relevant_ids": ["d68"]}
+{"id": "q52", "query": "Does the supervisory publication on quantitative-model oversight create binding obligations?", "relevant_ids": ["d75"]}
+{"id": "q53", "query": "Should every lender apply identical controls, or should rigour scale with the institution?", "relevant_ids": ["d73", "d74"]}
+{"id": "q54", "query": "Is there a companion document addressing risks specific to content-producing machine learning?", "relevant_ids": ["d70"]}
