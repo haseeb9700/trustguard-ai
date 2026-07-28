@@ -46,7 +46,9 @@ and `unverified_flag` push it down.
 
 ```python
 from ml.predict import predict_quality
-predict_quality(analyze_result)   # -> {"quality_score": 0.91, "label": "Likely correct", ...}
+
+predict_quality(analyze_result)
+# -> {"quality_score": 0.91, "label": "Likely correct", ...}
 ```
 
 Returns `None` if the model hasn't been trained yet. Also exposed as
