@@ -1,14 +1,14 @@
 ## TrustGuard Claim-Verification Eval
 
-**Cases:** 30  |  **Accuracy:** 70.0%  |  **Macro-F1:** 0.549  |  **Weighted-F1:** 0.577
+**Cases:** 40  |  **Accuracy:** 92.5%  |  **Macro-F1:** 0.928  |  **Weighted-F1:** 0.927
 
 ### Per-class metrics
 
 | Verdict | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| entailed | 0.688 | 1.000 | 0.815 | 11 |
-| baseless | 0.714 | 1.000 | 0.833 | 10 |
-| contradicted | 0.000 | 0.000 | 0.000 | 9 |
+| entailed | 1.000 | 1.000 | 1.000 | 11 |
+| baseless | 0.769 | 1.000 | 0.870 | 10 |
+| contradicted | 1.000 | 0.842 | 0.914 | 19 |
 
 ### Confusion matrix (rows = gold, cols = predicted)
 
@@ -16,4 +16,4 @@
 |---|---|---|---|
 | entailed | 11 | 0 | 0 |
 | baseless | 0 | 10 | 0 |
-| contradicted | 5 | 4 | 0 |
+| contradicted | 0 | 3 | 16 |

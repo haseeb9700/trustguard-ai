@@ -1,6 +1,7 @@
 import chromadb
 import pandas as pd
-from sentence_transformers import SentenceTransformer
+
+from modules.embeddings import get_embedding_model
 
 CHUNKS_FILE = "data/rag_chunks.csv"
 DB_PATH = "data/chroma_db"
@@ -16,7 +17,7 @@ def main():
 
     print(f"Valid chunks found: {len(df)}")
 
-    model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+    model = get_embedding_model()
 
     client = chromadb.PersistentClient(path=DB_PATH)
 

@@ -1,30 +1,30 @@
 {
-  "verifier": "lexical",
+  "verifier": "llm",
   "dataset": "dataset.jsonl",
-  "elapsed_seconds": 0.0,
+  "elapsed_seconds": 170.11,
   "metrics": {
-    "total": 30,
-    "accuracy": 0.7,
-    "macro_f1": 0.5494,
-    "weighted_f1": 0.5765,
+    "total": 40,
+    "accuracy": 0.925,
+    "macro_f1": 0.928,
+    "weighted_f1": 0.9267,
     "per_class": {
       "entailed": {
-        "precision": 0.6875,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1": 0.8148,
+        "f1": 1.0,
         "support": 11
       },
       "baseless": {
-        "precision": 0.7143,
+        "precision": 0.7692,
         "recall": 1.0,
-        "f1": 0.8333,
+        "f1": 0.8696,
         "support": 10
       },
       "contradicted": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0,
-        "support": 9
+        "precision": 1.0,
+        "recall": 0.8421,
+        "f1": 0.9143,
+        "support": 19
       }
     },
     "confusion_matrix": {
@@ -39,9 +39,9 @@
         "contradicted": 0
       },
       "contradicted": {
-        "entailed": 5,
-        "baseless": 4,
-        "contradicted": 0
+        "entailed": 0,
+        "baseless": 3,
+        "contradicted": 16
       }
     },
     "labels": [
@@ -62,14 +62,14 @@
       "id": "gov-02",
       "domain": "ai_governance",
       "gold": "contradicted",
-      "pred": "entailed",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "gov-03",
       "domain": "ai_governance",
-      "gold": "baseless",
-      "pred": "baseless",
+      "gold": "contradicted",
+      "pred": "contradicted",
       "correct": true
     },
     {
@@ -83,14 +83,14 @@
       "id": "gov-05",
       "domain": "ai_governance",
       "gold": "contradicted",
-      "pred": "baseless",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "gov-06",
       "domain": "ai_governance",
-      "gold": "baseless",
-      "pred": "baseless",
+      "gold": "contradicted",
+      "pred": "contradicted",
       "correct": true
     },
     {
@@ -104,14 +104,14 @@
       "id": "imm-02",
       "domain": "immigration",
       "gold": "contradicted",
-      "pred": "entailed",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "imm-03",
       "domain": "immigration",
-      "gold": "baseless",
-      "pred": "baseless",
+      "gold": "contradicted",
+      "pred": "contradicted",
       "correct": true
     },
     {
@@ -125,14 +125,14 @@
       "id": "imm-05",
       "domain": "immigration",
       "gold": "contradicted",
-      "pred": "baseless",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "imm-06",
       "domain": "immigration",
-      "gold": "baseless",
-      "pred": "baseless",
+      "gold": "contradicted",
+      "pred": "contradicted",
       "correct": true
     },
     {
@@ -146,14 +146,14 @@
       "id": "fin-02",
       "domain": "finance",
       "gold": "contradicted",
-      "pred": "entailed",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "fin-03",
       "domain": "finance",
-      "gold": "baseless",
-      "pred": "baseless",
+      "gold": "contradicted",
+      "pred": "contradicted",
       "correct": true
     },
     {
@@ -167,8 +167,8 @@
       "id": "fin-05",
       "domain": "finance",
       "gold": "contradicted",
-      "pred": "entailed",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "hlth-01",
@@ -181,14 +181,14 @@
       "id": "hlth-02",
       "domain": "healthcare",
       "gold": "contradicted",
-      "pred": "baseless",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "hlth-03",
       "domain": "healthcare",
-      "gold": "baseless",
-      "pred": "baseless",
+      "gold": "contradicted",
+      "pred": "contradicted",
       "correct": true
     },
     {
@@ -201,23 +201,23 @@
     {
       "id": "hlth-05",
       "domain": "healthcare",
-      "gold": "baseless",
-      "pred": "baseless",
+      "gold": "contradicted",
+      "pred": "contradicted",
       "correct": true
     },
     {
       "id": "multi-01",
       "domain": "ai_governance",
       "gold": "contradicted",
-      "pred": "baseless",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "multi-02",
       "domain": "finance",
-      "gold": "baseless",
+      "gold": "contradicted",
       "pred": "baseless",
-      "correct": true
+      "correct": false
     },
     {
       "id": "multi-03",
@@ -229,9 +229,9 @@
     {
       "id": "edge-01",
       "domain": "ai_governance",
-      "gold": "baseless",
+      "gold": "contradicted",
       "pred": "baseless",
-      "correct": true
+      "correct": false
     },
     {
       "id": "edge-02",
@@ -244,21 +244,91 @@
       "id": "edge-03",
       "domain": "finance",
       "gold": "contradicted",
-      "pred": "entailed",
-      "correct": false
+      "pred": "contradicted",
+      "correct": true
     },
     {
       "id": "edge-04",
       "domain": "immigration",
-      "gold": "baseless",
+      "gold": "contradicted",
       "pred": "baseless",
-      "correct": true
+      "correct": false
     },
     {
       "id": "edge-05",
       "domain": "ai_governance",
       "gold": "entailed",
       "pred": "entailed",
+      "correct": true
+    },
+    {
+      "id": "base-01",
+      "domain": "ai_governance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-02",
+      "domain": "ai_governance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-03",
+      "domain": "ai_governance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-04",
+      "domain": "immigration",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-05",
+      "domain": "immigration",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-06",
+      "domain": "immigration",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-07",
+      "domain": "finance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-08",
+      "domain": "healthcare",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-09",
+      "domain": "finance",
+      "gold": "baseless",
+      "pred": "baseless",
+      "correct": true
+    },
+    {
+      "id": "base-10",
+      "domain": "healthcare",
+      "gold": "baseless",
+      "pred": "baseless",
       "correct": true
     }
   ]

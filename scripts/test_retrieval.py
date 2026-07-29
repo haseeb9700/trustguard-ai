@@ -1,12 +1,13 @@
 import chromadb
-from sentence_transformers import SentenceTransformer
+
+from modules.embeddings import get_embedding_model
 
 DB_PATH = "data/chroma_db"
 COLLECTION_NAME = "uscis_policy_docs"
 
 
 def retrieve(query, top_k=3):
-    model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+    model = get_embedding_model()
 
     client = chromadb.PersistentClient(path=DB_PATH)
     collection = client.get_collection(name=COLLECTION_NAME)

@@ -60,8 +60,12 @@ def _corpus():
 
 
 def _patch_model(monkeypatch, model):
+    # Patch the shared loader every caller now routes through. It accepts an
+    # optional model-name override, so the stub must take one too.
     monkeypatch.setattr(
-        "modules.rag_pipeline._get_embedding_model", lambda: model, raising=False
+        "modules.embeddings.get_embedding_model",
+        lambda name=None: model,
+        raising=False,
     )
 
 
@@ -141,8 +145,19 @@ def test_reranked_ranker_pool_matches_production_default():
 
 
 def test_build_ranker_knows_every_compare_ranker():
+    # --compare iterates COMPARE_ORDER, so an unrecognised name there would
+    # only surface as a crash partway through a long benchmark run.
+    known = {
+        "lexical",
+        "bm25",
+        "embedding",
+        "hybrid",
+        "reranked",
+        "hybrid_reranked",
+        "oracle",
+    }
     for name in rre.COMPARE_ORDER:
-        assert name in {"lexical", "embedding", "reranked", "oracle"}
+        assert name in known
 
 
 # --- comparison report -----------------------------------------------------

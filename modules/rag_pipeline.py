@@ -8,6 +8,7 @@ from openai import OpenAI
 
 from modules.audit_logger import log_audit
 from modules.cache import get_cached_embedding, set_cached_embedding
+from modules.embeddings import embedding_model_name, get_embedding_model
 from modules.hallucination_checker import evaluate_hallucination
 from modules.reranker import rerank_contexts
 from modules.risk_score import calculate_risk
@@ -16,19 +17,14 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
-
-_embedding_model = None
+# Queries and passages MUST be embedded by the same model, so the name and the
+# loader live in one place rather than being repeated here.
+EMBEDDING_MODEL_NAME = embedding_model_name()
 
 
 def _get_embedding_model():
-    """Lazy-load the embedding model on first use (keeps startup fast)."""
-    global _embedding_model
-    if _embedding_model is None:
-        from sentence_transformers import SentenceTransformer
-
-        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-    return _embedding_model
+    """Lazy-load the shared embedding model (keeps startup fast)."""
+    return get_embedding_model()
 
 
 def get_connection():

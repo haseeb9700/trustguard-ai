@@ -7,10 +7,10 @@ chunk verdicts are merged with an OR-join, and unresolved claims are
 re-verified globally against the full context (evidence distributed
 across chunks gets caught here).
 
-Label taxonomy:
-    entailed     — the context directly supports the claim
-    contradicted — the context states the opposite (worst case)
-    baseless     — the context contains no evidence for the claim
+Label taxonomy is defined once in ``modules/verdicts`` and shared with the eval
+dataset, so the model is judged against the same boundary the data is labelled
+with. In short: contradicted means the context says something incompatible with
+the claim, baseless means the context is silent on it.
 """
 
 import json
@@ -20,6 +20,8 @@ import re
 
 from dotenv import load_dotenv
 from openai import OpenAI
+
+from modules.verdicts import PROMPT_RUBRIC
 
 load_dotenv()
 
@@ -120,9 +122,7 @@ You are a strict context-faithfulness verifier.
 
 For EACH claim, assess it against EACH context window INDEPENDENTLY:
 
-- "entailed": this window directly supports the claim
-- "contradicted": this window states the opposite of the claim
-- "baseless": this window contains no decisive evidence either way
+{PROMPT_RUBRIC}
 
 Judge only from the window text. Do not use outside knowledge.
 
@@ -199,10 +199,12 @@ Each claim below was screened chunk-by-chunk; the local result is shown as a hin
 only. Now read the FULL context — evidence may be spread across passages, and an
 apparent local contradiction may be resolved by surrounding text.
 
-Final verdicts:
-- "entailed": the full context supports the claim (possibly combining passages)
-- "contradicted": the full context states the opposite
-- "baseless": the full context contains no evidence for the claim
+Final verdicts — read "window" below as the FULL context:
+
+{PROMPT_RUBRIC}
+
+Evidence may be spread across passages, so a claim unsupported by any single
+passage may still be entailed by the whole.
 
 Judge only from the context. Do not use outside knowledge.
 

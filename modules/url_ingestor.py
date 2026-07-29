@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 from modules.content_filter import filter_chunks, is_boilerplate
+from modules.embeddings import get_embedding_model
 from modules.source_manager import delete_source
 from modules.trick_questions import generate_trick_questions
 from modules.url_guard import pin_validated_host, validate_public_url
@@ -21,7 +22,6 @@ load_dotenv()
 
 logger = logging.getLogger("trustguard.ingest")
 
-EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 REQUEST_TIMEOUT_SECONDS = 30
 MIN_BLOCK_LENGTH = 40
 MIN_CHUNK_LENGTH = 50
@@ -47,17 +47,14 @@ REQUEST_HEADERS = {
     )
 }
 
-_embedding_model = None
-
 
 def _get_embedding_model():
-    """Lazy-load the embedding model on first use (keeps startup fast)."""
-    global _embedding_model
-    if _embedding_model is None:
-        from sentence_transformers import SentenceTransformer
+    """Lazy-load the shared embedding model.
 
-        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-    return _embedding_model
+    Must be the same model that embeds queries in ``rag_pipeline``, or stored
+    vectors and query vectors are not comparable.
+    """
+    return get_embedding_model()
 
 
 def get_connection():

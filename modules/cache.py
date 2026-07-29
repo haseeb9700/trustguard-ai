@@ -104,16 +104,30 @@ def _norm(text: str) -> str:
     return " ".join(str(text).strip().lower().split())
 
 
+def _embedding_key(text: str) -> str:
+    """Namespace cached vectors by the model that produced them.
+
+    A vector is only meaningful alongside others from the same model, and the
+    models differ in width (bge-small 384, base 768, large 1024). Keying on the
+    text alone would hand back a previous model's vector after a model change —
+    silently wrong at best, and a shape mismatch at worst. Including the name
+    means a switch simply misses the cache instead.
+    """
+    from modules.embeddings import embedding_model_name
+
+    return f"{embedding_model_name()}::{_norm(text)}"
+
+
 def get_cached_embedding(text: str) -> list | None:
     if not CACHE_ENABLED:
         return None
-    return embedding_cache.get(_norm(text))
+    return embedding_cache.get(_embedding_key(text))
 
 
 def set_cached_embedding(text: str, vector: list) -> None:
     if not CACHE_ENABLED:
         return
-    embedding_cache.set(_norm(text), vector)
+    embedding_cache.set(_embedding_key(text), vector)
 
 
 def get_cached_answer(query: str) -> dict | None:

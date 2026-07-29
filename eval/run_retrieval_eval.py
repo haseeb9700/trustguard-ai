@@ -63,7 +63,14 @@ CANDIDATE_POOL_SIZE = 15
 BGE_QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
 
 # Cheapest first, so a --compare run fails fast before loading any model.
-COMPARE_ORDER = ["lexical", "embedding", "reranked"]
+COMPARE_ORDER = [
+    "lexical",
+    "bm25",
+    "embedding",
+    "hybrid",
+    "reranked",
+    "hybrid_reranked",
+]
 
 _STOPWORDS = {
     "the",
@@ -141,17 +148,23 @@ def lexical_ranker(corpus: list):
     return rank
 
 
-def embedding_ranker(corpus: list, instruction: str = ""):
-    """Rank corpus ids by cosine similarity of bge-small embeddings.
+def embedding_ranker(
+    corpus: list, instruction: str = "", model_name: str | None = None
+):
+    """Rank corpus ids by cosine similarity of the embedding model.
 
     Args:
         corpus: chunks to rank.
         instruction: optional prefix applied to the *query only*. BGE is
             trained asymmetrically, so passages stay bare.
+        model_name: override the configured model, for benchmarking. The corpus
+            is re-encoded here on every call, so a swap needs no re-indexing to
+            *measure* — only to deploy.
     """
-    from modules.rag_pipeline import _get_embedding_model, cosine_similarity
+    from modules.embeddings import get_embedding_model
+    from modules.rag_pipeline import cosine_similarity
 
-    model = _get_embedding_model()
+    model = get_embedding_model(model_name)
     ids = [c["id"] for c in corpus]
     embeddings = model.encode([c["text"] for c in corpus]).tolist()
 
@@ -167,13 +180,53 @@ def embedding_ranker(corpus: list, instruction: str = ""):
     return rank
 
 
+def bm25_ranker(corpus: list):
+    """Rank corpus ids by Okapi BM25 — exact-term matching, no model."""
+    from modules.hybrid_search import BM25
+
+    index = BM25([(c["id"], c["text"]) for c in corpus])
+    return index.rank
+
+
+def hybrid_ranker(
+    corpus: list,
+    instruction: str = "",
+    model_name: str | None = None,
+    rrf_k: int = None,
+    dense_weight: float = 1.0,
+    lexical_weight: float = 1.0,
+):
+    """Fuse dense and BM25 rankings with reciprocal rank fusion.
+
+    Dense retrieval handles paraphrase; BM25 handles the exact identifiers
+    ("Form I-983", "8 CFR 214.2(f)") that embeddings blur together. Fusing by
+    rank avoids having to reconcile their incomparable score scales.
+    """
+    from modules.hybrid_search import RRF_K, reciprocal_rank_fusion
+
+    rrf_k = RRF_K if rrf_k is None else rrf_k
+    dense = embedding_ranker(corpus, instruction=instruction, model_name=model_name)
+    lexical = bm25_ranker(corpus)
+
+    def rank(query: str) -> list:
+        return reciprocal_rank_fusion(
+            [dense(query), lexical(query)],
+            k=rrf_k,
+            weights=[dense_weight, lexical_weight],
+        )
+
+    return rank
+
+
 def reranked_ranker(
     corpus: list,
     instruction: str = "",
     pool_size: int = CANDIDATE_POOL_SIZE,
     mmr_lambda: float | None = None,
+    model_name: str | None = None,
+    first_stage: str = "embedding",
 ):
-    """Rank as production does: embedding recall, then cross-encoder rerank.
+    """Rank as production does: first-stage recall, then cross-encoder rerank.
 
     ``run_retrieval_agent`` pulls a wide candidate pool by embedding similarity
     and hands it to the cross-encoder, which reads each query/chunk pair
@@ -186,7 +239,14 @@ def reranked_ranker(
     """
     from modules.reranker import rerank_contexts
 
-    embed_rank = embedding_ranker(corpus, instruction=instruction)
+    if first_stage == "hybrid":
+        embed_rank = hybrid_ranker(
+            corpus, instruction=instruction, model_name=model_name
+        )
+    else:
+        embed_rank = embedding_ranker(
+            corpus, instruction=instruction, model_name=model_name
+        )
     by_id = {c["id"]: c for c in corpus}
 
     def rank(query: str) -> list:
@@ -214,15 +274,31 @@ def oracle_ranker(corpus: list):
 
 
 def build_ranker(
-    name: str, corpus: list, instruction: str = "", mmr_lambda: float | None = None
+    name: str,
+    corpus: list,
+    instruction: str = "",
+    mmr_lambda: float | None = None,
+    model_name: str | None = None,
 ):
     if name == "lexical":
         return lexical_ranker(corpus), False
     if name == "embedding":
-        return embedding_ranker(corpus, instruction=instruction), False
-    if name == "reranked":
+        return embedding_ranker(
+            corpus, instruction=instruction, model_name=model_name
+        ), False
+    if name == "bm25":
+        return bm25_ranker(corpus), False
+    if name == "hybrid":
+        return hybrid_ranker(
+            corpus, instruction=instruction, model_name=model_name
+        ), False
+    if name in ("reranked", "hybrid_reranked"):
         return reranked_ranker(
-            corpus, instruction=instruction, mmr_lambda=mmr_lambda
+            corpus,
+            instruction=instruction,
+            mmr_lambda=mmr_lambda,
+            model_name=model_name,
+            first_stage="hybrid" if name == "hybrid_reranked" else "embedding",
         ), False
     if name == "oracle":
         return oracle_ranker(corpus), True  # needs the relevant set, not the query
@@ -236,6 +312,7 @@ def run(
     instruction: str = "",
     verbose: bool = True,
     mmr_lambda: float | None = None,
+    model_name: str | None = None,
 ) -> dict:
     corpus = _load_jsonl(CORPUS_PATH)
     queries = _load_jsonl(QUERIES_PATH)
@@ -243,7 +320,11 @@ def run(
         queries = queries[:limit]
 
     ranker, is_oracle = build_ranker(
-        ranker_name, corpus, instruction=instruction, mmr_lambda=mmr_lambda
+        ranker_name,
+        corpus,
+        instruction=instruction,
+        mmr_lambda=mmr_lambda,
+        model_name=model_name,
     )
 
     results = []
@@ -276,6 +357,7 @@ def run(
         "ranker": ranker_name,
         "query_instruction": bool(instruction),
         "mmr_lambda": mmr_lambda,
+        "embedding_model": model_name or "default",
         "corpus_size": len(corpus),
         "elapsed_seconds": round(time.time() - started, 2),
         "metrics": metrics,
@@ -287,7 +369,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="TrustGuard retrieval eval")
     parser.add_argument(
         "--ranker",
-        choices=["reranked", "embedding", "lexical", "oracle"],
+        choices=[
+            "reranked",
+            "hybrid_reranked",
+            "hybrid",
+            "embedding",
+            "bm25",
+            "lexical",
+            "oracle",
+        ],
         default="reranked",
         help="Which retriever to score (default: reranked, the production path).",
     )
@@ -300,6 +390,18 @@ def main() -> int:
         "--query-instruction",
         action="store_true",
         help="Prefix queries with BGE's retrieval instruction (queries only).",
+    )
+    parser.add_argument(
+        "--embedding-model",
+        default=None,
+        metavar="NAME",
+        help="Override the embedding model, e.g. BAAI/bge-base-en-v1.5",
+    )
+    parser.add_argument(
+        "--embedding-sweep",
+        default=None,
+        metavar="NAMES",
+        help="Comma-separated models to compare on the same corpus.",
     )
     parser.add_argument(
         "--mmr",
@@ -327,6 +429,47 @@ def main() -> int:
 
     ks = [int(x) for x in args.k.split(",") if x.strip()]
     instruction = BGE_QUERY_INSTRUCTION if args.query_instruction else ""
+
+    if args.embedding_sweep:
+        names = [n.strip() for n in args.embedding_sweep.split(",") if n.strip()]
+        runs = []
+        for name in names:
+            print(f"\n--- {name} ---")
+            runs.append(
+                run(
+                    args.ranker,
+                    ks,
+                    args.limit,
+                    instruction,
+                    verbose=False,
+                    mmr_lambda=args.mmr,
+                    model_name=name,
+                )
+            )
+            m = runs[-1]["metrics"]
+            print(f"  MRR {m['mrr']:.3f}  |  {runs[-1]['elapsed_seconds']}s")
+        report = format_comparison_report(
+            [
+                (n.split("/")[-1], r["metrics"])
+                for n, r in zip(names, runs, strict=True)
+            ],
+            ks,
+            corpus_size=runs[0]["corpus_size"],
+            instruction=bool(instruction),
+        )
+        result = {"mode": "embedding_sweep", "models": names, "runs": runs}
+        print("\n" + report)
+        print(
+            "\nNote: swapping the embedding model requires re-embedding the whole\n"
+            "vector store. Stored vectors come from the old model and are not\n"
+            "comparable to new query vectors — and the widths differ."
+        )
+        if not args.no_write:
+            with open(RESULTS_JSON, "w", encoding="utf-8") as fh:
+                json.dump(result, fh, indent=2)
+            with open(REPORT_MD, "w", encoding="utf-8") as fh:
+                fh.write(report)
+        return 0
 
     if args.mmr_sweep:
         lambdas = [float(x) for x in args.mmr_sweep.split(",") if x.strip()]
@@ -393,7 +536,14 @@ def main() -> int:
         }
     else:
         print(f"Running retrieval eval — ranker={args.ranker}, k={ks}\n")
-        result = run(args.ranker, ks, args.limit, instruction, mmr_lambda=args.mmr)
+        result = run(
+            args.ranker,
+            ks,
+            args.limit,
+            instruction,
+            mmr_lambda=args.mmr,
+            model_name=args.embedding_model,
+        )
         report = format_report(result["metrics"], ranker=args.ranker)
 
     print("\n" + report)
