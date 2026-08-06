@@ -855,7 +855,7 @@ export default function Home() {
 
       {/* Promo banner */}
       <div className="promo-banner">
-        TrustGuard AI <span>— Audit-ready governance for enterprise LLM systems</span>
+        TrustGuard AI <span>Governance you can audit for enterprise AI</span>
       </div>
 
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px" }}>
@@ -870,7 +870,7 @@ export default function Home() {
         <section className="hero">
           <h1>Engineering trust<br />in every AI response.</h1>
           <p className="hero-sub">
-            Detect hallucinations, verify sources, score risk, and create audit-ready governance workflows for enterprise LLM systems.
+            Detect hallucinations, verify sources, score risk, and keep a clear record for every enterprise AI answer.
           </p>
           <div className="terminal">
             <span style={{ color: "#5f5f5f", fontFamily: "monospace", fontSize: 15 }}>›</span>
